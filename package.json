@@ -8,6 +8,8 @@
         "start": "next start",
         "lint": "eslint",
         "format": "eslint --fix; prettier --write .",
+        "test": "vitest run --project=unit",
+        "test:coverage": "vitest run --project=unit --coverage",
         "commit": "cz",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
