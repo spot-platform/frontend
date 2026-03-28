@@ -1,0 +1,61 @@
+{
+    "name": "frontend",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint",
+        "format": "eslint --fix; prettier --write .",
+        "commit": "cz",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
+    },
+    "config": {
+        "commitizen": {
+            "path": "cz-conventional-changelog"
+        }
+    },
+    "dependencies": {
+        "@tanstack/react-query": "^5.95.2",
+        "ky": "^1.14.3",
+        "lucide-react": "^1.7.0",
+        "next": "16.2.1",
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "zustand": "^5.0.12"
+    },
+    "devDependencies": {
+        "@chromatic-com/storybook": "^5.1.1",
+        "@storybook/addon-a11y": "^10.3.3",
+        "@storybook/addon-docs": "^10.3.3",
+        "@storybook/addon-onboarding": "^10.3.3",
+        "@storybook/addon-vitest": "^10.3.3",
+        "@storybook/nextjs-vite": "^10.3.3",
+        "@tailwindcss/postcss": "^4",
+        "@tanstack/react-query-devtools": "^5.95.2",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "@vitejs/plugin-react": "^6.0.1",
+        "@vitest/browser-playwright": "^4.1.2",
+        "@vitest/coverage-v8": "^4.1.2",
+        "commitizen": "^4.3.1",
+        "cz-conventional-changelog": "^3.3.0",
+        "eslint": "^9",
+        "eslint-config-next": "16.2.1",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-prettier": "^5.5.5",
+        "eslint-plugin-storybook": "^10.3.3",
+        "playwright": "^1.58.2",
+        "prettier": "^3.8.1",
+        "storybook": "^10.3.3",
+        "tailwindcss": "^4",
+        "typescript": "^5",
+        "vite": "^8.0.3",
+        "vitest": "^4.1.2"
+    }
+}
