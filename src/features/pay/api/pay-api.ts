@@ -1,9 +1,6 @@
-import { apiClient } from './client';
-import type {
-    PointBalance,
-    PointTransaction,
-    PagedResponse,
-} from '@/types/api';
+import { apiClient } from '@/shared/api/client';
+import type { PointBalance, PointTransaction } from '@/entities/pay/types';
+import type { PagedResponse } from '@/entities/spot/types';
 
 export const payApi = {
     balance: () =>

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { payApi } from '@/lib/api/pay';
+import { payApi } from '../api/pay-api';
 
 export const payKeys = {
     balance: ['pay', 'balance'] as const,

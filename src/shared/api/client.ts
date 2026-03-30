@@ -1,5 +1,5 @@
 import ky, { HTTPError } from 'ky';
-import { env } from '@/env';
+import { env } from '@/shared/lib/env';
 
 export type ApiErrorBody = {
     code: string;

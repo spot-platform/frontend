@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { setTokenAccessor } from '@/lib/api/client';
+import { setTokenAccessor } from '@/shared/api/client';
 
 type AuthState = {
     token: string | null;

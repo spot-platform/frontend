@@ -11,7 +11,6 @@ export type ApiResponse<T> = {
 
 export type PagedResponse<T> = ApiResponse<T[]>;
 
-// Spot domain types
 export type SpotType = 'OFFER' | 'REQUEST';
 export type SpotStatus = 'OPEN' | 'MATCHED' | 'CLOSED' | 'CANCELLED';
 
@@ -46,37 +45,4 @@ export type TimelineEvent = {
 
 export type SpotDetail = Spot & {
     timeline: TimelineEvent[];
-};
-
-// Point domain types
-export type PointTransaction = {
-    id: string;
-    type: 'CHARGE' | 'USE' | 'REFUND';
-    amount: number;
-    balanceAfter: number;
-    description: string;
-    createdAt: string;
-};
-
-export type PointBalance = {
-    balance: number;
-    updatedAt: string;
-};
-
-// User/My domain types
-export type UserProfile = {
-    id: string;
-    nickname: string;
-    email: string;
-    pointBalance: number;
-    joinedAt: string;
-};
-
-export type Participation = {
-    spotId: string;
-    spotTitle: string;
-    spotType: SpotType;
-    role: 'AUTHOR' | 'PARTICIPANT';
-    status: SpotStatus;
-    joinedAt: string;
 };

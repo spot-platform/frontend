@@ -3,7 +3,7 @@ import {
     spotsApi,
     type SpotListParams,
     type CreateSpotPayload,
-} from '@/lib/api/spots';
+} from '../api/spot-api';
 
 export const spotKeys = {
     all: ['spots'] as const,

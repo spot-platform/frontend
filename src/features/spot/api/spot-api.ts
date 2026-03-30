@@ -1,5 +1,5 @@
-import { apiClient } from './client';
-import type { Spot, SpotDetail, PagedResponse } from '@/types/api';
+import { apiClient } from '@/shared/api/client';
+import type { Spot, SpotDetail, PagedResponse } from '@/entities/spot/types';
 
 export type SpotListParams = {
     type?: 'OFFER' | 'REQUEST';

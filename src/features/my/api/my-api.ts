@@ -1,5 +1,6 @@
-import { apiClient } from './client';
-import type { UserProfile, Participation, PagedResponse } from '@/types/api';
+import { apiClient } from '@/shared/api/client';
+import type { UserProfile, Participation } from '@/entities/user/types';
+import type { PagedResponse } from '@/entities/spot/types';
 
 export const myApi = {
     profile: () => apiClient.get('users/me').json<{ data: UserProfile }>(),

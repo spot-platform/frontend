@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { QueryProvider } from '@/providers/query-provider';
-import { PwaUpdatePrompt } from '@/components/pwa-update-prompt';
+import { QueryProvider } from '@/app/providers/query-provider';
+import { PwaUpdatePrompt } from '@/shared/ui/pwa-update-prompt';
 import './globals.css';
 
 export const metadata: Metadata = {
