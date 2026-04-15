@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { setTokenAccessor } from '@/shared/api/client';
 
 type AuthState = {
     token: string | null;
@@ -20,12 +19,10 @@ export const useAuthStore = create<AuthState>()(
 
             setToken: (token, userId) => {
                 set({ token, userId, isAuthenticated: true });
-                setTokenAccessor(() => token);
             },
 
             clearAuth: () => {
                 set({ token: null, userId: null, isAuthenticated: false });
-                setTokenAccessor(() => null);
             },
         }),
         {
@@ -35,11 +32,15 @@ export const useAuthStore = create<AuthState>()(
                 userId: state.userId,
             }),
             onRehydrateStorage: () => (state) => {
-                // Re-wire token accessor after hydration from localStorage
-                if (state?.token) {
-                    const token = state.token;
-                    setTokenAccessor(() => token);
+                const token = state?.token ?? null;
+
+                if (state) {
+                    state.isAuthenticated = Boolean(
+                        state.token && state.userId,
+                    );
                 }
+
+                void token;
             },
         },
     ),

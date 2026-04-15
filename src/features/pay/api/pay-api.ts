@@ -1,20 +1,45 @@
-import { apiClient } from '@/shared/api/client';
-import type { PointBalance, PointTransaction } from '@/entities/pay/types';
+import type {
+    PointBalance,
+    PointTransaction,
+    LinkedBankAccount,
+    PointWithdrawal,
+} from '@/entities/pay/types';
 import type { PagedResponse } from '@/entities/spot/types';
+import {
+    chargeMockPoints,
+    getMockLinkedBankAccount,
+    getMockPointBalance,
+    getMockPointHistory,
+    getMockPointWithdrawals,
+    linkMockBankAccount,
+    withdrawMockPoints,
+} from '../model/mock';
 
 export const payApi = {
-    balance: () =>
-        apiClient.get('points/balance').json<{ data: PointBalance }>(),
+    balance: async (): Promise<{ data: PointBalance }> => getMockPointBalance(),
 
-    history: (params?: { page?: number; size?: number }) =>
-        apiClient
-            .get('points/history', {
-                searchParams: params as Record<string, number>,
-            })
-            .json<PagedResponse<PointTransaction>>(),
+    linkedBankAccount: async (): Promise<{ data: LinkedBankAccount | null }> =>
+        getMockLinkedBankAccount(),
 
-    charge: (amount: number) =>
-        apiClient
-            .post('points/charge', { json: { amount } })
-            .json<{ data: PointBalance }>(),
+    withdrawals: async (params?: {
+        page?: number;
+        size?: number;
+    }): Promise<{ data: PointWithdrawal[] }> => getMockPointWithdrawals(params),
+
+    history: async (params?: {
+        page?: number;
+        size?: number;
+    }): Promise<PagedResponse<PointTransaction>> => getMockPointHistory(params),
+
+    charge: async (amount: number): Promise<{ data: PointBalance }> =>
+        chargeMockPoints(amount),
+
+    linkBankAccount: async (payload: {
+        bankName: string;
+        accountNumber: string;
+        accountHolder: string;
+    }): Promise<{ data: LinkedBankAccount }> => linkMockBankAccount(payload),
+
+    withdraw: async (amount: number): Promise<{ data: PointBalance }> =>
+        withdrawMockPoints(amount),
 };

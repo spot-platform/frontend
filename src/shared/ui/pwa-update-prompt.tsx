@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Button } from '@frontend/design-system';
 
 export function PwaUpdatePrompt() {
     const [waitingSW, setWaitingSW] = useState<ServiceWorker | null>(null);
@@ -35,12 +36,14 @@ export function PwaUpdatePrompt() {
     return (
         <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-black px-4 py-3 text-white shadow-lg">
             <span className="text-sm">새 버전이 있습니다</span>
-            <button
+            <Button
                 onClick={handleUpdate}
-                className="ml-4 rounded-lg bg-white px-3 py-1 text-sm font-medium text-black"
+                variant="ghost"
+                size="sm"
+                className="ml-4 h-auto rounded-lg bg-white px-3 py-1 text-black hover:bg-gray-100"
             >
                 업데이트
-            </button>
+            </Button>
         </div>
     );
 }

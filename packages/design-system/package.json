@@ -1,0 +1,25 @@
+{
+    "name": "@frontend/design-system",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts",
+        "./tokens.css": "./src/styles/tokens.css",
+        "./storybook.css": "./src/styles/storybook.css"
+    },
+    "scripts": {
+        "storybook": "storybook dev -p 6007 -c .storybook",
+        "build-storybook": "storybook build -c .storybook"
+    },
+    "peerDependencies": {
+        "react": "19.2.4",
+        "react-dom": "19.2.4"
+    },
+    "dependencies": {
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^3.5.0"
+    }
+}

@@ -2,6 +2,9 @@
     "name": "frontend",
     "version": "0.1.0",
     "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
     "scripts": {
         "dev": "next dev",
         "build": "next build",
@@ -12,7 +15,9 @@
         "test:coverage": "vitest run --project=unit --coverage",
         "commit": "cz",
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
+        "build-storybook": "storybook build",
+        "storybook:design-system": "pnpm --filter @frontend/design-system storybook",
+        "build-storybook:design-system": "pnpm --filter @frontend/design-system build-storybook"
     },
     "config": {
         "commitizen": {
@@ -20,7 +25,9 @@
         }
     },
     "dependencies": {
+        "@frontend/design-system": "workspace:*",
         "@tanstack/react-query": "^5.95.2",
+        "clsx": "^2.1.1",
         "framer-motion": "^12.38.0",
         "ky": "^1.14.3",
         "lucide-react": "^1.7.0",
@@ -29,6 +36,7 @@
         "react-dom": "19.2.4",
         "react-icons": "^5.6.0",
         "serwist": "^9.5.7",
+        "tailwind-merge": "^3.5.0",
         "zustand": "^5.0.12"
     },
     "devDependencies": {
@@ -57,6 +65,7 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.5",
         "eslint-plugin-storybook": "^10.3.3",
+        "jsdom": "^26.1.0",
         "playwright": "^1.58.2",
         "prettier": "^3.8.1",
         "storybook": "^10.3.3",
@@ -64,5 +73,6 @@
         "typescript": "^5",
         "vite": "^8.0.3",
         "vitest": "^4.1.2"
-    }
+    },
+    "packageManager": "pnpm@10.22.0"
 }

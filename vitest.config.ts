@@ -14,6 +14,15 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+    resolve: {
+        alias: {
+            '@/': `${path.join(dirname, 'src')}/`,
+            '@frontend/design-system': path.join(
+                dirname,
+                'packages/design-system/src/index.ts',
+            ),
+        },
+    },
     test: {
         coverage: {
             provider: 'v8',

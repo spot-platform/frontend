@@ -6,7 +6,7 @@ export default function NotFound() {
             <h1 className="text-2xl font-bold">페이지를 찾을 수 없어요</h1>
             <p className="text-muted-foreground">존재하지 않는 페이지입니다.</p>
             <Link
-                href="/"
+                href="/feed"
                 className="text-brand-500 underline underline-offset-4"
             >
                 홈으로 돌아가기

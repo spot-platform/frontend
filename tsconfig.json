@@ -19,7 +19,8 @@
             }
         ],
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@frontend/design-system": ["./packages/design-system/src/index.ts"]
         }
     },
     "include": [

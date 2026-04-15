@@ -3,5 +3,9 @@ export {
     payKeys,
     usePointBalance,
     usePointHistory,
+    useLinkedBankAccount,
+    usePointWithdrawals,
     useChargePoints,
+    useLinkBankAccount,
+    useWithdrawPoints,
 } from './model/use-pay';

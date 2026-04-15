@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+:root {
+    color-scheme: light;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+}
