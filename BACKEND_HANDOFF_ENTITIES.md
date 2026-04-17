@@ -311,6 +311,27 @@
 | pointBalance | number | required |          |
 | joinedAt     | string | required | ISO 8601 |
 
+### UserPersonaRole (enum)
+
+| Value     | Notes                          |
+| --------- | ------------------------------ |
+| SUPPORTER | 모임을 여는 역할 (호스트 계열) |
+| PARTNER   | 모임에 참여하는 역할           |
+
+> `ProfileType`과 값이 같지만 의미 축이 다르다. `UserPersonaRole`은 온보딩에서 유저가 선택한 페르소나 역할이며 `person_fitness_score` 입력으로 쓰인다.
+
+### UserPersona
+
+> 온보딩 위저드 결과. `PersonaArchetype`은 Simulation 섹션의 동일 enum을 공유한다. `interests`는 Feed 섹션의 `FeedCategory` 값 배열(`"음악" | "요리" | "운동" | "공예" | "언어" | "기타"`)이지만 BE 저장/수신 시 `string[]`로 취급한다.
+
+| Field     | Type             | Required | Notes                                                 |
+| --------- | ---------------- | -------- | ----------------------------------------------------- |
+| userId    | string           | required |                                                       |
+| role      | UserPersonaRole  | required | SUPPORTER \| PARTNER                                  |
+| archetype | PersonaArchetype | required | explorer \| helper \| creator \| connector \| learner |
+| interests | string[]         | required | FeedCategory 값 배열. 빈 배열 허용.                   |
+| createdAt | string           | required | ISO 8601                                              |
+
 ### PasswordChangePayload
 
 | Field           | Type   | Required | Notes |
@@ -660,6 +681,7 @@ My spot list card entity for the My page. `role=AUTHOR` means the authenticated 
 | maxParticipants          | number                   | optional |                                                |
 | isBookmarked             | boolean                  | optional |                                                |
 | myApplicationStatus      | FeedApplicationStatus    | optional | 인증된 사용자의 신청 상태. 미신청 시 omitted   |
+| spotId                   | string                   | optional | 연결된 Spot id. 있으면 맵 프리뷰/점수 조회 키  |
 
 ### SupporterItem
 
@@ -1418,3 +1440,168 @@ No body returned (204).
 | appliedRole | FeedApplicationRole   | required | PARTNER \| SUPPORTER                         |
 | deposit     | number                | required | 신청 시점의 보증금 스냅샷                    |
 | createdAt   | string                | required | ISO datetime                                 |
+
+## Simulation (contextBuilder 응답, 2026-04 추가)
+
+> contextBuilder가 생산하는 시뮬레이션 결과를 프론트가 그대로 소비한다. 프론트 클라이언트 계산 없음 — BE가 산출한 점수/힌트/프레임을 그대로 렌더.
+
+### GeoCoord
+
+| Field | Type   | Required | Notes |
+| ----- | ------ | -------- | ----- |
+| lat   | number | required |       |
+| lng   | number | required |       |
+
+### SpotProvenance (enum)
+
+| Value   | Notes                     |
+| ------- | ------------------------- |
+| virtual | 시뮬레이션 생성 가상 스팟 |
+| real    | 실제 서포터가 게시한 스팟 |
+| mixed   | 가상→실제 전환 중인 스팟  |
+
+### SpotTeachMode (enum)
+
+`"1:1" | "small_group" | "workshop"`
+
+### SpotStatusLite (enum)
+
+`"OPEN" | "MATCHED" | "CLOSED"` — `TimelineFrame.SpotMarker.status`에 사용. `CANCELLED`는 포함하지 않음.
+
+### PersonaArchetype (enum)
+
+`"explorer" | "helper" | "creator" | "connector" | "learner"` — 기존 `entities/persona/types.ts`와 동일.
+
+### SpotCard
+
+| Field                | Type           | Required | Notes                          |
+| -------------------- | -------------- | -------- | ------------------------------ |
+| spot_id              | string         | required |                                |
+| provenance           | SpotProvenance | required | virtual \| real \| mixed       |
+| title                | string         | required | LLM 생성 제목                  |
+| skill_topic          | string         | required | 카테고리/주제 라벨             |
+| teach_mode           | SpotTeachMode  | required | 1:1 \| small_group \| workshop |
+| venue_type           | string         | required | 예: `cafe`, `studio`, `gym`    |
+| fee_per_partner      | number         | required | 파트너 1인당 원화 기준 요금    |
+| location             | GeoCoord       | required |                                |
+| host_preview         | string         | required | 호스트 소개 한 문장            |
+| person_fitness_score | number         | required | 0–1, 파트너 개인 적합도        |
+| attractiveness_score | number         | required | 0–1, 피드 품질 종합 점수       |
+
+### AttractivenessSignal (enum)
+
+`"title_hookiness" | "price_reasonableness" | "venue_accessibility" | "host_reputation_fit" | "time_slot_demand" | "skill_rarity_bonus" | "narrative_authenticity" | "bonded_repeat_potential"`
+
+### AttractivenessPriceBenchmark
+
+| Field   | Type   | Required | Notes                                       |
+| ------- | ------ | -------- | ------------------------------------------- |
+| p25     | number | required |                                             |
+| p50     | number | required |                                             |
+| p75     | number | required |                                             |
+| p90     | number | required |                                             |
+| verdict | string | required | 예: `below_p50`, `near_p50`, `above_p75` 등 |
+
+### AttractivenessReport
+
+| Field             | Type                                 | Required | Notes                           |
+| ----------------- | ------------------------------------ | -------- | ------------------------------- |
+| composite_score   | number                               | required | 0–1                             |
+| signals           | Record<AttractivenessSignal, number> | required | 8개 시그널 모두 0–1 값으로 포함 |
+| improvement_hints | string[]                             | required | LLM이 생성한 개선 힌트 문장     |
+| price_benchmark   | AttractivenessPriceBenchmark         | required |                                 |
+
+### AgentMarker
+
+| Field     | Type             | Required | Notes                  |
+| --------- | ---------------- | -------- | ---------------------- |
+| agent_id  | string           | required |                        |
+| location  | GeoCoord         | required |                        |
+| archetype | PersonaArchetype | optional | 알 수 없으면 생략 가능 |
+
+### SpotMarker (Simulation)
+
+| Field      | Type           | Required | Notes                     |
+| ---------- | -------------- | -------- | ------------------------- |
+| spot_id    | string         | required |                           |
+| location   | GeoCoord       | required |                           |
+| provenance | SpotProvenance | required | virtual \| real \| mixed  |
+| status     | SpotStatusLite | required | OPEN \| MATCHED \| CLOSED |
+
+> 맵 UI 컴포넌트 이름과 충돌하므로, 프론트 엔티티 파일에서는 `SpotMarker` 타입으로, 맵 컴포넌트는 `SpotMarker` 컴포넌트로 분리 import 한다.
+
+### LiveEvent
+
+| Field      | Type                    | Required | Notes                                                         |
+| ---------- | ----------------------- | -------- | ------------------------------------------------------------- |
+| event_id   | string                  | required |                                                               |
+| event_type | string                  | required | 예: `CREATE_TEACH_SPOT`, `JOIN_TEACH_SPOT`, `SPOT_MATCHED`, … |
+| payload    | Record<string, unknown> | required | event_type에 따라 가변. 어댑터가 기존 MapEvent로 변환.        |
+
+### TimelineFrame
+
+| Field            | Type          | Required | Notes                                 |
+| ---------------- | ------------- | -------- | ------------------------------------- |
+| tick             | number        | required | 0–47 (한 day 내 half-hour 슬롯)       |
+| day_of_week      | string        | required | 예: `MON`, `TUE`, … `SUN`             |
+| time_slot        | string        | required | 예: `09:30`                           |
+| active_agents    | AgentMarker[] | required | 해당 틱에 맵에 렌더할 에이전트 집합   |
+| active_spots     | SpotMarker[]  | required | 해당 틱에 활성인 스팟 집합            |
+| events_this_tick | LiveEvent[]   | required | 이 틱에 발생한 이벤트. 순서대로 방출. |
+
+### HighlightCategory (enum)
+
+`"first_success" | "bond_upgrade" | "counter_offer" | "referral" | "unexpected_match"`
+
+### HighlightClip
+
+| Field           | Type              | Required | Notes             |
+| --------------- | ----------------- | -------- | ----------------- |
+| clip_id         | string            | required |                   |
+| title           | string            | required |                   |
+| category        | HighlightCategory | required |                   |
+| start_tick      | number            | required |                   |
+| end_tick        | number            | required | inclusive         |
+| involved_agents | string[]          | required | agent_id 배열     |
+| narrative       | string            | required | LLM 생성 내러티브 |
+
+### ConversionHintsPlaceholder
+
+| Field       | Type   | Required | Notes               |
+| ----------- | ------ | -------- | ------------------- |
+| title       | string | required | 전환 피드 제목 초안 |
+| intro       | string | required | 소개 문구 초안      |
+| skill_topic | string | required |                     |
+
+### ConversionHintsPricing
+
+| Field         | Type    | Required | Notes                                                   |
+| ------------- | ------- | -------- | ------------------------------------------------------- |
+| fee_breakdown | unknown | required | 예: `{ tuition, materials, venue_share }` (스키마 가변) |
+| rationale     | string  | required |                                                         |
+
+### ConversionHintsPlan
+
+| Field         | Type     | Required | Notes |
+| ------------- | -------- | -------- | ----- |
+| warmup_block  | string   | required |       |
+| main_block    | string   | required |       |
+| closing_block | string   | required |       |
+| host_tips     | string[] | required |       |
+
+### ConversionHintsDemand
+
+| Field                   | Type   | Required | Notes |
+| ----------------------- | ------ | -------- | ----- |
+| forecast_join_count_p50 | number | required |       |
+| forecast_join_count_p90 | number | required |       |
+
+### ConversionHints
+
+| Field                  | Type                       | Required | Notes                         |
+| ---------------------- | -------------------------- | -------- | ----------------------------- |
+| source_virtual_spot_id | string                     | required | 전환 기반이 되는 가상 spot_id |
+| placeholder            | ConversionHintsPlaceholder | required |                               |
+| pricing_suggestion     | ConversionHintsPricing     | required |                               |
+| plan_help              | ConversionHintsPlan        | required |                               |
+| expected_demand        | ConversionHintsDemand      | required |                               |

@@ -239,20 +239,21 @@
 
 ### Entities
 
-| Entity                   | Fields                                                                                                               |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| UserProfile              | id, nickname, email, phone?, avatarUrl?, pointBalance, joinedAt                                                      |
-| NotificationSettings     | serviceNoticeEnabled, activityEnabled, pushEnabled, emailEnabled, updatedAt                                          |
-| SupporterRegistration    | field, mediaUrls[], career, bio, verificationStatus, verificationNotes, extraNotes, updatedAt?                       |
-| MySpot                   | id, type, status, title, description, pointCost, authorId, authorNickname, role, joinedAt?, createdAt, updatedAt     |
-| Participation            | spotId, spotTitle, spotType, role, status, joinedAt                                                                  |
-| ProfileReview            | id, reviewerNickname, rating, comment?, spotTitle, createdAt                                                         |
-| ProfileHistory           | spotId, spotTitle, spotType, completedAt, reviewCount, avgRating?                                                    |
-| SupporterProfile         | id, profileType, nickname, avatarUrl?, field, mediaUrls[], career, bio, avgRating, reviewCount, reviews[], history[] |
-| PartnerProfile           | id, profileType, nickname, avatarUrl?, interestCategories[], isFriend                                                |
-| MyFavoriteItem           | id, targetId, title, description?, type, savedAt, pointCost?, authorNickname?, status?                               |
-| MyRecentViewItem         | id, targetId, title, description?, type, viewedAt, pointCost?, authorNickname?, status?                              |
-| MySupportActivitySummary | avgRating, reviewCount, completedCount, latestReview?                                                                |
+| Entity                   | Fields                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| UserProfile              | id, nickname, email, phone?, avatarUrl?, pointBalance, joinedAt                                                                            |
+| UserPersona              | userId, role (SUPPORTER\|PARTNER), archetype (explorer\|helper\|creator\|connector\|learner), interests[] (FeedCategory values), createdAt |
+| NotificationSettings     | serviceNoticeEnabled, activityEnabled, pushEnabled, emailEnabled, updatedAt                                                                |
+| SupporterRegistration    | field, mediaUrls[], career, bio, verificationStatus, verificationNotes, extraNotes, updatedAt?                                             |
+| MySpot                   | id, type, status, title, description, pointCost, authorId, authorNickname, role, joinedAt?, createdAt, updatedAt                           |
+| Participation            | spotId, spotTitle, spotType, role, status, joinedAt                                                                                        |
+| ProfileReview            | id, reviewerNickname, rating, comment?, spotTitle, createdAt                                                                               |
+| ProfileHistory           | spotId, spotTitle, spotType, completedAt, reviewCount, avgRating?                                                                          |
+| SupporterProfile         | id, profileType, nickname, avatarUrl?, field, mediaUrls[], career, bio, avgRating, reviewCount, reviews[], history[]                       |
+| PartnerProfile           | id, profileType, nickname, avatarUrl?, interestCategories[], isFriend                                                                      |
+| MyFavoriteItem           | id, targetId, title, description?, type, savedAt, pointCost?, authorNickname?, status?                                                     |
+| MyRecentViewItem         | id, targetId, title, description?, type, viewedAt, pointCost?, authorNickname?, status?                                                    |
+| MySupportActivitySummary | avgRating, reviewCount, completedCount, latestReview?                                                                                      |
 
 ### Request DTO
 
@@ -528,3 +529,49 @@
 | ------------------ | ------ | -------------------------- | ------------------ | --------------------- |
 | GetAdminPostList   | GET    | /admin-posts               | AdminPostListQuery | AdminPostListResponse |
 | GetAdminPostDetail | GET    | /admin-posts/{adminPostId} | -                  | AdminPostResponse     |
+
+## Simulation (contextBuilder)
+
+> contextBuilder 시뮬레이션 출력을 맵/피드/대시보드에서 소비. 모든 응답은 `ApiResponse<T>` 또는 `PagedResponse<T>` 봉투를 사용한다 (단, SSE 스트림은 봉투 없이 프레임 JSON을 직접 송출).
+
+### Entities
+
+| Entity               | Fields                                                                                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| SpotCard             | spot_id, provenance, title, skill_topic, teach_mode, venue_type, fee_per_partner, location, host_preview, person_fitness_score, attractiveness_score                                 |
+| AttractivenessReport | composite_score, signals (Record<AttractivenessSignal, number>), improvement_hints[], price_benchmark                                                                                |
+| AttractivenessSignal | title_hookiness \| price_reasonableness \| venue_accessibility \| host_reputation_fit \| time_slot_demand \| skill_rarity_bonus \| narrative_authenticity \| bonded_repeat_potential |
+| AgentMarker          | agent_id, location, archetype?                                                                                                                                                       |
+| SpotMarker           | spot_id, location, provenance, status (OPEN \| MATCHED \| CLOSED)                                                                                                                    |
+| LiveEvent            | event_id, event_type, payload                                                                                                                                                        |
+| TimelineFrame        | tick, day_of_week, time_slot, active_agents[], active_spots[], events_this_tick[]                                                                                                    |
+| HighlightClip        | clip_id, title, category, start_tick, end_tick, involved_agents[], narrative                                                                                                         |
+| ConversionHints      | source_virtual_spot_id, placeholder, pricing_suggestion, plan_help, expected_demand                                                                                                  |
+
+### Request DTO
+
+| DTO                 | Fields                                 |
+| ------------------- | -------------------------------------- |
+| MapSpotsQuery       | mode? ('virtual' \| 'real' \| 'mixed') |
+| TimelineStreamQuery | -                                      |
+
+### Response DTO
+
+| DTO                          | Fields                      |
+| ---------------------------- | --------------------------- |
+| MapSpotsResponse             | data (SpotCard[])           |
+| HighlightClipsResponse       | data (HighlightClip[])      |
+| AttractivenessReportResponse | data (AttractivenessReport) |
+| ConversionHintsResponse      | data (ConversionHints)      |
+
+### Queries
+
+| Name                     | Method | Route                                            | Request DTO         | Response DTO                 |
+| ------------------------ | ------ | ------------------------------------------------ | ------------------- | ---------------------------- |
+| GetMapSpots              | GET    | /api/v1/map/spots                                | MapSpotsQuery       | MapSpotsResponse             |
+| StreamSimulationTimeline | GET    | /api/v1/simulation/runs/{run_id}/timeline/stream | TimelineStreamQuery | SSE: TimelineFrame           |
+| GetSimulationHighlights  | GET    | /api/v1/simulation/runs/{run_id}/highlights      | -                   | HighlightClipsResponse       |
+| GetFeedAttractiveness    | GET    | /api/v1/feed/{feed_id}/attractiveness            | -                   | AttractivenessReportResponse |
+| GetFeedConversionHints   | GET    | /api/v1/feed/{feed_id}/conversion-hints          | -                   | ConversionHintsResponse      |
+
+> `StreamSimulationTimeline`은 `text/event-stream`으로 `TimelineFrame` JSON을 프레임 단위 송출. 연결 유지 ping은 주석 라인(`: keepalive`)으로만 보내고 데이터 프레임에는 포함하지 않는다.

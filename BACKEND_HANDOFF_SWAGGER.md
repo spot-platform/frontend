@@ -2825,3 +2825,104 @@ Types are defined in `src/features/admin-post/model/types.ts`.
 ### DELETE /feeds/{feedId}/apply (side effect 명시)
 
 - 기존 엔드포인트. 서버가 본 요청 처리 시 환불/몰수 정책에 따라 `PointTransaction.type = 'REFUND'`을 즉시 발행하고, 연결된 Spot이 있으면 `spot.forfeitPool`을 업데이트한다. 규칙은 BACKEND_HANDOFF_SCHEMAS.md의 "Deposit refund/forfeit policy" 참조.
+
+## Simulation (contextBuilder, 2026-04 추가)
+
+> contextBuilder 시뮬레이션 결과 소비 엔드포인트. 모든 경로는 `${NEXT_PUBLIC_API_BASE_URL}` 기준이며, 프론트는 클라이언트 계산 없이 응답을 그대로 렌더한다.
+
+### GET /api/v1/map/spots
+
+- Purpose: 맵에 표시할 SpotCard 리스트 조회. `mode` 쿼리로 virtual/real/mixed 필터.
+- Auth: Optional (Bearer). 로그인된 파트너/서포터는 `person_fitness_score`가 본인 archetype 기준으로 산출된다.
+- Query params:
+    - `mode?`: `"virtual" | "real" | "mixed"` — 생략 시 전체.
+- Request body: none
+- Response body (200): `ApiResponse<SpotCard[]>`
+- Referenced schemas: `SpotCard`
+
+**Response 200**
+
+```json
+{
+    "data": [
+        {
+            "spot_id": "spot-v-001",
+            "provenance": "virtual",
+            "title": "연무동 저녁 라떼아트 실습",
+            "skill_topic": "바리스타",
+            "teach_mode": "small_group",
+            "venue_type": "cafe",
+            "fee_per_partner": 18000,
+            "location": { "lat": 37.2636, "lng": 127.0286 },
+            "host_preview": "5년차 바리스타 민지의 핸드드립+라떼아트 2시간 클래스",
+            "person_fitness_score": 0.82,
+            "attractiveness_score": 0.74
+        }
+    ]
+}
+```
+
+### GET /api/v1/simulation/runs/{run_id}/timeline/stream
+
+- Purpose: 시뮬레이션 실행의 틱별 `TimelineFrame`을 SSE로 실시간 송출.
+- Auth: Optional (Bearer)
+- Path params: `run_id: string`
+- Query params: none
+- Protocol: `text/event-stream` (SSE). 프론트는 `EventSource`로 구독.
+- Event format:
+    - 각 틱마다 `message` 이벤트 1건. `data:` 필드에 `TimelineFrame` JSON 문자열.
+    - keep-alive는 주석 라인(`: keepalive\n\n`)으로만 송출.
+- Response body: 아래와 같은 프레임이 반복된다.
+
+```
+data: {"tick":0,"day_of_week":"SAT","time_slot":"09:00","active_agents":[...],"active_spots":[...],"events_this_tick":[...]}
+
+data: {"tick":1,"day_of_week":"SAT","time_slot":"09:30", ...}
+```
+
+- Referenced schemas: `TimelineFrame`, `AgentMarker`, `SpotMarker`, `LiveEvent`
+
+### GET /api/v1/simulation/runs/{run_id}/highlights
+
+- Purpose: 시뮬레이션 실행의 내러티브 하이라이트 클립 리스트.
+- Auth: Optional (Bearer)
+- Path params: `run_id: string`
+- Query params: none
+- Response body (200): `ApiResponse<HighlightClip[]>`
+- Referenced schemas: `HighlightClip`
+
+**Response 200**
+
+```json
+{
+    "data": [
+        {
+            "clip_id": "clip-001",
+            "title": "첫 매칭 성사: 라떼아트 클래스",
+            "category": "first_success",
+            "start_tick": 0,
+            "end_tick": 3,
+            "involved_agents": ["A_11504", "A_80381"],
+            "narrative": "호스트 지훈이 연무동 카페에서 라떼아트 클래스를 열자 탐험형 민지가 바로 합류해 첫 매칭이 성사됐다."
+        }
+    ]
+}
+```
+
+### GET /api/v1/feed/{feed_id}/attractiveness
+
+- Purpose: 특정 피드의 Attractiveness 점수/시그널/개선 힌트 조회 (서포터 대시보드).
+- Auth: Required (Bearer) — 피드 소유 서포터만 호출 가능.
+- Path params: `feed_id: string`
+- Query params: none
+- Response body (200): `ApiResponse<AttractivenessReport>`
+- Referenced schemas: `AttractivenessReport`, `AttractivenessSignal`
+
+### GET /api/v1/feed/{feed_id}/conversion-hints
+
+- Purpose: 가상 스팟 → 실제 스팟 전환 가이드 (가격/플랜/수요 예측). 피드 작성 보조용.
+- Auth: Required (Bearer)
+- Path params: `feed_id: string`
+- Query params: none
+- Response body (200): `ApiResponse<ConversionHints>`
+- Referenced schemas: `ConversionHints`
