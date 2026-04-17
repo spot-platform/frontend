@@ -2,7 +2,7 @@
 
 import { Button, Textarea } from '@frontend/design-system';
 import { useState } from 'react';
-import { Star } from 'lucide-react';
+import { IconStar } from '@tabler/icons-react';
 import { BottomSheet } from '@/shared/ui';
 import { useSubmitReview } from '../../../model/use-reviews';
 
@@ -51,7 +51,7 @@ export function ReviewModal({
                             onClick={() => setRating(star)}
                             className="transition-transform active:scale-90"
                         >
-                            <Star
+                            <IconStar
                                 size={36}
                                 className={
                                     star <= rating

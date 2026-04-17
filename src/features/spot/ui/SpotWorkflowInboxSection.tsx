@@ -1,11 +1,16 @@
 import Link from 'next/link';
-import { ChevronRight, ClipboardCheck, Receipt, Vote } from 'lucide-react';
+import {
+    IconChevronRight,
+    IconClipboardCheck,
+    IconReceipt,
+    IconThumbUp,
+} from '@tabler/icons-react';
 import { getSpotWorkflowInboxItems, MOCK_SPOT_WORKFLOWS } from '../model/mock';
 
 const WORKFLOW_ICON_MAP = {
-    vote: Vote,
-    approval: ClipboardCheck,
-    settlement: Receipt,
+    vote: IconThumbUp,
+    approval: IconClipboardCheck,
+    settlement: IconReceipt,
 } as const;
 
 export function SpotWorkflowInboxSection() {
@@ -46,7 +51,7 @@ export function SpotWorkflowInboxSection() {
                                     </p>
                                 </div>
                             </div>
-                            <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
+                            <IconChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
                         </Link>
                     );
                 })}

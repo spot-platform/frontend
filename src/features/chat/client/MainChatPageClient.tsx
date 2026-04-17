@@ -3,17 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chip, IconButton } from '@frontend/design-system';
 import {
-    BarChart3,
-    CalendarRange,
-    ChevronDown,
-    ChevronRight,
-    Download,
-    FileText,
-    Handshake,
-    MessageCirclePlus,
-    Search,
-    UserPlus,
-} from 'lucide-react';
+    IconChartBar,
+    IconCalendarEvent,
+    IconChevronDown,
+    IconChevronRight,
+    IconDownload,
+    IconFileText,
+    IconHeartHandshake,
+    IconMessageCirclePlus,
+    IconSearch,
+    IconUserPlus,
+} from '@tabler/icons-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/shared/lib/cn';
 import { useChatNavStore } from '@/shared/model/chat-nav-store';
@@ -228,7 +228,7 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                 className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
             >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-                    <FileText size={20} />
+                    <IconFileText size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
@@ -245,9 +245,9 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                 </div>
                 <span className="shrink-0 text-gray-300">
                     {open ? (
-                        <ChevronDown size={16} />
+                        <IconChevronDown size={16} />
                     ) : (
-                        <ChevronRight size={16} />
+                        <IconChevronRight size={16} />
                     )}
                 </span>
             </button>
@@ -260,7 +260,7 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                         className="flex items-center gap-3 bg-gray-50 px-4 py-3"
                     >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm">
-                            <FileText size={16} />
+                            <IconFileText size={16} />
                         </div>
                         <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-gray-800">
@@ -278,7 +278,7 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                             className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 active:bg-gray-300"
                             aria-label={`${file.name} 다운로드`}
                         >
-                            <Download size={16} />
+                            <IconDownload size={16} />
                         </a>
                     </div>
                 ))}
@@ -328,7 +328,7 @@ function SpotItemList({
                     className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <Handshake size={20} />
+                        <IconHeartHandshake size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
@@ -364,7 +364,7 @@ function SpotItemList({
                     className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500">
-                        <BarChart3 size={20} />
+                        <IconChartBar size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
@@ -408,7 +408,7 @@ function SpotItemList({
                     className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                        <CalendarRange size={20} />
+                        <IconCalendarEvent size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
@@ -708,7 +708,7 @@ export function MainChatPageClient({
                                         label="개인 채팅 검색"
                                         className="text-gray-700"
                                         icon={
-                                            <Search
+                                            <IconSearch
                                                 size={22}
                                                 className="text-gray-700"
                                             />
@@ -722,7 +722,7 @@ export function MainChatPageClient({
                                         label="채팅 생성"
                                         className="text-gray-700"
                                         icon={
-                                            <MessageCirclePlus
+                                            <IconMessageCirclePlus
                                                 size={22}
                                                 className="text-gray-700"
                                             />
@@ -738,7 +738,7 @@ export function MainChatPageClient({
                                     label="항목 추가"
                                     className="text-gray-700"
                                     icon={
-                                        <MessageCirclePlus
+                                        <IconMessageCirclePlus
                                             size={22}
                                             className="text-gray-700"
                                         />
@@ -754,7 +754,7 @@ export function MainChatPageClient({
                                     label="친구 추가"
                                     className="text-gray-700"
                                     icon={
-                                        <UserPlus
+                                        <IconUserPlus
                                             size={22}
                                             className="text-gray-700"
                                         />

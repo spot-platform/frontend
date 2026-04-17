@@ -1,4 +1,4 @@
-import { Paperclip } from 'lucide-react';
+import { IconPaperclip } from '@tabler/icons-react';
 import { SectionCard } from '../SectionCard';
 import type { SharedFile } from '@/entities/spot/types';
 
@@ -26,7 +26,7 @@ export function FileShareSection({ files }: FileShareSectionProps) {
             ) : (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-1.5">
-                        <Paperclip size={12} className="text-gray-400" />
+                        <IconPaperclip size={12} className="text-gray-400" />
                         <span className="text-xs text-gray-500">
                             {files.length}개 파일
                         </span>

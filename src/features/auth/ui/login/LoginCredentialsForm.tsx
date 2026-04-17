@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
+import { IconLoader2, IconLock, IconMail } from '@tabler/icons-react';
 import { Button, Input } from '@frontend/design-system';
 import type { ChangeEvent, FormEvent } from 'react';
 
@@ -46,7 +46,7 @@ export function LoginCredentialsForm({
                 value={email}
                 onChange={onEmailChange}
                 placeholder="you@example.com"
-                startAdornment={<Mail size={18} />}
+                startAdornment={<IconMail size={18} />}
                 error={emailError}
                 disabled={isPending}
             />
@@ -59,7 +59,7 @@ export function LoginCredentialsForm({
                 value={password}
                 onChange={onPasswordChange}
                 placeholder="비밀번호를 입력해 주세요"
-                startAdornment={<LockKeyhole size={18} />}
+                startAdornment={<IconLock size={18} />}
                 error={passwordError}
                 disabled={isPending}
             />
@@ -86,7 +86,7 @@ export function LoginCredentialsForm({
                 disabled={isPending}
                 startIcon={
                     isPending ? (
-                        <LoaderCircle size={18} className="animate-spin" />
+                        <IconLoader2 size={18} className="animate-spin" />
                     ) : undefined
                 }
             >

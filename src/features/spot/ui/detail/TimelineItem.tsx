@@ -1,4 +1,10 @@
-import { Plus, Users, CheckCircle, XCircle, MessageCircle } from 'lucide-react';
+import {
+    IconPlus,
+    IconUsers,
+    IconCircleCheck,
+    IconCircleX,
+    IconMessageCircle,
+} from '@tabler/icons-react';
 import { formatRelativeTime } from '@/shared/lib/format-time';
 import type { TimelineEvent } from '@/entities/spot/types';
 
@@ -8,17 +14,20 @@ interface TimelineItemProps {
 }
 
 const ICON_MAP = {
-    CREATED: { Icon: Plus, color: 'bg-emerald-100 text-emerald-600' },
-    MATCHED: { Icon: Users, color: 'bg-blue-100 text-blue-600' },
-    COMPLETED: { Icon: CheckCircle, color: 'bg-brand-800/10 text-brand-800' },
-    CANCELLED: { Icon: XCircle, color: 'bg-red-100 text-red-500' },
-    COMMENT: { Icon: MessageCircle, color: 'bg-gray-100 text-gray-500' },
+    CREATED: { Icon: IconPlus, color: 'bg-emerald-100 text-emerald-600' },
+    MATCHED: { Icon: IconUsers, color: 'bg-blue-100 text-blue-600' },
+    COMPLETED: {
+        Icon: IconCircleCheck,
+        color: 'bg-brand-800/10 text-brand-800',
+    },
+    CANCELLED: { Icon: IconCircleX, color: 'bg-red-100 text-red-500' },
+    COMMENT: { Icon: IconMessageCircle, color: 'bg-gray-100 text-gray-500' },
     SETTLEMENT_REQUESTED: {
-        Icon: MessageCircle,
+        Icon: IconMessageCircle,
         color: 'bg-purple-100 text-purple-600',
     },
     SETTLEMENT_APPROVED: {
-        Icon: CheckCircle,
+        Icon: IconCircleCheck,
         color: 'bg-green-100 text-green-600',
     },
 };
@@ -44,7 +53,7 @@ export function TimelineItem({ event, isLast }: TimelineItemProps) {
                 <div
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${color}`}
                 >
-                    <Icon size={14} strokeWidth={2} />
+                    <Icon size={14} stroke={2} />
                 </div>
                 {!isLast && <div className="mt-1 w-0.5 flex-1 bg-gray-100" />}
             </div>

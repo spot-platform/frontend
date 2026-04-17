@@ -15,7 +15,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         return (
             <label className="flex w-full flex-col gap-1.5">
                 {label && (
-                    <span className="text-sm font-semibold text-gray-700">
+                    <span className="text-sm font-medium text-foreground">
                         {label}
                     </span>
                 )}
@@ -24,21 +24,23 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                     ref={ref}
                     rows={rows}
                     className={cn(
-                        'w-full rounded-2xl border bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-gray-100 placeholder:text-gray-400',
+                        'w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
                         error
-                            ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-                            : 'border-gray-200',
+                            ? 'border-destructive focus:border-destructive focus:ring-red-200'
+                            : 'border-input',
                         className,
                     )}
                     {...props}
                 />
                 {error ? (
-                    <span className="text-xs font-medium text-red-500">
+                    <span className="text-xs font-medium text-destructive">
                         {error}
                     </span>
                 ) : (
                     hint && (
-                        <span className="text-xs text-gray-500">{hint}</span>
+                        <span className="text-xs text-muted-foreground">
+                            {hint}
+                        </span>
                     )
                 )}
             </label>

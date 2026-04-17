@@ -9,7 +9,7 @@ export default function MainLayout({
     return (
         <>
             <Header />
-            <div className="min-h-[100dvh] bg-surface">{children}</div>
+            <div className="min-h-dvh bg-surface">{children}</div>
             <NavWrapper />
         </>
     );

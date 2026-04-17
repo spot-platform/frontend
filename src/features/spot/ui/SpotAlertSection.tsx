@@ -1,4 +1,4 @@
-import { Bell, CalendarCheck } from 'lucide-react';
+import { IconBell, IconCalendarCheck } from '@tabler/icons-react';
 import { MOCK_MY_SPOTS, MOCK_SPOT_DETAILS } from '../model/mock';
 
 function getAlertContent(): {
@@ -54,9 +54,9 @@ export function SpotAlertSection() {
             <div className="flex items-start gap-3 rounded-2xl bg-brand-800/5 px-4 py-3.5">
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-800/10">
                     {alert.icon === 'vote' ? (
-                        <Bell className="h-4 w-4 text-brand-800" />
+                        <IconBell className="h-4 w-4 text-brand-800" />
                     ) : (
-                        <CalendarCheck className="h-4 w-4 text-brand-800" />
+                        <IconCalendarCheck className="h-4 w-4 text-brand-800" />
                     )}
                 </div>
                 <div className="flex flex-col gap-0.5">

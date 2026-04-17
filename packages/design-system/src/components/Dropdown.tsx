@@ -1,17 +1,17 @@
 'use client';
 
 import {
+    type ChangeEvent,
     type FocusEvent,
+    type KeyboardEvent as ReactKeyboardEvent,
     type MouseEvent as ReactMouseEvent,
+    type ReactNode,
+    type SelectHTMLAttributes,
     useEffect,
     useId,
     useMemo,
     useRef,
     useState,
-    type ChangeEvent,
-    type KeyboardEvent as ReactKeyboardEvent,
-    type ReactNode,
-    type SelectHTMLAttributes,
 } from 'react';
 import { cn } from '../lib/cn';
 
@@ -46,19 +46,10 @@ function getInitialValue({
     placeholder?: string;
     options: DropdownOption[];
 }) {
-    if (typeof value === 'string') {
-        return value;
-    }
-
-    if (typeof defaultValue === 'string') {
-        return defaultValue;
-    }
-
-    if (placeholder) {
-        return '';
-    }
-
-    return options.find((option) => !option.disabled)?.value ?? '';
+    if (typeof value === 'string') return value;
+    if (typeof defaultValue === 'string') return defaultValue;
+    if (placeholder) return '';
+    return options.find((o) => !o.disabled)?.value ?? '';
 }
 
 export function Dropdown({
@@ -96,12 +87,7 @@ export function Dropdown({
     const listboxId = `${selectId}-listbox`;
     const isControlled = value !== undefined;
     const [internalValue, setInternalValue] = useState(() =>
-        getInitialValue({
-            value,
-            defaultValue,
-            placeholder,
-            options,
-        }),
+        getInitialValue({ value, defaultValue, placeholder, options }),
     );
     const [isOpen, setIsOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
@@ -125,7 +111,7 @@ export function Dropdown({
     );
 
     const selectedIndex = normalizedOptions.findIndex(
-        (option) => option.value === currentValue,
+        (o) => o.value === currentValue,
     );
     const selectedOption = normalizedOptions[selectedIndex];
     const [highlightedIndex, setHighlightedIndex] = useState(
@@ -138,16 +124,12 @@ export function Dropdown({
 
     useEffect(() => {
         function handlePointerDown(event: PointerEvent) {
-            if (!rootRef.current?.contains(event.target as Node)) {
+            if (!rootRef.current?.contains(event.target as Node))
                 setIsOpen(false);
-            }
         }
-
         document.addEventListener('pointerdown', handlePointerDown);
-
-        return () => {
+        return () =>
             document.removeEventListener('pointerdown', handlePointerDown);
-        };
     }, []);
 
     const activeDescendant =
@@ -156,22 +138,13 @@ export function Dropdown({
             : undefined;
 
     function getNextEnabledIndex(startIndex: number, direction: 1 | -1) {
-        if (normalizedOptions.length === 0) {
-            return -1;
-        }
-
         let index = startIndex;
-
-        for (let step = 0; step < normalizedOptions.length; step += 1) {
+        for (let step = 0; step < normalizedOptions.length; step++) {
             index =
                 (index + direction + normalizedOptions.length) %
                 normalizedOptions.length;
-
-            if (!normalizedOptions[index]?.disabled) {
-                return index;
-            }
+            if (!normalizedOptions[index]?.disabled) return index;
         }
-
         return -1;
     }
 
@@ -181,7 +154,6 @@ export function Dropdown({
             name,
             id: selectId,
         } as HTMLSelectElement;
-
         onChange?.({
             target: syntheticTarget,
             currentTarget: syntheticTarget,
@@ -189,111 +161,64 @@ export function Dropdown({
     }
 
     function selectValue(nextValue: string) {
-        if (!isControlled) {
-            setInternalValue(nextValue);
-        }
-
+        if (!isControlled) setInternalValue(nextValue);
         emitChange(nextValue);
         setIsOpen(false);
         buttonRef.current?.focus();
-    }
-
-    function openListbox() {
-        if (disabled || normalizedOptions.length === 0) {
-            return;
-        }
-
-        setIsOpen(true);
-    }
-
-    function closeListbox() {
-        setIsOpen(false);
     }
 
     function handleTriggerKeyDown(
         event: ReactKeyboardEvent<HTMLButtonElement>,
     ) {
         onKeyDown?.(event as unknown as ReactKeyboardEvent<HTMLSelectElement>);
-
-        if (event.defaultPrevented || disabled) {
-            return;
-        }
+        if (event.defaultPrevented || disabled) return;
 
         switch (event.key) {
             case 'ArrowDown': {
                 event.preventDefault();
-
                 if (!isOpen) {
-                    openListbox();
-                    const nextIndex = getNextEnabledIndex(selectedIndex, 1);
-
-                    if (nextIndex >= 0) {
-                        setHighlightedIndex(nextIndex);
-                    }
-
+                    setIsOpen(true);
+                    const next = getNextEnabledIndex(selectedIndex, 1);
+                    if (next >= 0) setHighlightedIndex(next);
                     return;
                 }
-
-                const nextIndex = getNextEnabledIndex(highlightedIndex, 1);
-
-                if (nextIndex >= 0) {
-                    setHighlightedIndex(nextIndex);
-                }
-
+                const next = getNextEnabledIndex(highlightedIndex, 1);
+                if (next >= 0) setHighlightedIndex(next);
                 return;
             }
             case 'ArrowUp': {
                 event.preventDefault();
-
                 if (!isOpen) {
-                    openListbox();
-                    const nextIndex = getNextEnabledIndex(
+                    setIsOpen(true);
+                    const next = getNextEnabledIndex(
                         selectedIndex >= 0 ? selectedIndex : 0,
                         -1,
                     );
-
-                    if (nextIndex >= 0) {
-                        setHighlightedIndex(nextIndex);
-                    }
-
+                    if (next >= 0) setHighlightedIndex(next);
                     return;
                 }
-
-                const nextIndex = getNextEnabledIndex(highlightedIndex, -1);
-
-                if (nextIndex >= 0) {
-                    setHighlightedIndex(nextIndex);
-                }
-
+                const next = getNextEnabledIndex(highlightedIndex, -1);
+                if (next >= 0) setHighlightedIndex(next);
                 return;
             }
             case 'Enter':
             case ' ': {
                 event.preventDefault();
-
                 if (!isOpen) {
-                    openListbox();
+                    setIsOpen(true);
                     return;
                 }
-
                 const option = normalizedOptions[highlightedIndex];
-
-                if (option && !option.disabled) {
-                    selectValue(option.value);
-                }
-
+                if (option && !option.disabled) selectValue(option.value);
                 return;
             }
             case 'Escape': {
                 if (isOpen) {
                     event.preventDefault();
-                    closeListbox();
+                    setIsOpen(false);
                 }
-
                 return;
             }
-            default:
-                return;
         }
     }
 
@@ -303,7 +228,7 @@ export function Dropdown({
                 <label
                     id={labelId}
                     htmlFor={selectId}
-                    className="text-sm font-semibold text-gray-700"
+                    className="text-sm font-medium text-foreground"
                 >
                     {label}
                 </label>
@@ -311,7 +236,7 @@ export function Dropdown({
             <div ref={rootRef} className="relative block">
                 <div className={cn('relative block', controlClassName)}>
                     {leadingAdornment && (
-                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                             {leadingAdornment}
                         </span>
                     )}
@@ -338,28 +263,19 @@ export function Dropdown({
                         tabIndex={tabIndex}
                         title={title}
                         className={cn(
-                            'peer h-11 w-full rounded-xl border border-gray-200 bg-white pr-10 text-left text-sm text-gray-900 outline-none transition-colors duration-150 hover:border-gray-300 focus-visible:border-brand-500 focus-visible:ring-4 focus-visible:ring-brand-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-400',
-                            leadingAdornment ? 'pl-11' : 'px-4',
+                            'peer flex h-9 w-full items-center rounded-lg border bg-background pr-9 text-left text-sm text-foreground shadow-xs outline-none transition-colors hover:border-neutral-400 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                            leadingAdornment ? 'pl-10' : 'px-3',
                             error
-                                ? 'border-red-300 hover:border-red-400 focus-visible:border-red-400 focus-visible:ring-red-100'
-                                : undefined,
+                                ? 'border-destructive hover:border-destructive focus-visible:border-destructive focus-visible:ring-red-200'
+                                : 'border-input',
                             className,
                         )}
                         onClick={(event) => {
                             onClick?.(
                                 event as unknown as ReactMouseEvent<HTMLSelectElement>,
                             );
-
-                            if (event.defaultPrevented) {
-                                return;
-                            }
-
-                            if (isOpen) {
-                                closeListbox();
-                                return;
-                            }
-
-                            openListbox();
+                            if (event.defaultPrevented) return;
+                            setIsOpen((prev) => !prev);
                         }}
                         onFocus={(event) =>
                             onFocus?.(
@@ -379,7 +295,7 @@ export function Dropdown({
                     </button>
                     <span
                         className={cn(
-                            'pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-gray-400 transition-transform duration-150 peer-disabled:text-gray-300',
+                            'pointer-events-none absolute right-2.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-muted-foreground transition-transform',
                             isOpen && 'rotate-180',
                             indicatorClassName,
                         )}
@@ -401,7 +317,7 @@ export function Dropdown({
                     </span>
                 </div>
                 {isOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+0.375rem)] z-20 overflow-hidden rounded-xl border border-gray-200 bg-white p-1">
+                    <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 overflow-hidden rounded-lg border border-border-soft bg-popover p-1 shadow-md">
                         <ul
                             id={listboxId}
                             role="listbox"
@@ -413,7 +329,6 @@ export function Dropdown({
                                     option.value === currentValue;
                                 const isHighlighted =
                                     index === highlightedIndex;
-
                                 return (
                                     <li
                                         key={`${option.value}-${index}`}
@@ -429,26 +344,24 @@ export function Dropdown({
                                             type="button"
                                             disabled={option.disabled}
                                             className={cn(
-                                                'flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-gray-700 outline-none transition-colors duration-100',
+                                                'flex w-full items-center rounded-md px-2.5 py-1.5 text-left text-sm outline-none transition-colors',
                                                 option.disabled
-                                                    ? 'cursor-not-allowed text-gray-300'
-                                                    : 'hover:bg-gray-50 focus-visible:bg-gray-50',
+                                                    ? 'cursor-not-allowed text-muted-foreground/50'
+                                                    : 'text-popover-foreground hover:bg-neutral-100',
                                                 isHighlighted &&
                                                     !option.disabled &&
-                                                    'bg-gray-50 text-gray-900',
+                                                    'bg-neutral-100',
                                                 isSelected &&
                                                     !option.disabled &&
                                                     'bg-brand-50 text-brand-700',
                                             )}
                                             onMouseEnter={() => {
-                                                if (!option.disabled) {
+                                                if (!option.disabled)
                                                     setHighlightedIndex(index);
-                                                }
                                             }}
                                             onClick={() => {
-                                                if (!option.disabled) {
+                                                if (!option.disabled)
                                                     selectValue(option.value);
-                                                }
                                             }}
                                         >
                                             <span className="block truncate">
@@ -465,13 +378,16 @@ export function Dropdown({
             {error ? (
                 <span
                     id={helperTextId}
-                    className="text-xs font-medium text-red-500"
+                    className="text-xs font-medium text-destructive"
                 >
                     {error}
                 </span>
             ) : (
                 hint && (
-                    <span id={helperTextId} className="text-xs text-gray-500">
+                    <span
+                        id={helperTextId}
+                        className="text-xs text-muted-foreground"
+                    >
                         {hint}
                     </span>
                 )

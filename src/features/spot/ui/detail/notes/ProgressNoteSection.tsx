@@ -1,4 +1,4 @@
-import { StickyNote } from 'lucide-react';
+import { IconNote } from '@tabler/icons-react';
 import { SectionCard } from '../SectionCard';
 import type { ProgressNote } from '@/entities/spot/types';
 
@@ -19,7 +19,7 @@ export function ProgressNoteSection({ notes }: ProgressNoteSectionProps) {
                 <p className="text-xs text-gray-400">아직 노트가 없어요</p>
             ) : (
                 <div className="flex gap-2">
-                    <StickyNote
+                    <IconNote
                         size={14}
                         className="mt-0.5 shrink-0 text-gray-300"
                     />

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { ArrowRight } from 'lucide-react';
+import { IconArrowRight } from '@tabler/icons-react';
 import { Button } from './Button';
 
 const meta = {
@@ -25,7 +25,7 @@ export const Secondary: Story = {
 
 export const WithIcon: Story = {
     args: {
-        endIcon: <ArrowRight size={16} />,
+        endIcon: <IconArrowRight size={16} />,
         children: '다음 단계',
     },
 };

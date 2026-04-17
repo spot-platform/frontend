@@ -1,5 +1,10 @@
 import type { ReactNode } from 'react';
-import { CheckCircle2, Clock3, Receipt, Vote } from 'lucide-react';
+import {
+    IconCircleCheck,
+    IconClock,
+    IconReceipt,
+    IconThumbUp,
+} from '@tabler/icons-react';
 import { cn } from '@/shared/lib/cn';
 import { SectionCard } from './SectionCard';
 import type {
@@ -55,7 +60,7 @@ export function SpotWorkflowSection({
                         <div className="flex items-start justify-between gap-3">
                             <div>
                                 <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-                                    <Vote className="h-3.5 w-3.5 text-brand-800" />
+                                    <IconThumbUp className="h-3.5 w-3.5 text-brand-800" />
                                     파트너 투표 요약
                                 </div>
                                 <p className="mt-1 text-sm font-bold text-gray-900">
@@ -125,9 +130,9 @@ export function SpotWorkflowSection({
                                 <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
                                     {workflow.finalApproval.status ===
                                     'APPROVED' ? (
-                                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                                        <IconCircleCheck className="h-3.5 w-3.5 text-emerald-600" />
                                     ) : (
-                                        <Clock3 className="h-3.5 w-3.5 text-amber-600" />
+                                        <IconClock className="h-3.5 w-3.5 text-amber-600" />
                                     )}
                                     호스트 최종 승인
                                 </div>
@@ -159,7 +164,7 @@ export function SpotWorkflowSection({
                         <div className="flex items-start justify-between gap-3">
                             <div>
                                 <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-                                    <Receipt className="h-3.5 w-3.5 text-accent" />
+                                    <IconReceipt className="h-3.5 w-3.5 text-accent" />
                                     정산 승인 상태
                                 </div>
                                 <p className="mt-1 text-sm font-bold text-gray-900">

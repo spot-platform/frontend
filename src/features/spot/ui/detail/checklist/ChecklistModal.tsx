@@ -2,7 +2,7 @@
 
 import { Button, IconButton, Input } from '@frontend/design-system';
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { IconPlus } from '@tabler/icons-react';
 import { BottomSheet } from '@/shared/ui';
 import { ChecklistItem } from './ChecklistItem';
 import {
@@ -103,7 +103,7 @@ export function ChecklistModal({ open, onClose, spotId }: ChecklistModalProps) {
                         onClick={handleAdd}
                         label="항목 추가"
                         className="h-10 w-10 rounded-xl"
-                        icon={<Plus size={18} />}
+                        icon={<IconPlus size={18} />}
                     />
                 </div>
 

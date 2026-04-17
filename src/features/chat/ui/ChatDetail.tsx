@@ -4,19 +4,19 @@ import { Chip, IconButton } from '@frontend/design-system';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    ArrowLeft,
-    ArrowUpRight,
-    BarChart3,
-    CalendarRange,
-    Check,
-    FileText,
-    Handshake,
-    Mic,
-    Plus,
-    SendHorizonal,
-    Users,
-    X,
-} from 'lucide-react';
+    IconArrowLeft,
+    IconArrowUpRight,
+    IconChartBar,
+    IconCalendarEvent,
+    IconCheck,
+    IconFileText,
+    IconHeartHandshake,
+    IconMicrophone,
+    IconPlus,
+    IconSend,
+    IconUsers,
+    IconX,
+} from '@tabler/icons-react';
 import { formatReverseOfferApprovalProgress } from '../model/types';
 import type {
     ChatMessage,
@@ -29,6 +29,7 @@ import {
     useMainChatStore,
 } from '../model/use-main-chat-store';
 import { getShareableSpotActionItems } from '../model/spot-action-items';
+import { ChatLifecyclePanel } from './lifecycle/ChatLifecyclePanel';
 import { cn } from '@/shared/lib/cn';
 import {
     BottomSheet,
@@ -273,11 +274,11 @@ function renderThreadEntryContent(
 
         const shortcutIcon =
             message.shortcut.actionKind === 'vote' ? (
-                <BarChart3 size={16} />
+                <IconChartBar size={16} />
             ) : message.shortcut.actionKind === 'schedule' ? (
-                <CalendarRange size={16} />
+                <IconCalendarEvent size={16} />
             ) : (
-                <FileText size={16} />
+                <IconFileText size={16} />
             );
 
         return (
@@ -310,7 +311,7 @@ function renderThreadEntryContent(
                         {message.shortcut.preview}
                     </p>
                 </div>
-                <ArrowUpRight
+                <IconArrowUpRight
                     size={16}
                     className="mt-0.5 shrink-0 text-gray-400"
                 />
@@ -327,9 +328,9 @@ function renderThreadEntryContent(
         return (
             <ThreadItemCard
                 mine={mine}
-                icon={<BarChart3 size={18} />}
+                icon={<IconChartBar size={18} />}
                 tone="vote"
-                eyebrow="Vote"
+                eyebrow="IconThumbUp"
                 title={message.vote.question}
                 footer={`총 ${totalVotes}표 · ${message.vote.multiSelect ? '복수 선택' : '단일 선택'}`}
             >
@@ -356,7 +357,7 @@ function renderThreadEntryContent(
         return (
             <ThreadItemCard
                 mine={mine}
-                icon={<CalendarRange size={18} />}
+                icon={<IconCalendarEvent size={18} />}
                 tone="schedule"
                 eyebrow="Schedule"
                 title={message.schedule.title}
@@ -381,7 +382,7 @@ function renderThreadEntryContent(
             >
                 <ThreadItemCard
                     mine={mine}
-                    icon={<Handshake size={18} />}
+                    icon={<IconHeartHandshake size={18} />}
                     tone="reverse-offer"
                     eyebrow="역제안"
                     title="역제안을 등록했어요"
@@ -435,7 +436,7 @@ function renderThreadEntryContent(
         return (
             <ThreadItemCard
                 mine={mine}
-                icon={<Handshake size={18} />}
+                icon={<IconHeartHandshake size={18} />}
                 tone="proposal"
                 eyebrow="제안"
                 title={`${message.proposal.suggestedAmount.toLocaleString('ko-KR')}원`}
@@ -448,7 +449,7 @@ function renderThreadEntryContent(
                             type="button"
                             className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-accent py-2 text-xs font-semibold text-white"
                         >
-                            <Check size={13} />
+                            <IconCheck size={13} />
                             수락
                         </button>
                         <button
@@ -461,13 +462,13 @@ function renderThreadEntryContent(
                             type="button"
                             className="flex items-center justify-center rounded-xl bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400"
                         >
-                            <X size={13} />
+                            <IconX size={13} />
                         </button>
                     </div>
                 )}
                 {message.status === 'ACCEPTED' && (
                     <div className="flex items-center gap-1.5 rounded-xl bg-green-50 px-3 py-2 text-xs font-semibold text-green-700">
-                        <Check size={13} />
+                        <IconCheck size={13} />
                         수락 완료 · 스팟으로 전환하기
                     </div>
                 )}
@@ -482,7 +483,7 @@ function renderThreadEntryContent(
     return (
         <ThreadItemCard
             mine={mine}
-            icon={<FileText size={18} />}
+            icon={<IconFileText size={18} />}
             tone="file"
             eyebrow="File"
             title={message.file.name}
@@ -638,7 +639,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                     label="뒤로가기"
                                     className="text-gray-700"
                                     icon={
-                                        <ArrowLeft
+                                        <IconArrowLeft
                                             size={22}
                                             className="text-gray-700"
                                         />
@@ -666,7 +667,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                         label="참여자 정보"
                                         className="text-gray-700"
                                         icon={
-                                            <Users
+                                            <IconUsers
                                                 size={20}
                                                 className="text-gray-700"
                                             />
@@ -681,19 +682,22 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-6 pt-18">
                     <div className="mx-auto flex max-w-3xl flex-col gap-4">
                         {currentRoom.category === 'spot' ? (
-                            <section className="flex justify-center">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-[11px] font-semibold text-brand-800">
-                                    <TypeBadge
-                                        type={currentRoom.spot.type}
-                                        size="sm"
-                                    />
-                                    <StatusBadge
-                                        status={currentRoom.spot.status}
-                                        size="sm"
-                                    />
-                                    <span>{currentRoom.metaLabel}</span>
-                                </div>
-                            </section>
+                            <>
+                                <section className="flex justify-center">
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-[11px] font-semibold text-brand-800">
+                                        <TypeBadge
+                                            type={currentRoom.spot.type}
+                                            size="sm"
+                                        />
+                                        <StatusBadge
+                                            status={currentRoom.spot.status}
+                                            size="sm"
+                                        />
+                                        <span>{currentRoom.metaLabel}</span>
+                                    </div>
+                                </section>
+                                <ChatLifecyclePanel room={currentRoom} />
+                            </>
                         ) : (
                             <PersonalContextCard room={currentRoom} />
                         )}
@@ -871,7 +875,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 active:scale-[0.98]"
                                 aria-label="바로가기 공유"
                             >
-                                <Plus size={18} />
+                                <IconPlus size={18} />
                             </button>
                         ) : null}
 
@@ -900,7 +904,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-800 text-white shadow-sm transition-colors hover:bg-brand-900"
                                 aria-label="전송"
                             >
-                                <SendHorizonal size={18} />
+                                <IconSend size={18} />
                             </button>
                         ) : (
                             <button
@@ -909,9 +913,9 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 aria-label="음성메시지"
                             >
                                 {currentRoom.category === 'personal' ? (
-                                    <Mic size={18} />
+                                    <IconMicrophone size={18} />
                                 ) : (
-                                    <SendHorizonal size={18} />
+                                    <IconSend size={18} />
                                 )}
                             </button>
                         )}
@@ -937,11 +941,11 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 {shareableActionItems.map((item, index) => {
                                     const itemIcon =
                                         item.kind === 'vote' ? (
-                                            <BarChart3 size={18} />
+                                            <IconChartBar size={18} />
                                         ) : item.kind === 'schedule' ? (
-                                            <CalendarRange size={18} />
+                                            <IconCalendarEvent size={18} />
                                         ) : (
-                                            <FileText size={18} />
+                                            <IconFileText size={18} />
                                         );
                                     const itemToneClassName =
                                         item.kind === 'vote'
@@ -991,7 +995,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                     {itemDescription}
                                                 </p>
                                             </div>
-                                            <ArrowUpRight
+                                            <IconArrowUpRight
                                                 size={16}
                                                 className="mt-0.5 shrink-0 text-gray-400"
                                             />
@@ -1001,7 +1005,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                             </div>
                         ) : (
                             <EmptyState
-                                icon={<Plus size={22} />}
+                                icon={<IconPlus size={22} />}
                                 title="공유할 바로가기가 없어요"
                                 description="먼저 이 방에서 투표, 일정, 파일을 만들어 주세요."
                             />

@@ -1,7 +1,12 @@
 // Feed 상세 페이지 — OFFER/REQUEST 타입별 분기 렌더링
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { ImageIcon, UserCircle2, Users, Star } from 'lucide-react';
+import {
+    IconPhoto,
+    IconUserCircle,
+    IconUsers,
+    IconStar,
+} from '@tabler/icons-react';
 import { notFound } from 'next/navigation';
 import { MOCK_FEED, MOCK_FEED_MANAGEMENT } from '@/features/feed/model/mock';
 import { FeedManagementPanel } from '@/features/feed/ui/detail/FeedManagementPanel';
@@ -62,7 +67,7 @@ function AuthorSection({ item }: { item: FeedItem }) {
                             className="h-full w-full object-cover"
                         />
                     ) : (
-                        <UserCircle2 size={32} className="text-gray-400" />
+                        <IconUserCircle size={32} className="text-gray-400" />
                     )}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -80,7 +85,7 @@ function AuthorSection({ item }: { item: FeedItem }) {
                         <span>{item.location}</span>
                         {isSupporter && profile.rating != null && (
                             <span className="flex items-center gap-0.5">
-                                <Star
+                                <IconStar
                                     size={10}
                                     className="fill-amber-400 text-amber-400"
                                 />
@@ -133,7 +138,7 @@ function OfferDetailContent({ item }: { item: FeedItem }) {
                 )}
                 <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center gap-1 text-sm text-gray-400">
-                        <Users size={14} />
+                        <IconUsers size={14} />
                         <span>{partnerCount}명 참여 중</span>
                     </div>
                     {remaining != null && (
@@ -360,7 +365,7 @@ export default async function FeedDetailPage({ params }: Props) {
                         />
                     ) : (
                         <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-300">
-                            <ImageIcon size={40} strokeWidth={1} />
+                            <IconPhoto size={40} stroke={1} />
                             <span className="text-sm">관련 사진</span>
                         </div>
                     )}

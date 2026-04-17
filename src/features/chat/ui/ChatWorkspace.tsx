@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, ChevronDown, MessageCircle, SendHorizonal } from 'lucide-react';
+import {
+    IconCheck,
+    IconChevronDown,
+    IconMessageCircle,
+    IconSend,
+} from '@tabler/icons-react';
 import { formatReverseOfferApprovalProgress } from '../model/types';
 import type { ChatMessage, ChatRoom } from '../model/types';
 import { getChatRooms } from '../model/mock';
@@ -278,7 +283,10 @@ function RoomSection({
                                 </p>
                             </div>
                             {active && (
-                                <Check size={18} className="text-brand-700" />
+                                <IconCheck
+                                    size={18}
+                                    className="text-brand-700"
+                                />
                             )}
                         </button>
                     );
@@ -312,7 +320,7 @@ export function ChatWorkspace({
         return (
             <div className="px-4 py-8">
                 <EmptyState
-                    icon={<MessageCircle size={36} />}
+                    icon={<IconMessageCircle size={36} />}
                     title="표시할 채팅방이 없어요"
                     description="현재는 로컬 프레젠테이션용 대화방이 준비되지 않았어요."
                 />
@@ -398,7 +406,7 @@ export function ChatWorkspace({
                             </p>
                         </div>
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-500">
-                            <ChevronDown size={18} />
+                            <IconChevronDown size={18} />
                         </div>
                     </button>
 
@@ -473,7 +481,7 @@ export function ChatWorkspace({
                                 className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-800 text-white disabled:bg-gray-300"
                                 aria-label="메시지 보내기"
                             >
-                                <SendHorizonal size={18} />
+                                <IconSend size={18} />
                             </button>
                         </div>
                     </div>

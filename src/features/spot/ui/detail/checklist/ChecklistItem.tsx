@@ -1,6 +1,6 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { IconTrash } from '@tabler/icons-react';
 import type { ChecklistItem as ChecklistItemType } from '@/entities/spot/types';
 
 interface ChecklistItemProps {
@@ -57,7 +57,7 @@ export function ChecklistItem({
                     onClick={onDelete}
                     className="text-gray-300 active:text-red-400"
                 >
-                    <Trash2 size={14} />
+                    <IconTrash size={14} />
                 </button>
             )}
         </div>

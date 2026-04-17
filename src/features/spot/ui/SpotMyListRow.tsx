@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronDown } from 'lucide-react';
+import { IconChevronDown } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
 import type { Spot } from '@/entities/spot/types';
 
@@ -52,7 +52,7 @@ export function RecruitingSpotRow({
                     animate={{ rotate: expanded ? 180 : 0 }}
                     transition={{ type: 'spring', stiffness: 320, damping: 30 }}
                 >
-                    <ChevronDown size={16} className="text-gray-500" />
+                    <IconChevronDown size={16} className="text-gray-500" />
                 </motion.div>
             </button>
         </div>

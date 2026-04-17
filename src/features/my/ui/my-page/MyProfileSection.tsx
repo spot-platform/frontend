@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { IconChevronRight } from '@tabler/icons-react';
 import { Section } from '@/shared/ui';
 import type { UserProfile } from '@/entities/user/types';
 import {
@@ -38,7 +38,7 @@ export function MyProfileSection({
                     className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-white"
                 >
                     계정 설정
-                    <ChevronRight size={14} />
+                    <IconChevronRight size={14} />
                 </Link>
             </div>
 

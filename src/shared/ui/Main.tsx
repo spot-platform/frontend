@@ -1,4 +1,5 @@
 import type { ReactNode, ElementType } from 'react';
+import { cn } from '../lib/cn';
 
 type PxScale = 'none' | 'sm' | 'md' | 'lg';
 type GapScale = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -33,19 +34,21 @@ export function Main({
     px = 'none',
     gap = 'md',
     safeArea = true,
-    className = '',
+    className,
 }: MainProps) {
-    const classes = [
-        'flex min-w-0 flex-col',
-        PX_CLASSES[px],
-        GAP_CLASSES[gap],
-        safeArea
-            ? 'pt-[calc(var(--spacing-header-h)+env(safe-area-inset-top)+2rem)] pb-[calc(var(--spacing-nav-h)+env(safe-area-inset-bottom))]'
-            : '',
-        className,
-    ]
-        .filter(Boolean)
-        .join(' ');
-
-    return <Tag className={classes}>{children}</Tag>;
+    return (
+        <Tag
+            className={cn(
+                'flex min-w-0 flex-col',
+                PX_CLASSES[px],
+                GAP_CLASSES[gap],
+                safeArea &&
+                    'pt-[calc(var(--spacing-header-h)+env(safe-area-inset-top)+1.5rem)] pb-[calc(var(--spacing-nav-h)+env(safe-area-inset-bottom))]',
+                'lg:pl-[var(--spacing-sidebar-w)] lg:pt-0 lg:pb-0',
+                className,
+            )}
+        >
+            {children}
+        </Tag>
+    );
 }

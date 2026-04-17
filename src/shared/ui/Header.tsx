@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { IconButton } from '@frontend/design-system';
-import { Search } from 'lucide-react';
+import { IconSearch } from '@tabler/icons-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
     resolveHeaderTabConfig,
@@ -16,7 +16,7 @@ export function Header() {
     const tabConfig = resolveHeaderTabConfig(pathname);
 
     return (
-        <div className="fixed left-0 right-0 top-0 z-40 flex h-[calc(var(--spacing-header-h)+env(safe-area-inset-top))] items-center justify-between border-b border-gray-200 bg-white/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-sm pointer-events-auto">
+        <div className="pointer-events-auto fixed left-0 right-0 top-0 z-40 flex h-[calc(var(--spacing-header-h)+env(safe-area-inset-top))] items-center justify-between border-b border-border-soft bg-background/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
             <div className="min-w-0 flex-1">
                 {tabConfig ? (
                     <Suspense fallback={null}>
@@ -34,9 +34,12 @@ export function Header() {
                 size="sm"
                 onClick={() => router.push('/search')}
                 label="검색"
-                className="shrink-0 text-black"
                 icon={
-                    <Search size={22} strokeWidth={2} className="text-black" />
+                    <IconSearch
+                        size={20}
+                        stroke={2}
+                        className="text-foreground"
+                    />
                 }
             />
         </div>

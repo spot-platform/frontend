@@ -517,6 +517,7 @@ function buildSpotRoom(spotId: string): SpotChatRoom | null {
         updatedAt: spot.updatedAt,
         spot,
         reverseOffer: reverseOfferScenario?.reverseOffer,
+        sourceFeedId: spot.type === 'OFFER' ? `feed-${spot.id}` : undefined,
         messages,
     };
 }

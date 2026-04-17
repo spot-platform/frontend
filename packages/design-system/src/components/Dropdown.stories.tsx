@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { BriefcaseBusiness } from 'lucide-react';
+import { IconBriefcase } from '@tabler/icons-react';
 import { useState, type ComponentProps } from 'react';
 import { Dropdown } from './Dropdown';
 
@@ -57,7 +57,7 @@ export const WithLeadingAdornment: Story = {
     render: (args) => <StatefulDropdownStory {...args} />,
     args: {
         label: '전문 분야',
-        leadingAdornment: <BriefcaseBusiness size={16} />,
+        leadingAdornment: <IconBriefcase size={16} />,
         hint: '아이콘이 있는 입력 그룹에도 같은 밀도를 유지해요.',
     },
 };

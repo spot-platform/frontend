@@ -1,3 +1,17 @@
+export type GeoCoord = {
+    lat: number;
+    lng: number;
+};
+
+export type SpotMapItem = {
+    id: string;
+    type: SpotType;
+    status: SpotStatus;
+    title: string;
+    coord: GeoCoord;
+    category: string;
+};
+
 // Standard success envelope
 export type ApiResponse<T> = {
     data: T;

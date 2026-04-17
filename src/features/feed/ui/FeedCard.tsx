@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Eye, Heart, ImageIcon, Users } from 'lucide-react';
+import { IconEye, IconHeart, IconPhoto, IconUsers } from '@tabler/icons-react';
 import { MOCK_FEED_MANAGEMENT } from '../model/mock';
 import type { FeedItem, FeedParticipantProfile } from '../model/types';
 import { UserAvatarStatic } from '@/shared/ui';
@@ -314,7 +314,7 @@ function ExploreCard({ item }: { item: FeedItem }) {
                             />
                         ) : (
                             <div className="flex h-full w-full items-center justify-center">
-                                <ImageIcon
+                                <IconPhoto
                                     size={24}
                                     className="text-gray-300"
                                 />
@@ -389,15 +389,15 @@ function ExploreCard({ item }: { item: FeedItem }) {
 
                     <div className="mt-2 flex items-center gap-3">
                         <StatBadge
-                            icon={<Eye size={11} />}
+                            icon={<IconEye size={11} />}
                             count={item.views}
                         />
                         <StatBadge
-                            icon={<Heart size={11} />}
+                            icon={<IconHeart size={11} />}
                             count={item.likes}
                         />
                         <StatBadge
-                            icon={<Users size={11} />}
+                            icon={<IconUsers size={11} />}
                             count={
                                 item.partnerCount ?? item.applicantCount ?? 0
                             }
@@ -617,11 +617,11 @@ export function HomeFeedCard({ item }: { item: FeedItem }) {
                         )}
                         <div className="flex items-center gap-3">
                             <StatBadge
-                                icon={<Eye size={12} />}
+                                icon={<IconEye size={12} />}
                                 count={item.views}
                             />
                             <StatBadge
-                                icon={<Heart size={12} />}
+                                icon={<IconHeart size={12} />}
                                 count={item.likes}
                             />
                         </div>

@@ -1,15 +1,3 @@
-import type { Metadata } from 'next';
-import { FeedPageClient } from '@/features/feed';
+import { createMapRedirect } from '@/features/map/model/map-redirect';
 
-export const metadata: Metadata = { title: 'Feed' };
-
-export default async function FeedPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ tab?: string }>;
-}) {
-    const { tab } = await searchParams;
-    const activeTab = (tab ?? 'HOME').toUpperCase();
-
-    return <FeedPageClient activeTab={activeTab} />;
-}
+export default createMapRedirect({ sheet: 'half' });

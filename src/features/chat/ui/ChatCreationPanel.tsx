@@ -3,21 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@frontend/design-system';
 import {
-    BarChart3,
-    CalendarRange,
-    Check,
-    ChevronLeft,
-    ChevronRight,
-    Copy,
-    FileText,
-    Handshake,
-    Link2,
-    Plus,
-    Trash2,
-    Upload,
-    Users,
-    X,
-} from 'lucide-react';
+    IconChartBar,
+    IconCalendarEvent,
+    IconCheck,
+    IconChevronLeft,
+    IconChevronRight,
+    IconCopy,
+    IconFileText,
+    IconHeartHandshake,
+    IconLink,
+    IconPlus,
+    IconTrash,
+    IconUpload,
+    IconUsers,
+    IconX,
+} from '@tabler/icons-react';
 import { UserAvatarStatic } from '@/shared/ui';
 import { SearchBar } from '@/shared/ui/SearchBar';
 import { useChatNavStore } from '@/shared/model/chat-nav-store';
@@ -194,7 +194,7 @@ function FriendChip({
             </div>
             {selected && (
                 <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-800 text-white">
-                    <Check size={12} strokeWidth={2.5} />
+                    <IconCheck size={12} stroke={2.5} />
                 </span>
             )}
         </button>
@@ -283,7 +283,7 @@ function VoteCreatePanel({
                                     onClick={() => removeOption(i)}
                                     className="flex h-8 w-8 items-center justify-center rounded-full text-white/30 hover:bg-white/10 hover:text-white/60"
                                 >
-                                    <X size={14} />
+                                    <IconX size={14} />
                                 </button>
                             )}
                         </div>
@@ -295,7 +295,7 @@ function VoteCreatePanel({
                         onClick={addOption}
                         className="mt-2 flex items-center gap-1.5 text-xs text-white/40 hover:text-white/60"
                     >
-                        <Plus size={13} /> 선택지 추가
+                        <IconPlus size={13} /> 선택지 추가
                     </button>
                 )}
             </div>
@@ -313,9 +313,9 @@ function VoteCreatePanel({
                     }`}
                 >
                     {multiSelect && (
-                        <Check
+                        <IconCheck
                             size={10}
-                            strokeWidth={3}
+                            stroke={3}
                             className="text-white"
                         />
                     )}
@@ -446,7 +446,7 @@ function ScheduleCreatePanel({
                     disabled={pageOffset === 0}
                     className="flex h-7 w-7 items-center justify-center rounded-full text-white/40 hover:bg-white/10 disabled:opacity-20"
                 >
-                    <ChevronLeft size={16} />
+                    <IconChevronLeft size={16} />
                 </button>
                 <span className="text-xs text-white/40">
                     {dates[0]} ~ {dates[dates.length - 1]}
@@ -456,7 +456,7 @@ function ScheduleCreatePanel({
                     onClick={() => setPageOffset((p) => p + DAYS_PER_PAGE)}
                     className="flex h-7 w-7 items-center justify-center rounded-full text-white/40 hover:bg-white/10"
                 >
-                    <ChevronRight size={16} />
+                    <IconChevronRight size={16} />
                 </button>
             </div>
 
@@ -631,7 +631,7 @@ function FileCreatePanel({ onClose }: { onClose: () => void }) {
                 onClick={() => inputRef.current?.click()}
                 className="mb-3 flex w-full flex-col items-center gap-2 rounded-2xl border border-dashed border-white/20 bg-white/5 px-4 py-6 text-center transition hover:border-white/30 hover:bg-white/8"
             >
-                <Upload size={22} className="text-white/30" />
+                <IconUpload size={22} className="text-white/30" />
                 <p className="text-sm text-white/50">
                     파일을 선택하거나 여기에 끌어다 놓으세요
                 </p>
@@ -671,7 +671,7 @@ function FileCreatePanel({ onClose }: { onClose: () => void }) {
                                 onClick={() => removeFile(i)}
                                 className="flex h-7 w-7 items-center justify-center rounded-full text-white/30 hover:bg-white/10 hover:text-white/60"
                             >
-                                <Trash2 size={14} />
+                                <IconTrash size={14} />
                             </button>
                         </div>
                     ))}
@@ -707,7 +707,7 @@ function ReverseOfferCreatePanel({
         <div className="pb-2">
             <div className="mb-1 flex items-center justify-center">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300">
-                    <Handshake size={16} />
+                    <IconHeartHandshake size={16} />
                 </div>
             </div>
             <p className="mb-1 text-center text-sm font-semibold text-white">
@@ -974,7 +974,7 @@ function FriendAddPanel() {
             <div className="mb-4 rounded-[20px] border border-white/10 bg-white/5 p-4">
                 <div className="flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
-                        <Link2 size={18} />
+                        <IconLink size={18} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-white">
@@ -995,7 +995,7 @@ function FriendAddPanel() {
                         size="sm"
                         variant="secondary"
                         className="border-white/10 bg-white text-brand-900 hover:bg-brand-50"
-                        startIcon={<Copy size={14} />}
+                        startIcon={<IconCopy size={14} />}
                         onClick={handleShareMyUrl}
                     >
                         복사
@@ -1072,7 +1072,7 @@ function VoteActionPanel({
         <div className="pb-2">
             <div className="mb-1 flex items-center justify-center">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
-                    <BarChart3 size={16} />
+                    <IconChartBar size={16} />
                 </div>
             </div>
             <p className="mb-1 text-center text-sm font-semibold text-white">
@@ -1111,7 +1111,7 @@ function VoteActionPanel({
                             <div className="relative flex items-center gap-2">
                                 {voted && (
                                     <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] text-white">
-                                        <Check size={10} strokeWidth={2.5} />
+                                        <IconCheck size={10} stroke={2.5} />
                                     </span>
                                 )}
                                 <span className="text-xs text-white/50">
@@ -1207,7 +1207,7 @@ function ScheduleActionPanel({
         <div className="pb-2">
             <div className="mb-1 flex items-center justify-center">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300">
-                    <CalendarRange size={16} />
+                    <IconCalendarEvent size={16} />
                 </div>
             </div>
             <p className="mb-1 text-center text-sm font-semibold text-white">
@@ -1238,7 +1238,7 @@ function ScheduleActionPanel({
                     disabled={pageOffset === 0}
                     className="flex h-7 w-7 items-center justify-center rounded-full text-white/40 hover:bg-white/10 disabled:opacity-20"
                 >
-                    <ChevronLeft size={16} />
+                    <IconChevronLeft size={16} />
                 </button>
                 <span className="text-xs text-white/40">
                     {dates[0]} ~ {dates[dates.length - 1]}
@@ -1248,7 +1248,7 @@ function ScheduleActionPanel({
                     onClick={() => setPageOffset((p) => p + DAYS_PER_PAGE)}
                     className="flex h-7 w-7 items-center justify-center rounded-full text-white/40 hover:bg-white/10"
                 >
-                    <ChevronRight size={16} />
+                    <IconChevronRight size={16} />
                 </button>
             </div>
 
@@ -1370,7 +1370,7 @@ function FileActionPanel({
         <div className="pb-2">
             <div className="mb-1 flex items-center justify-center">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-500/20 text-gray-300">
-                    <FileText size={16} />
+                    <IconFileText size={16} />
                 </div>
             </div>
             <p className="mb-1 text-center text-sm font-semibold text-white">
@@ -1446,7 +1446,7 @@ function ReverseOfferActionPanel({
         <div className="pb-2">
             <div className="mb-1 flex items-center justify-center">
                 <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300">
-                    <Handshake size={16} />
+                    <IconHeartHandshake size={16} />
                 </div>
             </div>
             <p className="mb-1 text-center text-sm font-semibold text-white">
@@ -1475,7 +1475,7 @@ function ReverseOfferActionPanel({
 
             <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
                 <p className="text-[11px] font-semibold tracking-[0.14em] text-white/35 uppercase">
-                    Team Chat Check
+                    Team Chat IconCheck
                 </p>
                 <p className="mt-2 text-sm text-white/75">
                     {reverseOffer.priorAgreementReachedInChat
@@ -1616,7 +1616,7 @@ function RoomInfoPanel({
                     </div>
                     <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                         <div className="mb-2 flex items-center gap-2">
-                            <Users size={14} className="text-white/40" />
+                            <IconUsers size={14} className="text-white/40" />
                             <p className="text-xs font-semibold text-white/60">
                                 참여 중인 멤버
                             </p>

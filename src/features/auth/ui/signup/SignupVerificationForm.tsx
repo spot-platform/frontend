@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, BadgeCheck, KeyRound } from 'lucide-react';
+import { IconArrowLeft, IconCircleCheck, IconKey } from '@tabler/icons-react';
 import { Button, Input } from '@frontend/design-system';
 import type { ChangeEvent } from 'react';
 
@@ -52,7 +52,7 @@ export function SignupVerificationForm({
                 value={verificationCode}
                 onChange={onChange}
                 placeholder="6자리 숫자"
-                startAdornment={<KeyRound size={18} />}
+                startAdornment={<IconKey size={18} />}
                 error={verificationCodeError}
                 hint="현재는 코드 형식만 확인해요."
                 disabled={isComplete}
@@ -62,7 +62,10 @@ export function SignupVerificationForm({
             {isComplete && (
                 <div className="rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
                     <div className="flex items-start gap-2">
-                        <BadgeCheck size={18} className="mt-0.5 shrink-0" />
+                        <IconCircleCheck
+                            size={18}
+                            className="mt-0.5 shrink-0"
+                        />
                         <div>
                             코드 입력 형식만 확인했어요. 실제 가입 완료는 인증
                             API가 연결된 뒤 이어질 수 있어요.
@@ -78,7 +81,7 @@ export function SignupVerificationForm({
                     size="lg"
                     onClick={onBack}
                     disabled={isComplete}
-                    startIcon={<ArrowLeft size={18} />}
+                    startIcon={<IconArrowLeft size={18} />}
                     className="flex-1"
                 >
                     이전 단계

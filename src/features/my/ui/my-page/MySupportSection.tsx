@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CircleHelp, Wallet } from 'lucide-react';
+import { IconHelpCircle, IconWallet } from '@tabler/icons-react';
 import { Button } from '@frontend/design-system';
 import { Section } from '@/shared/ui';
 import { MySectionHeader } from './MySectionHeader';
@@ -27,7 +27,7 @@ export function MySupportSection({ email }: MySupportSectionProps) {
             <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border border-gray-200 bg-white p-4">
                     <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100">
-                        <CircleHelp size={18} className="text-gray-600" />
+                        <IconHelpCircle size={18} className="text-gray-600" />
                     </div>
                     <p className="text-sm font-semibold text-gray-900">
                         설정에서 관리 가능한 항목
@@ -40,7 +40,7 @@ export function MySupportSection({ email }: MySupportSectionProps) {
 
                 <div className="rounded-lg border border-gray-200 bg-white p-4">
                     <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100">
-                        <Wallet size={18} className="text-gray-600" />
+                        <IconWallet size={18} className="text-gray-600" />
                     </div>
                     <p className="text-sm font-semibold text-gray-900">
                         다음에 확인하면 좋은 것

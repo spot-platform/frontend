@@ -1,7 +1,7 @@
 'use client';
 
 import { IconButton } from '@frontend/design-system';
-import { ArrowLeft, Share2, Settings } from 'lucide-react';
+import { IconArrowLeft, IconShare, IconSettings } from '@tabler/icons-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 interface DetailHeaderProps {
@@ -33,44 +33,38 @@ export function DetailHeader({
 
         try {
             if (navigator.share) {
-                await navigator.share({
-                    title: shareTitle,
-                    url: shareUrl,
-                });
+                await navigator.share({ title: shareTitle, url: shareUrl });
                 return;
             }
-
             if (navigator.clipboard?.writeText) {
                 await navigator.clipboard.writeText(shareUrl);
             }
         } catch (error) {
-            if (error instanceof DOMException && error.name === 'AbortError') {
+            if (error instanceof DOMException && error.name === 'AbortError')
                 return;
-            }
         }
     };
 
     return (
         <div className="fixed left-0 right-0 top-0 z-40">
-            <div className="mx-auto max-w-107.5">
-                <div className="flex h-[calc(var(--spacing-header-h)+env(safe-area-inset-top))] items-end justify-between bg-white px-4 pb-2 pt-[env(safe-area-inset-top)]">
+            <div className="mx-auto max-w-lg">
+                <div className="flex h-[calc(var(--spacing-header-h)+env(safe-area-inset-top))] items-end justify-between bg-background px-4 pb-2 pt-[env(safe-area-inset-top)]">
                     <IconButton
                         variant="ghost"
                         size="sm"
                         onClick={() => router.back()}
                         label="뒤로가기"
-                        className="text-black"
                         icon={
-                            <ArrowLeft
-                                size={22}
-                                strokeWidth={2}
-                                className="text-black"
+                            <IconArrowLeft
+                                size={20}
+                                stroke={2}
+                                className="text-foreground"
                             />
                         }
                     />
 
                     {title && (
-                        <span className="text-base font-semibold text-black">
+                        <span className="text-base font-semibold text-foreground">
                             {title}
                         </span>
                     )}
@@ -82,12 +76,11 @@ export function DetailHeader({
                                 size="sm"
                                 onClick={handleShare}
                                 label="공유"
-                                className="text-black"
                                 icon={
-                                    <Share2
-                                        size={20}
-                                        strokeWidth={2}
-                                        className="text-black"
+                                    <IconShare
+                                        size={18}
+                                        stroke={2}
+                                        className="text-foreground"
                                     />
                                 }
                             />
@@ -98,18 +91,17 @@ export function DetailHeader({
                                 size="sm"
                                 onClick={onSettings}
                                 label="설정"
-                                className="text-black"
                                 icon={
-                                    <Settings
-                                        size={20}
-                                        strokeWidth={2}
-                                        className="text-black"
+                                    <IconSettings
+                                        size={18}
+                                        stroke={2}
+                                        className="text-foreground"
                                     />
                                 }
                             />
                         )}
                         {!showShare && !showSettings && (
-                            <div className="h-9 w-9" />
+                            <div className="h-8 w-8" />
                         )}
                     </div>
                 </div>
