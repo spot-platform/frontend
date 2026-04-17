@@ -11,7 +11,6 @@ import {
     IconX,
     IconBolt,
 } from '@tabler/icons-react';
-import { IconButton } from '@frontend/design-system';
 import { useMainChatStore } from '../model/use-main-chat-store';
 import type { ChatRoom, PersonalChatRoom, SpotChatRoom } from '../model/types';
 
@@ -205,7 +204,7 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             {open && (
                 <motion.div
                     key="drawer-fullscreen"
-                    className="fixed inset-0 z-50 flex flex-col bg-background"
+                    className="fixed inset-0 z-[60] flex flex-col bg-background"
                     initial={{ x: '100%' }}
                     animate={{ x: 0 }}
                     exit={{ x: '100%' }}
@@ -220,7 +219,7 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="fixed right-0 top-[55vh] z-[51] flex h-[72px] w-14 items-center justify-center rounded-l-2xl bg-primary shadow-lg"
+                        className="fixed right-0 top-[55vh] z-[61] flex h-[72px] w-14 items-center justify-center rounded-l-2xl bg-primary shadow-lg"
                         aria-label="채팅 닫기"
                     >
                         <IconX

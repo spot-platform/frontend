@@ -10,6 +10,7 @@ import {
     IconDownload,
     IconFileText,
     IconHeartHandshake,
+    IconMap,
     IconMessageCirclePlus,
     IconSearch,
     IconUserPlus,
@@ -18,6 +19,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/shared/lib/cn';
 import { useChatNavStore } from '@/shared/model/chat-nav-store';
 import { SearchBar } from '@/shared/ui/SearchBar';
+import { ChatCreationPanel } from '../ui/ChatCreationPanel';
 import { ChatHeaderContextSelect } from '../ui/ChatHeaderContextSelect';
 import { ChatRoomList } from '../ui/ChatRoomList';
 import {
@@ -25,6 +27,7 @@ import {
     useMainChatStore,
 } from '../model/use-main-chat-store';
 import { formatReverseOfferApprovalProgress } from '../model/types';
+import { isSupporterForSpot } from '../model/mock';
 import {
     buildScheduleSubtitle,
     findSpotActionItem,
@@ -38,7 +41,7 @@ import type {
     SpotActionItem,
     SpotChatRoom,
 } from '../model/types';
-import { Main } from '@/shared/ui';
+import { BottomSheet, Main } from '@/shared/ui';
 import type { SharedFile } from '@/entities/spot/types';
 
 const PERSONAL_FILTERS: Array<{
@@ -485,7 +488,17 @@ export function MainChatPageClient({
         openPersonalCreate,
         openFriendAdd,
         openActionItem,
+        openCreation,
+        expanded: chatNavExpanded,
+        mode: chatNavMode,
     } = useChatNavStore();
+    const showMobileChatNavPanel =
+        chatNavExpanded &&
+        (chatNavMode.kind === 'action-item' ||
+            chatNavMode.kind === 'creation' ||
+            chatNavMode.kind === 'room-info' ||
+            chatNavMode.kind === 'personal-create' ||
+            chatNavMode.kind === 'friend-add');
 
     useEffect(() => {
         const resolution = applyRouteIntent(routeIntent);
@@ -761,6 +774,20 @@ export function MainChatPageClient({
                                     }
                                 />
                             ) : null}
+                            <IconButton
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => push('/map')}
+                                label="맵으로 돌아가기"
+                                className="text-gray-700"
+                                icon={
+                                    <IconMap
+                                        size={22}
+                                        className="text-gray-700"
+                                    />
+                                }
+                            />
                         </div>
                     </div>
 
@@ -834,6 +861,90 @@ export function MainChatPageClient({
                     )}
                 </div>
             </div>
+
+            <BottomSheet
+                open={showMobileChatNavPanel}
+                onClose={closeChatNav}
+                snapPoint="half"
+                className="border-2 border-[#3b4954] bg-[#1e2938]"
+            >
+                <ChatCreationPanel onClose={closeChatNav} />
+            </BottomSheet>
+
+            <BottomSheet
+                open={!isPersonalMode && subNavOpen}
+                onClose={() => setSubNavOpen(false)}
+                snapPoint="half"
+                title="항목 추가"
+                className="md:hidden"
+            >
+                <div className="grid grid-cols-2 gap-2 pb-4">
+                    {[
+                        {
+                            step: 'schedule' as const,
+                            label: '일정',
+                            description: '가능한 시간 조율',
+                            icon: <IconCalendarEvent size={18} />,
+                            tone: 'bg-brand-50 text-brand-800',
+                        },
+                        {
+                            step: 'vote' as const,
+                            label: '투표',
+                            description: '선택지를 제안해요',
+                            icon: <IconChartBar size={18} />,
+                            tone: 'bg-amber-50 text-amber-700',
+                        },
+                        {
+                            step: 'file' as const,
+                            label: '파일',
+                            description: '첨부 파일 공유',
+                            icon: <IconFileText size={18} />,
+                            tone: 'bg-gray-100 text-gray-700',
+                        },
+                        ...(selectedSpotRoom &&
+                        isSupporterForSpot(selectedSpotRoom)
+                            ? [
+                                  {
+                                      step: 'reverse-offer' as const,
+                                      label: '역제안',
+                                      description: '파트너에게 역제안',
+                                      icon: <IconHeartHandshake size={18} />,
+                                      tone: 'bg-emerald-50 text-emerald-700',
+                                  },
+                              ]
+                            : []),
+                    ].map(({ step, label, description, icon, tone }) => (
+                        <button
+                            key={step}
+                            type="button"
+                            onClick={() => {
+                                setSubNavOpen(false);
+                                openCreation(step);
+                            }}
+                            className={cn(
+                                'flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left transition hover:bg-gray-50 active:scale-[0.99]',
+                            )}
+                        >
+                            <div
+                                className={cn(
+                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                                    tone,
+                                )}
+                            >
+                                {icon}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-gray-900">
+                                    {label}
+                                </p>
+                                <p className="mt-0.5 text-xs text-gray-500">
+                                    {description}
+                                </p>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </BottomSheet>
         </Main>
     );
 }

@@ -1,7 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { IconSearch, IconUser, IconPlus, IconBell } from '@tabler/icons-react';
+import {
+    IconSearch,
+    IconUser,
+    IconPlus,
+    IconBell,
+    IconX,
+} from '@tabler/icons-react';
+import { useFilterStore } from '@/features/map/model/use-filter-store';
 
 type MapHeaderProps = {
     onCreateClick?: () => void;
@@ -9,32 +16,54 @@ type MapHeaderProps = {
 
 export function MapHeader({ onCreateClick }: MapHeaderProps) {
     const router = useRouter();
+    const searchQuery = useFilterStore((s) => s.searchQuery);
+    const setSearchQuery = useFilterStore((s) => s.setSearchQuery);
+
+    const handleChange = (value: string) => {
+        setSearchQuery(value);
+    };
 
     return (
-        <div className="pointer-events-auto fixed left-0 right-0 top-0 z-30 flex items-center gap-2.5 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-            <div className="flex h-11 flex-1 items-center gap-2.5 rounded-full bg-white px-4 shadow-md">
-                <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => router.push('/search')}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') router.push('/search');
-                    }}
-                    className="flex flex-1 items-center gap-2.5"
-                >
-                    <IconSearch
-                        size={18}
-                        stroke={1.8}
-                        className="shrink-0 text-muted-foreground"
-                    />
-                    <span className="text-sm text-muted-foreground">
-                        동네에서 찾아보기
-                    </span>
-                </div>
+        <div
+            className="pointer-events-auto fixed left-0 right-0 top-0 z-30 flex items-center gap-2 pb-2"
+            style={{
+                paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)',
+                paddingLeft: 'calc(env(safe-area-inset-left) + 1rem)',
+                paddingRight: 'calc(env(safe-area-inset-right) + 1rem)',
+            }}
+        >
+            <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full bg-white pl-4 pr-2 shadow-md">
+                <IconSearch
+                    size={18}
+                    stroke={1.8}
+                    className="shrink-0 text-muted-foreground"
+                />
+                <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleChange(e.target.value)}
+                    placeholder="동네에서 찾아보기"
+                    aria-label="모임 검색"
+                    className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                />
+                {searchQuery.length > 0 ? (
+                    <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-neutral-100"
+                        aria-label="검색어 지우기"
+                    >
+                        <IconX
+                            size={13}
+                            stroke={2}
+                            className="text-foreground"
+                        />
+                    </button>
+                ) : null}
                 <button
                     type="button"
                     onClick={() => router.push('/notifications')}
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100"
+                    className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 xs:flex"
                     aria-label="알림"
                 >
                     <IconBell

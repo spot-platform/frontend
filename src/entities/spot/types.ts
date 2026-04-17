@@ -10,6 +10,12 @@ export type SpotMapItem = {
     title: string;
     coord: GeoCoord;
     category: string;
+    provenance?: 'virtual' | 'real' | 'mixed';
+    personFitnessScore?: number;
+    attractivenessScore?: number;
+    authorId?: string;
+    participantCount?: number;
+    location?: string;
 };
 
 // Standard success envelope

@@ -2,15 +2,8 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@frontend/design-system';
+import { ARCHETYPE_LABEL } from '@/entities/persona/labels';
 import type { Persona } from '@/entities/persona/types';
-
-const ARCHETYPE_LABEL: Record<string, string> = {
-    explorer: '탐험가',
-    helper: '도우미',
-    creator: '만드는 사람',
-    connector: '연결자',
-    learner: '배우는 사람',
-};
 
 type PersonaProfileCardProps = {
     persona: Persona | null;

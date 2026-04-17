@@ -65,7 +65,7 @@ function loadNaverMapSDK(): Promise<void> {
 
 function useNaverMapLoader() {
     const [state, setState] = useState<'loading' | 'ready' | 'error'>(
-        typeof window !== 'undefined' && window.naver?.maps
+        typeof window !== 'undefined' && window.naver?.maps?.Map
             ? 'ready'
             : 'loading',
     );
@@ -155,6 +155,14 @@ function NaverMapCanvas({
             map.setCenter(new naver.maps.LatLng(center.lat, center.lng));
         }
     }, [map, center.lat, center.lng]);
+
+    useEffect(() => {
+        if (!map || level == null) return;
+        const target = Math.max(1, 20 - level);
+        if (map.getZoom() !== target) {
+            map.setZoom(target);
+        }
+    }, [map, level]);
 
     useEffect(() => {
         if (!map || !onMapClick) return;

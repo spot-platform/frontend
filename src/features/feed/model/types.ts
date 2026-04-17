@@ -59,6 +59,7 @@ export interface FeedItem {
     myApplicationStatus?: FeedApplicationStatus;
     myApplicationRole?: FeedApplicationRole;
     myApplicationDeposit?: number;
+    spotId?: string;
 }
 
 export interface SupporterItem {

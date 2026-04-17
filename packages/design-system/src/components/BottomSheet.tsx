@@ -1,7 +1,9 @@
 'use client';
 
-import { PersistentDrawer, type BottomSheetSnapPoint } from './Drawer';
 import type { ReactNode } from 'react';
+import { Drawer as VaulDrawer } from 'vaul';
+import { cn } from '../lib/cn';
+import { PersistentDrawer, type BottomSheetSnapPoint } from './Drawer';
 
 export type { BottomSheetSnapPoint };
 
@@ -18,19 +20,58 @@ export interface BottomSheetProps {
 
 export function BottomSheet({
     open,
+    onClose,
+    title,
     children,
     snapPoint = 'half',
     onSnapChange,
+    persistent = false,
     className,
 }: BottomSheetProps) {
+    if (persistent) {
+        return (
+            <PersistentDrawer
+                open={open}
+                snapPoint={snapPoint}
+                onSnapChange={onSnapChange}
+                className={className}
+            >
+                {children}
+            </PersistentDrawer>
+        );
+    }
+
     return (
-        <PersistentDrawer
+        <VaulDrawer.Root
             open={open}
-            snapPoint={snapPoint}
-            onSnapChange={onSnapChange}
-            className={className}
+            onOpenChange={(next) => {
+                if (!next) onClose?.();
+            }}
         >
-            {children}
-        </PersistentDrawer>
+            <VaulDrawer.Portal>
+                <VaulDrawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
+                <VaulDrawer.Content
+                    aria-describedby={undefined}
+                    className={cn(
+                        'fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85dvh] max-w-lg flex-col rounded-t-xl bg-background shadow-xl',
+                        className,
+                    )}
+                >
+                    <div className="mx-auto mt-3 mb-2 h-1 w-10 shrink-0 rounded-full bg-neutral-300" />
+                    {title ? (
+                        <VaulDrawer.Title className="px-4 pb-2 text-base font-semibold text-foreground">
+                            {title}
+                        </VaulDrawer.Title>
+                    ) : (
+                        <VaulDrawer.Title className="sr-only">
+                            Bottom sheet
+                        </VaulDrawer.Title>
+                    )}
+                    <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
+                        {children}
+                    </div>
+                </VaulDrawer.Content>
+            </VaulDrawer.Portal>
+        </VaulDrawer.Root>
     );
 }

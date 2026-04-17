@@ -52,7 +52,12 @@ export function useLoginForm({ nextPath }: UseLoginFormOptions) {
 
     const handleLoginSuccess = (result: LoginResult) => {
         setToken(result.accessToken, result.userId);
-        router.replace(resolvePostLoginPath(result.redirectTo || redirectPath));
+        const hasCompletedOnboarding =
+            useAuthStore.getState().hasCompletedOnboarding;
+        const destination = hasCompletedOnboarding
+            ? resolvePostLoginPath(result.redirectTo || redirectPath)
+            : '/onboarding';
+        router.replace(destination);
         router.refresh();
     };
 

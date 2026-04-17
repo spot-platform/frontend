@@ -1,6 +1,12 @@
 'use client';
 
-import type { ComponentProps, ReactNode } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    type ComponentProps,
+    type ReactNode,
+} from 'react';
 import { Drawer as VaulDrawer } from 'vaul';
 import { cn } from '../lib/cn';
 
@@ -112,6 +118,25 @@ const SNAP_VALUES: Record<BottomSheetSnapPoint, number> = {
     full: 0.9,
 };
 
+const SNAP_POINTS_ARRAY: number[] = [
+    SNAP_VALUES.peek,
+    SNAP_VALUES.half,
+    SNAP_VALUES.full,
+];
+
+const SNAP_ENTRIES = Object.entries(SNAP_VALUES) as [
+    BottomSheetSnapPoint,
+    number,
+][];
+
+function resolveSnapKey(
+    value: number | string | null,
+): BottomSheetSnapPoint | null {
+    if (value == null) return null;
+    const entry = SNAP_ENTRIES.find(([, v]) => v === value);
+    return entry ? entry[0] : null;
+}
+
 interface PersistentDrawerProps {
     open: boolean;
     children: ReactNode;
@@ -127,23 +152,29 @@ function PersistentDrawer({
     onSnapChange,
     className,
 }: PersistentDrawerProps) {
-    const snapPoints = [SNAP_VALUES.peek, SNAP_VALUES.half, SNAP_VALUES.full];
     const activeSnap = SNAP_VALUES[snapPoint];
+
+    const snapChangeRef = useRef(onSnapChange);
+    useEffect(() => {
+        snapChangeRef.current = onSnapChange;
+    }, [onSnapChange]);
+
+    const handleSetActiveSnap = useCallback((snap: number | string | null) => {
+        const resolved = resolveSnapKey(snap);
+        if (resolved && snapChangeRef.current) {
+            snapChangeRef.current(resolved);
+        }
+    }, []);
 
     return (
         <VaulDrawer.Root
             open={open}
-            snapPoints={snapPoints}
+            snapPoints={SNAP_POINTS_ARRAY}
             activeSnapPoint={activeSnap}
-            setActiveSnapPoint={(snap) => {
-                if (!snap || !onSnapChange) return;
-                const entry = Object.entries(SNAP_VALUES).find(
-                    ([, v]) => v === snap,
-                );
-                if (entry) onSnapChange(entry[0] as BottomSheetSnapPoint);
-            }}
+            setActiveSnapPoint={handleSetActiveSnap}
             modal={false}
             dismissible={false}
+            handleOnly
         >
             <VaulDrawer.Portal>
                 <VaulDrawer.Content
@@ -156,13 +187,19 @@ function PersistentDrawer({
                     <VaulDrawer.Title className="sr-only">
                         Bottom sheet
                     </VaulDrawer.Title>
-                    <div className="mx-auto mt-3 mb-2 h-1 w-10 shrink-0 rounded-full bg-neutral-300" />
+                    <VaulDrawer.Handle
+                        preventCycle
+                        style={{
+                            marginTop: '0.75rem',
+                            marginBottom: '0.75rem',
+                        }}
+                    />
                     <div
                         className={cn(
                             'min-h-0 flex-1 px-4 pb-6',
                             snapPoint === 'peek'
                                 ? 'overflow-hidden'
-                                : 'overflow-y-auto',
+                                : 'overflow-y-auto overscroll-contain',
                         )}
                     >
                         {children}

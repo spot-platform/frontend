@@ -36,7 +36,13 @@ export function MapFooter({
         'flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md active:scale-95 transition-transform';
 
     return (
-        <div className="pointer-events-auto fixed right-4 top-[calc(env(safe-area-inset-top)+7.5rem)] z-20 flex flex-col gap-2">
+        <div
+            className="pointer-events-auto fixed z-20 flex flex-col gap-2"
+            style={{
+                top: 'calc(env(safe-area-inset-top) + 7.5rem)',
+                right: 'calc(env(safe-area-inset-right) + 1rem)',
+            }}
+        >
             <button
                 type="button"
                 onClick={() => onLayerToggle?.()}

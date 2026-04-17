@@ -112,4 +112,8 @@
     --spacing-nav-h: 5rem;
     --spacing-session-px: 1rem;
     --spacing-sidebar-w: 16rem;
+
+    /* ── Breakpoints (Tailwind v4 custom) ──
+       xs: 360px — 세로 모드 저해상도 단말기(예: iPhone SE) 대응 */
+    --breakpoint-xs: 22.5rem;
 }
