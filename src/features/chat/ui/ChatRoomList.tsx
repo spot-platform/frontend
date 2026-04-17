@@ -1,13 +1,29 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatReverseOfferApprovalProgress } from '../model/types';
 import type { ChatRoom, ChatMessage } from '../model/types';
+import {
+    deriveChatLifecycle,
+    LIFECYCLE_LABEL,
+    type ChatLifecycle,
+} from './lifecycle/lifecycle';
 import { cn } from '@/shared/lib/cn';
+
+type LifecycleFilter = 'all' | ChatLifecycle;
 
 interface ChatRoomListProps {
     rooms: ChatRoom[];
+    showLifecycleFilter?: boolean;
 }
+
+const FILTERS: { value: LifecycleFilter; label: string }[] = [
+    { value: 'all', label: '전체' },
+    { value: 'open', label: LIFECYCLE_LABEL.open },
+    { value: 'matched', label: LIFECYCLE_LABEL.matched },
+    { value: 'closed', label: LIFECYCLE_LABEL.closed },
+];
 
 function getLastMessage(room: ChatRoom): ChatMessage | undefined {
     const msgs = room.messages;
@@ -73,53 +89,88 @@ function RoomAvatar({ room }: { room: ChatRoom }) {
     );
 }
 
-export function ChatRoomList({ rooms }: ChatRoomListProps) {
+export function ChatRoomList({
+    rooms,
+    showLifecycleFilter = false,
+}: ChatRoomListProps) {
     const router = useRouter();
+    const [filter, setFilter] = useState<LifecycleFilter>('all');
+
+    const filteredRooms = useMemo(() => {
+        if (!showLifecycleFilter || filter === 'all') return rooms;
+        return rooms.filter(
+            (room) =>
+                room.category === 'spot' &&
+                deriveChatLifecycle(room.spot.status) === filter,
+        );
+    }, [rooms, filter, showLifecycleFilter]);
 
     return (
-        <div className="flex flex-col divide-y divide-gray-100">
-            {rooms.map((room) => {
-                const lastText = getLastMessageText(room);
-                const timeLabel = formatListTime(room.updatedAt);
+        <div className="flex flex-col">
+            {showLifecycleFilter && (
+                <div className="sticky top-0 z-10 flex gap-1.5 border-b border-gray-100 bg-white px-4 py-2">
+                    {FILTERS.map((opt) => (
+                        <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setFilter(opt.value)}
+                            className={cn(
+                                'rounded-full px-3 py-1 text-xs font-semibold transition-colors',
+                                filter === opt.value
+                                    ? 'bg-brand-800 text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                            )}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
-                return (
-                    <button
-                        key={room.id}
-                        type="button"
-                        onClick={() => router.push(`/chat/${room.id}`)}
-                        className={cn(
-                            'flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50',
-                        )}
-                    >
-                        <RoomAvatar room={room} />
+            <div className="flex flex-col divide-y divide-gray-100">
+                {filteredRooms.map((room) => {
+                    const lastText = getLastMessageText(room);
+                    const timeLabel = formatListTime(room.updatedAt);
 
-                        <div className="min-w-0 flex-1">
-                            <div className="flex items-baseline justify-between gap-2">
-                                <div className="flex min-w-0 items-center gap-2">
-                                    <span className="truncate text-sm font-semibold text-gray-900">
-                                        {room.title}
+                    return (
+                        <button
+                            key={room.id}
+                            type="button"
+                            onClick={() => router.push(`/chat/${room.id}`)}
+                            className={cn(
+                                'flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50',
+                            )}
+                        >
+                            <RoomAvatar room={room} />
+
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-baseline justify-between gap-2">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span className="truncate text-sm font-semibold text-gray-900">
+                                            {room.title}
+                                        </span>
+                                        {room.category === 'personal' &&
+                                            room.unreadCount > 0 && (
+                                                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-800 px-1.5 text-[10px] font-bold text-white">
+                                                    {room.unreadCount}
+                                                </span>
+                                            )}
+                                    </div>
+                                    <span
+                                        suppressHydrationWarning
+                                        className="shrink-0 text-[11px] text-gray-400"
+                                    >
+                                        {timeLabel}
                                     </span>
-                                    {room.category === 'personal' &&
-                                        room.unreadCount > 0 && (
-                                            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-800 px-1.5 text-[10px] font-bold text-white">
-                                                {room.unreadCount}
-                                            </span>
-                                        )}
                                 </div>
-                                <span
-                                    suppressHydrationWarning
-                                    className="shrink-0 text-[11px] text-gray-400"
-                                >
-                                    {timeLabel}
-                                </span>
+                                <p className="mt-0.5 truncate text-sm text-gray-500">
+                                    {lastText}
+                                </p>
                             </div>
-                            <p className="mt-0.5 truncate text-sm text-gray-500">
-                                {lastText}
-                            </p>
-                        </div>
-                    </button>
-                );
-            })}
+                        </button>
+                    );
+                })}
+            </div>
         </div>
     );
 }

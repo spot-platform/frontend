@@ -1,7 +1,6 @@
 export { Section } from './Section';
 export { Main } from './Main';
 export { DetailPageShell } from './DetailPageShell';
-export { Header } from './Header';
 export { BottomNav } from './BottomNav';
 export { NavWrapper } from './NavWrapper';
 export { DetailHeader } from './DetailHeader';

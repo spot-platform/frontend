@@ -79,14 +79,18 @@ export function SpotPreviewSheet({
                             <Button
                                 size="sm"
                                 onClick={() => {
-                                    if (feedItem)
-                                        router.push(`/feed/${feedItem.id}`);
+                                    router.push(
+                                        `/chat?spotId=${selectedSpot.id}`,
+                                    );
                                     onClose();
                                 }}
                             >
-                                {selectedSpot.type === 'OFFER'
-                                    ? '참여하기'
-                                    : '제안하기'}
+                                {selectedSpot.status === 'MATCHED'
+                                    ? '진행 공간 입장'
+                                    : selectedSpot.status === 'CLOSED' ||
+                                        selectedSpot.status === 'CANCELLED'
+                                      ? '회고 보기'
+                                      : '대화방 입장'}
                             </Button>
                         </div>
                     </div>

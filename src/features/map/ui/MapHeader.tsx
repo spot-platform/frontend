@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { IconSearch, IconUser, IconPlus } from '@tabler/icons-react';
+import { IconSearch, IconUser, IconPlus, IconBell } from '@tabler/icons-react';
 
 type MapHeaderProps = {
     onCreateClick?: () => void;
@@ -31,6 +31,18 @@ export function MapHeader({ onCreateClick }: MapHeaderProps) {
                         동네에서 찾아보기
                     </span>
                 </div>
+                <button
+                    type="button"
+                    onClick={() => router.push('/notifications')}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100"
+                    aria-label="알림"
+                >
+                    <IconBell
+                        size={15}
+                        stroke={1.8}
+                        className="text-foreground"
+                    />
+                </button>
                 <button
                     type="button"
                     onClick={() => router.push('/my')}
