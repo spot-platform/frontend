@@ -2,7 +2,7 @@
 
 import { Button, IconButton, Input } from '@frontend/design-system';
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { IconPlus, IconX } from '@tabler/icons-react';
 import { BottomSheet } from '@/shared/ui';
 import { VoteOptionBar } from './VoteOptionBar';
 import {
@@ -96,7 +96,7 @@ function CreateVoteForm({
                                     onClick={() => handleRemoveOption(idx)}
                                     label={`선택지 ${idx + 1} 삭제`}
                                     className="text-gray-400"
-                                    icon={<X size={16} />}
+                                    icon={<IconX size={16} />}
                                 />
                             )}
                         </div>
@@ -106,7 +106,7 @@ function CreateVoteForm({
                             variant="secondary"
                             size="sm"
                             onClick={handleAddOption}
-                            startIcon={<Plus size={14} />}
+                            startIcon={<IconPlus size={14} />}
                             className="justify-start border-dashed text-xs text-gray-500"
                         >
                             선택지 추가

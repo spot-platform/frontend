@@ -1,0 +1,76 @@
+import type { SpotMapItem } from '@/entities/spot/types';
+import { MOCK_SPOT_CARDS } from '@/features/simulation/model/mock-api-responses';
+import { spotCardsToSpotMapItems } from '@/features/simulation/model/spot-card-adapter';
+
+const LEGACY_MOCK_SPOTS: SpotMapItem[] = [
+    {
+        id: 'S_30996',
+        type: 'OFFER',
+        status: 'OPEN',
+        title: '가벼운 등산 함께해요',
+        coord: { lat: 37.302, lng: 127.018 },
+        category: '등산',
+        provenance: 'real',
+        personFitnessScore: 0.72,
+        attractivenessScore: 0.66,
+        participantCount: 4,
+        location: '수원시 장안구',
+    },
+    {
+        id: 'S_10094',
+        type: 'OFFER',
+        status: 'OPEN',
+        title: '코딩 입문 함께 해요',
+        coord: { lat: 37.286, lng: 127.015 },
+        category: '코딩',
+        provenance: 'mixed',
+        personFitnessScore: 0.58,
+        attractivenessScore: 0.71,
+        participantCount: 7,
+        location: '수원시 영통구',
+    },
+    {
+        id: 'S_0003',
+        type: 'REQUEST',
+        status: 'OPEN',
+        title: '요가 입문 같이 하실 분',
+        coord: { lat: 37.2636, lng: 127.0286 },
+        category: '요가',
+        provenance: 'real',
+        personFitnessScore: 0.81,
+        attractivenessScore: 0.77,
+        participantCount: 2,
+        location: '수원시 팔달구',
+    },
+    {
+        id: 'S_0004',
+        type: 'REQUEST',
+        status: 'OPEN',
+        title: '볼더링 파트너 구해요',
+        coord: { lat: 37.275, lng: 127.045 },
+        category: '볼더링',
+        provenance: 'virtual',
+        personFitnessScore: 0.43,
+        attractivenessScore: 0.52,
+        participantCount: 5,
+        location: '수원시 영통구',
+    },
+    {
+        id: 'S_0005',
+        type: 'OFFER',
+        status: 'MATCHED',
+        title: '수채화 원데이 클래스',
+        coord: { lat: 37.258, lng: 127.032 },
+        category: '미술',
+        provenance: 'mixed',
+        personFitnessScore: 0.64,
+        attractivenessScore: 0.83,
+        participantCount: 8,
+        location: '수원시 권선구',
+    },
+];
+
+export const MOCK_SPOTS: SpotMapItem[] = [
+    ...LEGACY_MOCK_SPOTS,
+    ...spotCardsToSpotMapItems(MOCK_SPOT_CARDS),
+];

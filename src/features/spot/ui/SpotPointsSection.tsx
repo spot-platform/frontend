@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { IconChevronRight } from '@tabler/icons-react';
 import { MOCK_POINTS } from '../model/mock-dashboard';
 
 export function SpotPointsSection() {
@@ -19,7 +19,7 @@ export function SpotPointsSection() {
                     className="flex items-center gap-0.5 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600"
                 >
                     내역
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <IconChevronRight className="h-3.5 w-3.5" />
                 </Link>
             </div>
 

@@ -1,5 +1,10 @@
 import Link from 'next/link';
-import { Bookmark, ChevronRight, MapPinned, Settings } from 'lucide-react';
+import {
+    IconBookmark,
+    IconChevronRight,
+    IconMapPinFilled,
+    IconSettings,
+} from '@tabler/icons-react';
 import { Section } from '@/shared/ui';
 import { MySectionHeader } from './MySectionHeader';
 
@@ -8,19 +13,19 @@ const QUICK_ACTIONS = [
         href: '/my/settings',
         label: '설정',
         description: '프로필과 계정 환경을 관리해요.',
-        icon: Settings,
+        icon: IconSettings,
     },
     {
         href: '/bookmarks',
         label: '북마크',
         description: '저장해 둔 스팟을 다시 확인해요.',
-        icon: Bookmark,
+        icon: IconBookmark,
     },
     {
         href: '/spot',
         label: '참여 관리',
         description: '진행 중인 스팟과 최근 활동을 이어서 봐요.',
-        icon: MapPinned,
+        icon: IconMapPinFilled,
     },
 ] as const;
 
@@ -56,7 +61,7 @@ export function MyQuickActionsSection() {
                                     {item.description}
                                 </p>
                             </div>
-                            <ChevronRight
+                            <IconChevronRight
                                 size={18}
                                 className="shrink-0 text-gray-300"
                             />

@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserPlus, UserCheck, MessageCircle } from 'lucide-react';
+import {
+    IconUserPlus,
+    IconUserCheck,
+    IconMessageCircle,
+} from '@tabler/icons-react';
 import { Button } from '@frontend/design-system';
 import { DetailHeader } from '@/shared/ui/DetailHeader';
 import { Section } from '@/shared/ui';
@@ -98,9 +102,9 @@ export function PartnerProfileClient({
                         onClick={handleFriendToggle}
                         startIcon={
                             isFriend ? (
-                                <UserCheck size={16} />
+                                <IconUserCheck size={16} />
                             ) : (
-                                <UserPlus size={16} />
+                                <IconUserPlus size={16} />
                             )
                         }
                     >
@@ -110,7 +114,7 @@ export function PartnerProfileClient({
                         variant="secondary"
                         fullWidth
                         onClick={handleChat}
-                        startIcon={<MessageCircle size={16} />}
+                        startIcon={<IconMessageCircle size={16} />}
                     >
                         1:1 채팅
                     </Button>

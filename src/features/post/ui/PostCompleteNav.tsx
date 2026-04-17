@@ -1,7 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { LayoutList, MapPin, Plus, MessageCircle, User } from 'lucide-react';
+import {
+    IconLayoutList,
+    IconMapPin,
+    IconPlus,
+    IconMessageCircle,
+    IconUser,
+} from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
@@ -74,8 +80,8 @@ export function PostCompleteNav({ spotId }: PostCompleteNavProps) {
     const defaultContent = (
         <>
             {[
-                { href: '/feed', label: '피드', Icon: LayoutList },
-                { href: '/spot', label: '스팟', Icon: MapPin },
+                { href: '/feed', label: '피드', Icon: IconLayoutList },
+                { href: '/spot', label: '스팟', Icon: IconMapPin },
             ].map(({ href, label, Icon }) => (
                 <Link
                     key={href}
@@ -84,7 +90,7 @@ export function PostCompleteNav({ spotId }: PostCompleteNavProps) {
                 >
                     <Icon
                         size={22}
-                        strokeWidth={1.5}
+                        stroke={1.5}
                         className="text-nav-inactive"
                     />
                     <span className="text-[11px] font-medium leading-none text-nav-inactive">
@@ -99,13 +105,13 @@ export function PostCompleteNav({ spotId }: PostCompleteNavProps) {
                     className="-mt-6 flex h-13 w-13 items-center justify-center rounded-full bg-accent shadow-lg"
                     animate={{ rotate: 45 }}
                 >
-                    <Plus size={28} strokeWidth={2.5} className="text-white" />
+                    <IconPlus size={28} stroke={2.5} className="text-white" />
                 </motion.div>
             </div>
 
             {[
-                { href: '/chat', label: '채팅', Icon: MessageCircle },
-                { href: '/my', label: '마이', Icon: User },
+                { href: '/chat', label: '채팅', Icon: IconMessageCircle },
+                { href: '/my', label: '마이', Icon: IconUser },
             ].map(({ href, label, Icon }) => (
                 <Link
                     key={href}
@@ -114,7 +120,7 @@ export function PostCompleteNav({ spotId }: PostCompleteNavProps) {
                 >
                     <Icon
                         size={22}
-                        strokeWidth={1.5}
+                        stroke={1.5}
                         className="text-nav-inactive"
                     />
                     <span className="text-[11px] font-medium leading-none text-nav-inactive">

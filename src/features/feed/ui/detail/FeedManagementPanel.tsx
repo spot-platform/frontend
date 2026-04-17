@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Chip } from '@frontend/design-system';
-import { CircleDollarSign, Users } from 'lucide-react';
+import { IconCoinMonero, IconUsers } from '@tabler/icons-react';
 import { cn } from '@/shared/lib/cn';
 import { EmptyState, Section, UserAvatarStatic } from '@/shared/ui';
 import type {
@@ -80,13 +80,13 @@ export function FeedManagementPanel({
 
                 <div className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-3">
                     <StatBlock
-                        icon={<CircleDollarSign className="h-3.5 w-3.5" />}
+                        icon={<IconCoinMonero className="h-3.5 w-3.5" />}
                         label={currentAmountLabel}
                         value={formatCurrency(flow.demand.fundedAmount)}
                         meta={`${targetAmountLabel} ${formatCurrency(flow.demand.fundingGoal)}`}
                     />
                     <StatBlock
-                        icon={<Users className="h-3.5 w-3.5" />}
+                        icon={<IconUsers className="h-3.5 w-3.5" />}
                         label={partnersLabel}
                         value={`${confirmedPartnerCount} / ${flow.demand.requiredPartners}명`}
                         meta={`${remainingPartnersCopy} ${Math.max(flow.demand.requiredPartners - confirmedPartnerCount, 0)}명 필요`}

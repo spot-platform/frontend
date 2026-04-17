@@ -4,19 +4,20 @@ import { Chip, IconButton } from '@frontend/design-system';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    ArrowLeft,
-    ArrowUpRight,
-    BarChart3,
-    CalendarRange,
-    Check,
-    FileText,
-    Handshake,
-    Mic,
-    Plus,
-    SendHorizonal,
-    Users,
-    X,
-} from 'lucide-react';
+    IconArrowLeft,
+    IconArrowUpRight,
+    IconChartBar,
+    IconCalendarEvent,
+    IconCheck,
+    IconFileText,
+    IconHeartHandshake,
+    IconMap,
+    IconMicrophone,
+    IconPlus,
+    IconSend,
+    IconUsers,
+    IconX,
+} from '@tabler/icons-react';
 import { formatReverseOfferApprovalProgress } from '../model/types';
 import type {
     ChatMessage,
@@ -28,7 +29,13 @@ import {
     PERSONAL_CHAT_CONTEXT_ID,
     useMainChatStore,
 } from '../model/use-main-chat-store';
-import { getShareableSpotActionItems } from '../model/spot-action-items';
+import { isSupporterForSpot } from '../model/mock';
+import {
+    getShareableSpotActionItems,
+    getSpotScheduleActionId,
+    buildScheduleSubtitle,
+} from '../model/spot-action-items';
+import { ChatLifecyclePanel } from './lifecycle/ChatLifecyclePanel';
 import { cn } from '@/shared/lib/cn';
 import {
     BottomSheet,
@@ -241,6 +248,8 @@ function renderThreadEntryContent(
             { kind: 'reverse-offer' }
         >['reverseOffer'],
     ) => void,
+    onVoteOpen?: (vote: Extract<ChatMessage, { kind: 'vote' }>['vote']) => void,
+    onScheduleOpen?: () => void,
 ) {
     if (message.kind === 'message') {
         return (
@@ -273,11 +282,11 @@ function renderThreadEntryContent(
 
         const shortcutIcon =
             message.shortcut.actionKind === 'vote' ? (
-                <BarChart3 size={16} />
+                <IconChartBar size={16} />
             ) : message.shortcut.actionKind === 'schedule' ? (
-                <CalendarRange size={16} />
+                <IconCalendarEvent size={16} />
             ) : (
-                <FileText size={16} />
+                <IconFileText size={16} />
             );
 
         return (
@@ -310,7 +319,7 @@ function renderThreadEntryContent(
                         {message.shortcut.preview}
                     </p>
                 </div>
-                <ArrowUpRight
+                <IconArrowUpRight
                     size={16}
                     className="mt-0.5 shrink-0 text-gray-400"
                 />
@@ -323,46 +332,61 @@ function renderThreadEntryContent(
             (sum, option) => sum + option.voterIds.length,
             0,
         );
+        const votePayload = message.vote;
 
         return (
-            <ThreadItemCard
-                mine={mine}
-                icon={<BarChart3 size={18} />}
-                tone="vote"
-                eyebrow="Vote"
-                title={message.vote.question}
-                footer={`총 ${totalVotes}표 · ${message.vote.multiSelect ? '복수 선택' : '단일 선택'}`}
+            <button
+                type="button"
+                onClick={() => onVoteOpen?.(votePayload)}
+                className="block w-full text-left transition active:scale-[0.99]"
+                aria-label="투표 패널 열기"
             >
-                <div className="flex flex-col gap-2">
-                    {message.vote.options.map((option) => (
-                        <div
-                            key={option.id}
-                            className="flex items-center justify-between rounded-2xl bg-gray-50 px-3 py-2"
-                        >
-                            <span className="text-sm text-gray-700">
-                                {option.label}
-                            </span>
-                            <span className="text-xs font-semibold text-gray-400">
-                                {option.voterIds.length}표
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            </ThreadItemCard>
+                <ThreadItemCard
+                    mine={mine}
+                    icon={<IconChartBar size={18} />}
+                    tone="vote"
+                    eyebrow="투표"
+                    title={message.vote.question}
+                    footer={`총 ${totalVotes}표 · ${message.vote.multiSelect ? '복수 선택' : '단일 선택'} · 탭해서 투표하기`}
+                >
+                    <div className="flex flex-col gap-2">
+                        {message.vote.options.map((option) => (
+                            <div
+                                key={option.id}
+                                className="flex items-center justify-between rounded-2xl bg-gray-50 px-3 py-2"
+                            >
+                                <span className="text-sm text-gray-700">
+                                    {option.label}
+                                </span>
+                                <span className="text-xs font-semibold text-gray-400">
+                                    {option.voterIds.length}표
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </ThreadItemCard>
+            </button>
         );
     }
 
     if (message.kind === 'schedule') {
         return (
-            <ThreadItemCard
-                mine={mine}
-                icon={<CalendarRange size={18} />}
-                tone="schedule"
-                eyebrow="Schedule"
-                title={message.schedule.title}
-                description={message.schedule.description}
-                footer={message.schedule.metaLabel}
-            />
+            <button
+                type="button"
+                onClick={() => onScheduleOpen?.()}
+                className="block w-full text-left transition active:scale-[0.99]"
+                aria-label="일정 조율 패널 열기"
+            >
+                <ThreadItemCard
+                    mine={mine}
+                    icon={<IconCalendarEvent size={18} />}
+                    tone="schedule"
+                    eyebrow="일정"
+                    title={message.schedule.title}
+                    description={message.schedule.description}
+                    footer={`${message.schedule.metaLabel} · 탭해서 일정 조율하기`}
+                />
+            </button>
         );
     }
 
@@ -381,7 +405,7 @@ function renderThreadEntryContent(
             >
                 <ThreadItemCard
                     mine={mine}
-                    icon={<Handshake size={18} />}
+                    icon={<IconHeartHandshake size={18} />}
                     tone="reverse-offer"
                     eyebrow="역제안"
                     title="역제안을 등록했어요"
@@ -435,7 +459,7 @@ function renderThreadEntryContent(
         return (
             <ThreadItemCard
                 mine={mine}
-                icon={<Handshake size={18} />}
+                icon={<IconHeartHandshake size={18} />}
                 tone="proposal"
                 eyebrow="제안"
                 title={`${message.proposal.suggestedAmount.toLocaleString('ko-KR')}원`}
@@ -448,7 +472,7 @@ function renderThreadEntryContent(
                             type="button"
                             className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-accent py-2 text-xs font-semibold text-white"
                         >
-                            <Check size={13} />
+                            <IconCheck size={13} />
                             수락
                         </button>
                         <button
@@ -461,13 +485,13 @@ function renderThreadEntryContent(
                             type="button"
                             className="flex items-center justify-center rounded-xl bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400"
                         >
-                            <X size={13} />
+                            <IconX size={13} />
                         </button>
                     </div>
                 )}
                 {message.status === 'ACCEPTED' && (
                     <div className="flex items-center gap-1.5 rounded-xl bg-green-50 px-3 py-2 text-xs font-semibold text-green-700">
-                        <Check size={13} />
+                        <IconCheck size={13} />
                         수락 완료 · 스팟으로 전환하기
                     </div>
                 )}
@@ -482,7 +506,7 @@ function renderThreadEntryContent(
     return (
         <ThreadItemCard
             mine={mine}
-            icon={<FileText size={18} />}
+            icon={<IconFileText size={18} />}
             tone="file"
             eyebrow="File"
             title={message.file.name}
@@ -510,6 +534,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     );
     const openRoomInfo = useChatNavStore((state) => state.openRoomInfo);
     const openActionItem = useChatNavStore((state) => state.openActionItem);
+    const openCreation = useChatNavStore((state) => state.openCreation);
     const chatNavExpanded = useChatNavStore((state) => state.expanded);
     const chatNavMode = useChatNavStore((state) => state.mode);
     const closeChatNav = useChatNavStore((state) => state.close);
@@ -568,8 +593,11 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     const messageCount = messages.filter(
         (message) => message.kind !== 'system',
     ).length;
-    const showMobileRoomInfoPanel =
-        chatNavExpanded && chatNavMode.kind === 'room-info';
+    const showMobileChatNavPanel =
+        chatNavExpanded &&
+        (chatNavMode.kind === 'room-info' ||
+            chatNavMode.kind === 'action-item' ||
+            chatNavMode.kind === 'creation');
 
     function handleSend() {
         const trimmed = draft.trim();
@@ -623,6 +651,51 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
         });
     }
 
+    function handleVoteOpen(
+        vote: Extract<ChatMessage, { kind: 'vote' }>['vote'],
+    ) {
+        if (currentRoom.category !== 'spot') {
+            return;
+        }
+
+        const liveVote =
+            currentRoom.spot.votes.find(
+                (candidate) => candidate.id === vote.id,
+            ) ?? vote;
+
+        openActionItem({
+            kind: 'vote',
+            id: liveVote.id,
+            roomId: currentRoom.id,
+            roomTitle: currentRoom.title,
+            vote: liveVote,
+            updatedAt: currentRoom.updatedAt,
+        });
+    }
+
+    function handleScheduleOpen() {
+        if (currentRoom.category !== 'spot' || !currentRoom.spot.schedule) {
+            return;
+        }
+
+        const schedule = currentRoom.spot.schedule;
+        openActionItem({
+            kind: 'schedule',
+            id: getSpotScheduleActionId(currentRoom.id),
+            roomId: currentRoom.id,
+            roomTitle: currentRoom.title,
+            schedule: {
+                id: getSpotScheduleActionId(currentRoom.id),
+                spotId: currentRoom.spot.id,
+                title: schedule.confirmedSlot ? '일정 확정' : '일정 조율 중',
+                description: buildScheduleSubtitle(schedule),
+                metaLabel: schedule.confirmedSlot ? '일정 확정' : '조율 중',
+                createdAt: currentRoom.updatedAt,
+            },
+            updatedAt: currentRoom.updatedAt,
+        });
+    }
+
     return (
         <>
             <div className="flex min-h-[calc(100vh-3.5rem)] flex-col bg-surface">
@@ -638,7 +711,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                     label="뒤로가기"
                                     className="text-gray-700"
                                     icon={
-                                        <ArrowLeft
+                                        <IconArrowLeft
                                             size={22}
                                             className="text-gray-700"
                                         />
@@ -655,6 +728,20 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                             </div>
 
                             <div className="flex items-center gap-1">
+                                <IconButton
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => router.push('/map')}
+                                    label="맵으로 돌아가기"
+                                    className="text-gray-700"
+                                    icon={
+                                        <IconMap
+                                            size={20}
+                                            className="text-gray-700"
+                                        />
+                                    }
+                                />
                                 {currentRoom.category === 'spot' && (
                                     <IconButton
                                         type="button"
@@ -666,7 +753,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                         label="참여자 정보"
                                         className="text-gray-700"
                                         icon={
-                                            <Users
+                                            <IconUsers
                                                 size={20}
                                                 className="text-gray-700"
                                             />
@@ -681,19 +768,22 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-6 pt-18">
                     <div className="mx-auto flex max-w-3xl flex-col gap-4">
                         {currentRoom.category === 'spot' ? (
-                            <section className="flex justify-center">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-[11px] font-semibold text-brand-800">
-                                    <TypeBadge
-                                        type={currentRoom.spot.type}
-                                        size="sm"
-                                    />
-                                    <StatusBadge
-                                        status={currentRoom.spot.status}
-                                        size="sm"
-                                    />
-                                    <span>{currentRoom.metaLabel}</span>
-                                </div>
-                            </section>
+                            <>
+                                <section className="flex justify-center">
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-[11px] font-semibold text-brand-800">
+                                        <TypeBadge
+                                            type={currentRoom.spot.type}
+                                            size="sm"
+                                        />
+                                        <StatusBadge
+                                            status={currentRoom.spot.status}
+                                            size="sm"
+                                        />
+                                        <span>{currentRoom.metaLabel}</span>
+                                    </div>
+                                </section>
+                                <ChatLifecyclePanel room={currentRoom} />
+                            </>
                         ) : (
                             <PersonalContextCard room={currentRoom} />
                         )}
@@ -840,6 +930,8 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                                 mine,
                                                                 handleShortcutOpen,
                                                                 handleReverseOfferOpen,
+                                                                handleVoteOpen,
+                                                                handleScheduleOpen,
                                                             )}
                                                         </div>
 
@@ -871,7 +963,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 active:scale-[0.98]"
                                 aria-label="바로가기 공유"
                             >
-                                <Plus size={18} />
+                                <IconPlus size={18} />
                             </button>
                         ) : null}
 
@@ -900,7 +992,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-800 text-white shadow-sm transition-colors hover:bg-brand-900"
                                 aria-label="전송"
                             >
-                                <SendHorizonal size={18} />
+                                <IconSend size={18} />
                             </button>
                         ) : (
                             <button
@@ -909,9 +1001,9 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 aria-label="음성메시지"
                             >
                                 {currentRoom.category === 'personal' ? (
-                                    <Mic size={18} />
+                                    <IconMicrophone size={18} />
                                 ) : (
-                                    <SendHorizonal size={18} />
+                                    <IconSend size={18} />
                                 )}
                             </button>
                         )}
@@ -923,10 +1015,95 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                 <BottomSheet
                     open={shortcutPickerOpen}
                     onClose={() => setShortcutPickerOpen(false)}
-                    title="대화에 바로가기 공유"
+                    title="항목 추가 / 공유"
                     snapPoint="half"
                 >
-                    <div className="flex flex-col gap-3 pb-2">
+                    <div className="flex flex-col gap-4 pb-2">
+                        <section className="flex flex-col gap-2">
+                            <p className="text-[11px] font-semibold tracking-[0.14em] text-gray-400 uppercase">
+                                새로 만들기
+                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    {
+                                        step: 'vote' as const,
+                                        label: '투표',
+                                        description: '선택지를 제안해요',
+                                        icon: <IconChartBar size={18} />,
+                                        tone: 'bg-amber-50 text-amber-700',
+                                    },
+                                    {
+                                        step: 'schedule' as const,
+                                        label: '일정',
+                                        description: '가능한 시간 조율',
+                                        icon: <IconCalendarEvent size={18} />,
+                                        tone: 'bg-brand-50 text-brand-800',
+                                    },
+                                    ...(isSupporterForSpot(currentRoom)
+                                        ? [
+                                              {
+                                                  step: 'reverse-offer' as const,
+                                                  label: '역제안',
+                                                  description:
+                                                      '파트너에게 역제안',
+                                                  icon: (
+                                                      <IconHeartHandshake
+                                                          size={18}
+                                                      />
+                                                  ),
+                                                  tone: 'bg-emerald-50 text-emerald-700',
+                                              },
+                                          ]
+                                        : []),
+                                    {
+                                        step: 'file' as const,
+                                        label: '파일',
+                                        description: '첨부 파일 공유',
+                                        icon: <IconFileText size={18} />,
+                                        tone: 'bg-gray-100 text-gray-700',
+                                    },
+                                ].map(
+                                    ({
+                                        step,
+                                        label,
+                                        description,
+                                        icon,
+                                        tone,
+                                    }) => (
+                                        <button
+                                            key={step}
+                                            type="button"
+                                            onClick={() => {
+                                                setShortcutPickerOpen(false);
+                                                openCreation(step);
+                                            }}
+                                            className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left transition hover:bg-gray-50 active:scale-[0.99]"
+                                        >
+                                            <div
+                                                className={cn(
+                                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                                                    tone,
+                                                )}
+                                            >
+                                                {icon}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-semibold text-gray-900">
+                                                    {label}
+                                                </p>
+                                                <p className="mt-0.5 text-xs text-gray-500">
+                                                    {description}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    ),
+                                )}
+                            </div>
+                        </section>
+
+                        <p className="text-[11px] font-semibold tracking-[0.14em] text-gray-400 uppercase">
+                            바로가기 공유
+                        </p>
                         <p className="text-sm leading-6 text-gray-500">
                             이 방에 이미 등록된 투표, 일정, 파일만 바로가기
                             메시지로 공유할 수 있어요.
@@ -937,11 +1114,11 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                 {shareableActionItems.map((item, index) => {
                                     const itemIcon =
                                         item.kind === 'vote' ? (
-                                            <BarChart3 size={18} />
+                                            <IconChartBar size={18} />
                                         ) : item.kind === 'schedule' ? (
-                                            <CalendarRange size={18} />
+                                            <IconCalendarEvent size={18} />
                                         ) : (
-                                            <FileText size={18} />
+                                            <IconFileText size={18} />
                                         );
                                     const itemToneClassName =
                                         item.kind === 'vote'
@@ -991,7 +1168,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                     {itemDescription}
                                                 </p>
                                             </div>
-                                            <ArrowUpRight
+                                            <IconArrowUpRight
                                                 size={16}
                                                 className="mt-0.5 shrink-0 text-gray-400"
                                             />
@@ -1001,7 +1178,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                             </div>
                         ) : (
                             <EmptyState
-                                icon={<Plus size={22} />}
+                                icon={<IconPlus size={22} />}
                                 title="공유할 바로가기가 없어요"
                                 description="먼저 이 방에서 투표, 일정, 파일을 만들어 주세요."
                             />
@@ -1010,23 +1187,14 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                 </BottomSheet>
             ) : null}
 
-            {showMobileRoomInfoPanel ? (
-                <div className="fixed inset-0 z-50 md:hidden">
-                    <button
-                        type="button"
-                        className="absolute inset-0 bg-black/30"
-                        onClick={closeChatNav}
-                        aria-label="대화 정보 닫기"
-                    />
-                    <div className="absolute bottom-1 left-1 right-1">
-                        <div className="mx-auto max-w-107.5 overflow-hidden rounded-[28px] border-2 border-[#3b4954] bg-[#1e2938]">
-                            <div className="max-h-[calc(80dvh-5rem)] overflow-y-auto overscroll-contain px-4 pt-4 pb-4">
-                                <ChatCreationPanel onClose={closeChatNav} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            ) : null}
+            <BottomSheet
+                open={showMobileChatNavPanel}
+                onClose={closeChatNav}
+                snapPoint="half"
+                className="border-2 border-[#3b4954] bg-[#1e2938] md:hidden"
+            >
+                <ChatCreationPanel onClose={closeChatNav} />
+            </BottomSheet>
         </>
     );
 }

@@ -1,4 +1,4 @@
-import { ChevronLeft } from 'lucide-react';
+import { IconChevronLeft } from '@tabler/icons-react';
 import { Button } from '@frontend/design-system';
 
 type PostSubmitBarProps = {
@@ -26,7 +26,7 @@ export function PostSubmitBar({
                         className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-50 active:bg-gray-100"
                         aria-label="이전 단계"
                     >
-                        <ChevronLeft size={20} />
+                        <IconChevronLeft size={20} />
                     </button>
                 )}
                 <Button

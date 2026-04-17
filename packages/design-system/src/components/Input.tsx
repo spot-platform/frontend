@@ -25,13 +25,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     return (
         <label className="flex w-full flex-col gap-1.5">
             {label && (
-                <span className="text-sm font-semibold text-gray-700">
+                <span className="text-sm font-medium text-foreground">
                     {label}
                 </span>
             )}
             <span className="relative block">
                 {startAdornment && (
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         {startAdornment}
                     </span>
                 )}
@@ -39,28 +39,32 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
                     id={id}
                     ref={ref}
                     className={cn(
-                        'h-11 w-full rounded-xl border bg-white text-sm text-gray-900 outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-gray-100 placeholder:text-gray-400',
-                        startAdornment ? 'pl-11 pr-4' : 'px-4',
-                        endAdornment && 'pr-11',
+                        'flex h-9 w-full rounded-lg border bg-background px-3 text-sm text-foreground shadow-xs outline-none transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                        startAdornment && 'pl-10',
+                        endAdornment && 'pr-10',
                         error
-                            ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-                            : 'border-gray-200',
+                            ? 'border-destructive focus:border-destructive focus:ring-red-200'
+                            : 'border-input',
                         className,
                     )}
                     {...props}
                 />
                 {endAdornment && (
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         {endAdornment}
                     </span>
                 )}
             </span>
             {error ? (
-                <span className="text-xs font-medium text-red-500">
+                <span className="text-xs font-medium text-destructive">
                     {error}
                 </span>
             ) : (
-                hint && <span className="text-xs text-gray-500">{hint}</span>
+                hint && (
+                    <span className="text-xs text-muted-foreground">
+                        {hint}
+                    </span>
+                )
             )}
         </label>
     );

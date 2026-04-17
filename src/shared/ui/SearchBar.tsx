@@ -3,7 +3,7 @@
 import { IconButton, Input } from '@frontend/design-system';
 import { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { IconX } from '@tabler/icons-react';
 
 interface SearchBarProps {
     value: string;
@@ -68,9 +68,9 @@ export function SearchBar({
                                         label="검색어 지우기"
                                         className="h-5 w-5 rounded-full bg-gray-400 text-white hover:bg-gray-500 focus-visible:ring-2 focus-visible:ring-gray-300"
                                         icon={
-                                            <X
+                                            <IconX
                                                 size={12}
-                                                strokeWidth={2.5}
+                                                stroke={2.5}
                                                 className="text-current"
                                             />
                                         }

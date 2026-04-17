@@ -1,4 +1,4 @@
-import { Calendar } from 'lucide-react';
+import { IconCalendar } from '@tabler/icons-react';
 import { SectionCard } from '../SectionCard';
 import type { SpotSchedule } from '@/entities/spot/types';
 
@@ -14,7 +14,7 @@ export function ScheduleSection({ schedule }: ScheduleSectionProps) {
         <SectionCard title="일정 조율" manageModal="schedule">
             {confirmed ? (
                 <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5">
-                    <Calendar size={16} className="text-emerald-600" />
+                    <IconCalendar size={16} className="text-emerald-600" />
                     <div>
                         <p className="text-xs font-semibold text-emerald-700">
                             확정된 일정

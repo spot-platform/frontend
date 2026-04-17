@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { Mail } from 'lucide-react';
+import { IconMail } from '@tabler/icons-react';
 import { Input } from './Input';
 
 const meta = {
@@ -26,7 +26,7 @@ export const Default: Story = {};
 
 export const WithAdornment: Story = {
     args: {
-        startAdornment: <Mail size={18} />,
+        startAdornment: <IconMail size={18} />,
     },
 };
 

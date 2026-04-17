@@ -3,21 +3,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chip, IconButton } from '@frontend/design-system';
 import {
-    BarChart3,
-    CalendarRange,
-    ChevronDown,
-    ChevronRight,
-    Download,
-    FileText,
-    Handshake,
-    MessageCirclePlus,
-    Search,
-    UserPlus,
-} from 'lucide-react';
+    IconChartBar,
+    IconCalendarEvent,
+    IconChevronDown,
+    IconChevronRight,
+    IconDownload,
+    IconFileText,
+    IconHeartHandshake,
+    IconMap,
+    IconMessageCirclePlus,
+    IconSearch,
+    IconUserPlus,
+} from '@tabler/icons-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/shared/lib/cn';
 import { useChatNavStore } from '@/shared/model/chat-nav-store';
 import { SearchBar } from '@/shared/ui/SearchBar';
+import { ChatCreationPanel } from '../ui/ChatCreationPanel';
 import { ChatHeaderContextSelect } from '../ui/ChatHeaderContextSelect';
 import { ChatRoomList } from '../ui/ChatRoomList';
 import {
@@ -25,6 +27,7 @@ import {
     useMainChatStore,
 } from '../model/use-main-chat-store';
 import { formatReverseOfferApprovalProgress } from '../model/types';
+import { isSupporterForSpot } from '../model/mock';
 import {
     buildScheduleSubtitle,
     findSpotActionItem,
@@ -38,7 +41,7 @@ import type {
     SpotActionItem,
     SpotChatRoom,
 } from '../model/types';
-import { Main } from '@/shared/ui';
+import { BottomSheet, Main } from '@/shared/ui';
 import type { SharedFile } from '@/entities/spot/types';
 
 const PERSONAL_FILTERS: Array<{
@@ -228,7 +231,7 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                 className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
             >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-                    <FileText size={20} />
+                    <IconFileText size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
@@ -245,9 +248,9 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                 </div>
                 <span className="shrink-0 text-gray-300">
                     {open ? (
-                        <ChevronDown size={16} />
+                        <IconChevronDown size={16} />
                     ) : (
-                        <ChevronRight size={16} />
+                        <IconChevronRight size={16} />
                     )}
                 </span>
             </button>
@@ -260,7 +263,7 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                         className="flex items-center gap-3 bg-gray-50 px-4 py-3"
                     >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm">
-                            <FileText size={16} />
+                            <IconFileText size={16} />
                         </div>
                         <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-gray-800">
@@ -278,7 +281,7 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                             className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 active:bg-gray-300"
                             aria-label={`${file.name} 다운로드`}
                         >
-                            <Download size={16} />
+                            <IconDownload size={16} />
                         </a>
                     </div>
                 ))}
@@ -328,7 +331,7 @@ function SpotItemList({
                     className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <Handshake size={20} />
+                        <IconHeartHandshake size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
@@ -364,7 +367,7 @@ function SpotItemList({
                     className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500">
-                        <BarChart3 size={20} />
+                        <IconChartBar size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
@@ -408,7 +411,7 @@ function SpotItemList({
                     className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                        <CalendarRange size={20} />
+                        <IconCalendarEvent size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
@@ -485,7 +488,17 @@ export function MainChatPageClient({
         openPersonalCreate,
         openFriendAdd,
         openActionItem,
+        openCreation,
+        expanded: chatNavExpanded,
+        mode: chatNavMode,
     } = useChatNavStore();
+    const showMobileChatNavPanel =
+        chatNavExpanded &&
+        (chatNavMode.kind === 'action-item' ||
+            chatNavMode.kind === 'creation' ||
+            chatNavMode.kind === 'room-info' ||
+            chatNavMode.kind === 'personal-create' ||
+            chatNavMode.kind === 'friend-add');
 
     useEffect(() => {
         const resolution = applyRouteIntent(routeIntent);
@@ -708,7 +721,7 @@ export function MainChatPageClient({
                                         label="개인 채팅 검색"
                                         className="text-gray-700"
                                         icon={
-                                            <Search
+                                            <IconSearch
                                                 size={22}
                                                 className="text-gray-700"
                                             />
@@ -722,7 +735,7 @@ export function MainChatPageClient({
                                         label="채팅 생성"
                                         className="text-gray-700"
                                         icon={
-                                            <MessageCirclePlus
+                                            <IconMessageCirclePlus
                                                 size={22}
                                                 className="text-gray-700"
                                             />
@@ -738,7 +751,7 @@ export function MainChatPageClient({
                                     label="항목 추가"
                                     className="text-gray-700"
                                     icon={
-                                        <MessageCirclePlus
+                                        <IconMessageCirclePlus
                                             size={22}
                                             className="text-gray-700"
                                         />
@@ -754,13 +767,27 @@ export function MainChatPageClient({
                                     label="친구 추가"
                                     className="text-gray-700"
                                     icon={
-                                        <UserPlus
+                                        <IconUserPlus
                                             size={22}
                                             className="text-gray-700"
                                         />
                                     }
                                 />
                             ) : null}
+                            <IconButton
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => push('/map')}
+                                label="맵으로 돌아가기"
+                                className="text-gray-700"
+                                icon={
+                                    <IconMap
+                                        size={22}
+                                        className="text-gray-700"
+                                    />
+                                }
+                            />
                         </div>
                     </div>
 
@@ -834,6 +861,90 @@ export function MainChatPageClient({
                     )}
                 </div>
             </div>
+
+            <BottomSheet
+                open={showMobileChatNavPanel}
+                onClose={closeChatNav}
+                snapPoint="half"
+                className="border-2 border-[#3b4954] bg-[#1e2938]"
+            >
+                <ChatCreationPanel onClose={closeChatNav} />
+            </BottomSheet>
+
+            <BottomSheet
+                open={!isPersonalMode && subNavOpen}
+                onClose={() => setSubNavOpen(false)}
+                snapPoint="half"
+                title="항목 추가"
+                className="md:hidden"
+            >
+                <div className="grid grid-cols-2 gap-2 pb-4">
+                    {[
+                        {
+                            step: 'schedule' as const,
+                            label: '일정',
+                            description: '가능한 시간 조율',
+                            icon: <IconCalendarEvent size={18} />,
+                            tone: 'bg-brand-50 text-brand-800',
+                        },
+                        {
+                            step: 'vote' as const,
+                            label: '투표',
+                            description: '선택지를 제안해요',
+                            icon: <IconChartBar size={18} />,
+                            tone: 'bg-amber-50 text-amber-700',
+                        },
+                        {
+                            step: 'file' as const,
+                            label: '파일',
+                            description: '첨부 파일 공유',
+                            icon: <IconFileText size={18} />,
+                            tone: 'bg-gray-100 text-gray-700',
+                        },
+                        ...(selectedSpotRoom &&
+                        isSupporterForSpot(selectedSpotRoom)
+                            ? [
+                                  {
+                                      step: 'reverse-offer' as const,
+                                      label: '역제안',
+                                      description: '파트너에게 역제안',
+                                      icon: <IconHeartHandshake size={18} />,
+                                      tone: 'bg-emerald-50 text-emerald-700',
+                                  },
+                              ]
+                            : []),
+                    ].map(({ step, label, description, icon, tone }) => (
+                        <button
+                            key={step}
+                            type="button"
+                            onClick={() => {
+                                setSubNavOpen(false);
+                                openCreation(step);
+                            }}
+                            className={cn(
+                                'flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left transition hover:bg-gray-50 active:scale-[0.99]',
+                            )}
+                        >
+                            <div
+                                className={cn(
+                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                                    tone,
+                                )}
+                            >
+                                {icon}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-gray-900">
+                                    {label}
+                                </p>
+                                <p className="mt-0.5 text-xs text-gray-500">
+                                    {description}
+                                </p>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </BottomSheet>
         </Main>
     );
 }

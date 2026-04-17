@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Plus, X } from 'lucide-react';
+import { IconPlus, IconX } from '@tabler/icons-react';
 
 interface ImageUploadGridProps {
     previews: string[];
@@ -61,7 +61,7 @@ export function ImageUploadGrid({
                         className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-700 text-white"
                         aria-label={`사진 ${i + 1} 삭제`}
                     >
-                        <X size={11} strokeWidth={2.5} />
+                        <IconX size={11} stroke={2.5} />
                     </button>
                 </div>
             ))}
@@ -72,7 +72,7 @@ export function ImageUploadGrid({
                     onClick={() => inputRef.current?.click()}
                     className="aspect-square rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center gap-1 text-gray-300"
                 >
-                    <Plus size={20} strokeWidth={1.5} />
+                    <IconPlus size={20} stroke={1.5} />
                     <span className="text-[10px]">추가</span>
                 </button>
             )}

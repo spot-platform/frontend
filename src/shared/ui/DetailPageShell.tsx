@@ -73,6 +73,7 @@ export function DetailPageShell({
         <Tag
             className={cn(
                 'flex min-h-[calc(100dvh-var(--spacing-header-h)-env(safe-area-inset-top))] min-w-0 flex-col',
+                'lg:mx-auto lg:max-w-3xl',
                 PX_CLASSES[px],
                 GAP_CLASSES[gap],
                 TOP_INSET_CLASSES[topInset],

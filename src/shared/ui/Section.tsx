@@ -30,23 +30,23 @@ const PX_CLASSES: Record<PxScale, string> = {
 
 export function Section({
     children,
-    title = '',
+    title,
     gap = 'md',
     px = 'none',
     as: Tag = 'section',
-    className = '',
+    className,
 }: SectionProps) {
     return (
         <Tag
             className={cn(
-                'flex flex-col rounded-2xl',
+                'flex flex-col rounded-xl',
                 GAP_CLASSES[gap],
                 PX_CLASSES[px],
                 className,
             )}
         >
             {title && (
-                <h2 className="px-4 text-sm font-bold text-gray-700">
+                <h2 className="px-4 text-sm font-semibold text-foreground">
                     {title}
                 </h2>
             )}

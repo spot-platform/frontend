@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Star } from 'lucide-react';
+import { IconStar } from '@tabler/icons-react';
 import type { SupporterItem } from '../../model/types';
 
 const CATEGORY_COLOR: Record<string, string> = {
@@ -43,7 +43,10 @@ export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
 
                 {/* 평점 */}
                 <div className="flex items-center gap-0.5 shrink-0">
-                    <Star size={11} className="fill-amber-400 text-amber-400" />
+                    <IconStar
+                        size={11}
+                        className="fill-amber-400 text-amber-400"
+                    />
                     <span className="text-xs font-bold text-gray-700">
                         {supporter.rating}
                     </span>

@@ -240,6 +240,7 @@ export const MOCK_FEED: FeedItem[] = [
         ],
         category: '요리',
         deadline: '2026-04-07',
+        spotId: 'spot-v-001',
     },
     {
         id: '4',
@@ -278,6 +279,7 @@ export const MOCK_FEED: FeedItem[] = [
         ],
         category: '음악',
         deadline: '2026-04-15',
+        spotId: 'spot-m-003',
     },
     {
         id: '5',
@@ -349,6 +351,7 @@ export const MOCK_FEED: FeedItem[] = [
         category: '운동',
         deadline: '2026-04-08',
         isBookmarked: true,
+        spotId: 'spot-r-002',
     },
     {
         id: '7',

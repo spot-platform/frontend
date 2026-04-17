@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { BottomSheet, Button, Input, Textarea } from '@frontend/design-system';
-import { X } from 'lucide-react';
+import { IconX } from '@tabler/icons-react';
 import type { SpotForfeitPool } from '@/entities/spot/types';
 import { useSubmitSpotSettlement } from '../../model/use-spot';
 
@@ -153,7 +153,7 @@ export function SettlementSubmitSheet({
                                     className="mt-2 rounded-full p-1 text-gray-400 hover:bg-gray-100"
                                     onClick={() => handleRemove(item.id)}
                                 >
-                                    <X className="h-4 w-4" />
+                                    <IconX className="h-4 w-4" />
                                 </button>
                             </div>
                         ))}

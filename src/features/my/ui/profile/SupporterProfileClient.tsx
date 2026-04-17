@@ -1,6 +1,11 @@
 'use client';
 
-import { Star, Briefcase, ImageIcon, History } from 'lucide-react';
+import {
+    IconStar,
+    IconBriefcase,
+    IconPhoto,
+    IconHistory,
+} from '@tabler/icons-react';
 import { DetailHeader } from '@/shared/ui/DetailHeader';
 import { Section } from '@/shared/ui';
 import { cn } from '@/shared/lib/cn';
@@ -16,7 +21,7 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
     return (
         <div className="flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((i) => (
-                <Star
+                <IconStar
                     key={i}
                     size={size}
                     className={cn(
@@ -83,7 +88,7 @@ function MediaGallery({ urls }: { urls: string[] }) {
         return (
             <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50">
                 <div className="flex flex-col items-center gap-1.5 text-gray-300">
-                    <ImageIcon size={24} />
+                    <IconPhoto size={24} />
                     <span className="text-xs">등록된 사진·동영상이 없어요</span>
                 </div>
             </div>
@@ -172,7 +177,7 @@ function HistoryRow({ item }: { item: ProfileHistory }) {
             <div className="flex shrink-0 items-center gap-1.5">
                 {item.avgRating && (
                     <div className="flex items-center gap-0.5">
-                        <Star
+                        <IconStar
                             size={11}
                             className="fill-amber-400 text-amber-400"
                         />
@@ -233,7 +238,7 @@ export function SupporterProfileClient({
                 className="rounded-xl border border-gray-100 bg-white p-4"
                 gap="sm"
             >
-                <SectionLabel icon={Briefcase} label="경력" />
+                <SectionLabel icon={IconBriefcase} label="경력" />
                 <p className="text-sm leading-7 text-gray-700">
                     {profile.career}
                 </p>
@@ -244,7 +249,7 @@ export function SupporterProfileClient({
                 className="rounded-xl border border-gray-100 bg-white p-4"
                 gap="sm"
             >
-                <SectionLabel icon={ImageIcon} label="사진 · 동영상" />
+                <SectionLabel icon={IconPhoto} label="사진 · 동영상" />
                 <MediaGallery urls={profile.mediaUrls} />
             </Section>
 
@@ -254,7 +259,7 @@ export function SupporterProfileClient({
                 gap="md"
             >
                 <div className="flex items-center justify-between">
-                    <SectionLabel icon={Star} label="리뷰" />
+                    <SectionLabel icon={IconStar} label="리뷰" />
                     <div className="flex items-center gap-1.5">
                         <StarRating rating={profile.avgRating} size={16} />
                         <span className="text-base font-black text-gray-900">
@@ -280,7 +285,7 @@ export function SupporterProfileClient({
                 className="rounded-xl border border-gray-100 bg-white p-4"
                 gap="sm"
             >
-                <SectionLabel icon={History} label="History" />
+                <SectionLabel icon={IconHistory} label="IconHistory" />
                 {profile.history.length === 0 ? (
                     <p className="py-4 text-center text-sm text-gray-400">
                         완료된 스팟이 없어요

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Chip } from '@frontend/design-system';
-import { ArrowRight } from 'lucide-react';
+import { IconArrowRight } from '@tabler/icons-react';
 import { FeedCard } from '../FeedCard';
 import { CategoryGrid } from '../CategoryGrid';
 import { MOCK_FEED } from '../../model/mock';
@@ -68,7 +68,7 @@ export function RequestSection() {
                             <p className="line-clamp-1 text-sm font-semibold text-white">
                                 {recommended.title}
                             </p>
-                            <ArrowRight
+                            <IconArrowRight
                                 size={16}
                                 className="shrink-0 text-white/70"
                             />

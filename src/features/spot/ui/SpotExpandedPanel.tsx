@@ -1,7 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageCircle, CheckCircle2, Circle } from 'lucide-react';
+import {
+    IconMessageCircle,
+    IconCircleCheck,
+    IconCircle,
+} from '@tabler/icons-react';
 import { UserAvatar, UserAvatarStatic } from '@/shared/ui';
 import { getMockUserProfile } from '@/entities/user/mock';
 import type { SpotDetailFull } from '@/entities/spot/types';
@@ -14,7 +18,7 @@ function ChatButton({ spotId }: { spotId: string }) {
             href={`/chat?spotId=${spotId}`}
             className="flex items-center justify-center gap-1.5 rounded-xl bg-white/10 py-2.5 text-sm font-semibold text-white transition-colors active:bg-white/20"
         >
-            <MessageCircle size={15} />
+            <IconMessageCircle size={15} />
             채팅방 이동
         </Link>
     );
@@ -80,9 +84,12 @@ function ProgressRow({ label, done }: { label: string; done: boolean }) {
     return (
         <div className="flex items-center gap-2">
             {done ? (
-                <CheckCircle2 size={13} className="shrink-0 text-emerald-400" />
+                <IconCircleCheck
+                    size={13}
+                    className="shrink-0 text-emerald-400"
+                />
             ) : (
-                <Circle size={13} className="shrink-0 text-white/30" />
+                <IconCircle size={13} className="shrink-0 text-white/30" />
             )}
             <span
                 className={`text-xs ${done ? 'text-white/70' : 'text-white/40'}`}

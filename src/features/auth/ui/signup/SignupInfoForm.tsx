@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LockKeyhole, Mail } from 'lucide-react';
+import { IconLock, IconMail } from '@tabler/icons-react';
 import { Button, Input } from '@frontend/design-system';
 import type { ChangeEvent } from 'react';
 
@@ -51,7 +51,7 @@ export function SignupInfoForm({
                 value={email}
                 onChange={onEmailChange}
                 placeholder="you@example.com"
-                startAdornment={<Mail size={18} />}
+                startAdornment={<IconMail size={18} />}
                 error={emailError}
             />
 
@@ -63,7 +63,7 @@ export function SignupInfoForm({
                 value={password}
                 onChange={onPasswordChange}
                 placeholder="비밀번호를 입력해 주세요"
-                startAdornment={<LockKeyhole size={18} />}
+                startAdornment={<IconLock size={18} />}
                 error={passwordError}
             />
 
@@ -75,7 +75,7 @@ export function SignupInfoForm({
                 value={passwordConfirm}
                 onChange={onPasswordConfirmChange}
                 placeholder="비밀번호를 한 번 더 입력해 주세요"
-                startAdornment={<LockKeyhole size={18} />}
+                startAdornment={<IconLock size={18} />}
                 error={passwordConfirmError}
             />
 

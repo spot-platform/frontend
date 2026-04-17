@@ -1,6 +1,6 @@
 'use client';
 
-import { Star } from 'lucide-react';
+import { IconStar } from '@tabler/icons-react';
 import { SectionCard } from '../SectionCard';
 import { useSpotDetailStore } from '../../../model/spot-detail-store';
 import type { SpotReview, Spot } from '@/entities/spot/types';
@@ -44,7 +44,7 @@ export function ReviewSection({
                 <div className="flex flex-col gap-3">
                     {avgRating && (
                         <div className="flex items-center gap-1.5">
-                            <Star
+                            <IconStar
                                 size={14}
                                 className="fill-yellow-400 text-yellow-400"
                             />
@@ -67,7 +67,7 @@ export function ReviewSection({
                                 </span>
                                 <div className="flex">
                                     {Array.from({ length: 5 }).map((_, i) => (
-                                        <Star
+                                        <IconStar
                                             key={i}
                                             size={12}
                                             className={

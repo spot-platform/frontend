@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@frontend/design-system';
 import { Chip } from '@frontend/design-system';
-import { Eye, Heart, Users } from 'lucide-react';
+import { IconEye, IconHeart, IconUsers } from '@tabler/icons-react';
 import { cn } from '@/shared/lib/cn';
 import { CategoryGrid } from '../CategoryGrid';
 import { MOCK_FEED } from '../../model/mock';
@@ -63,15 +63,15 @@ function SupporterRequestCard({ item }: { item: FeedItem }) {
                         </div>
                         <div className="mt-2 flex items-center gap-3">
                             <StatBadge
-                                icon={<Eye size={11} />}
+                                icon={<IconEye size={11} />}
                                 count={item.views}
                             />
                             <StatBadge
-                                icon={<Heart size={11} />}
+                                icon={<IconHeart size={11} />}
                                 count={item.likes}
                             />
                             <StatBadge
-                                icon={<Users size={11} />}
+                                icon={<IconUsers size={11} />}
                                 count={item.applicantCount ?? 0}
                             />
                         </div>

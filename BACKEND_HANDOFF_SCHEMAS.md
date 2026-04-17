@@ -1431,3 +1431,155 @@ All message variants share:
 | Feed/Spot                  | 양쪽      | HOST_REJECTED, HOST_CANCELLED | 100% 환불           |
 
 몰수분 분할: `toPlatformFee = round(forfeit * 0.2)`, `toPool = forfeit - toPlatformFee` (잔여 계산). Feed 단계에서 발생한 서포터 몰수분은 연결된 Spot이 없으므로 플랫폼 풀에 누적(MVP). Spot 몰수분은 `spot.forfeitPool.toPool`에 누적되며 정산 승인 시 `approvedAmount = requestedAmount + forfeitPool.toPool` 공식으로 합산된다. 환불은 `PointTransaction.type = 'REFUND'`로 즉시 발행한다.
+
+## Simulation schemas (contextBuilder, 2026-04 추가)
+
+### MapSpotsQuery
+
+| Field | Type   | Required | Notes                          |
+| ----- | ------ | -------- | ------------------------------ |
+| mode  | string | optional | `virtual` \| `real` \| `mixed` |
+
+### MapSpotsResponse
+
+```json
+{
+    "data": [
+        {
+            "spot_id": "spot-v-001",
+            "provenance": "virtual",
+            "title": "연무동 저녁 라떼아트 실습",
+            "skill_topic": "바리스타",
+            "teach_mode": "small_group",
+            "venue_type": "cafe",
+            "fee_per_partner": 18000,
+            "location": { "lat": 37.2636, "lng": 127.0286 },
+            "host_preview": "5년차 바리스타 민지의 핸드드립+라떼아트 2시간 클래스",
+            "person_fitness_score": 0.82,
+            "attractiveness_score": 0.74
+        }
+    ]
+}
+```
+
+### TimelineFrame (SSE frame payload)
+
+단일 SSE `message` 이벤트의 `data` 필드에 아래 JSON을 문자열로 실어 보낸다.
+
+```json
+{
+    "tick": 2,
+    "day_of_week": "SAT",
+    "time_slot": "10:00",
+    "active_agents": [
+        {
+            "agent_id": "A_80381",
+            "location": { "lat": 37.2636, "lng": 127.0286 },
+            "archetype": "explorer"
+        }
+    ],
+    "active_spots": [
+        {
+            "spot_id": "spot-v-001",
+            "location": { "lat": 37.2636, "lng": 127.0286 },
+            "provenance": "virtual",
+            "status": "OPEN"
+        }
+    ],
+    "events_this_tick": [
+        {
+            "event_id": "evt-2-1",
+            "event_type": "JOIN_TEACH_SPOT",
+            "payload": {
+                "agent_id": "A_80381",
+                "spot_id": "spot-v-001"
+            }
+        }
+    ]
+}
+```
+
+### HighlightClipsResponse
+
+```json
+{
+    "data": [
+        {
+            "clip_id": "clip-001",
+            "title": "첫 매칭 성사: 라떼아트 클래스",
+            "category": "first_success",
+            "start_tick": 0,
+            "end_tick": 3,
+            "involved_agents": ["A_11504", "A_80381"],
+            "narrative": "호스트 지훈이 연무동 카페에서 라떼아트 클래스를 열자 탐험형 민지가 바로 합류해 첫 매칭이 성사됐다."
+        }
+    ]
+}
+```
+
+### AttractivenessReportResponse
+
+```json
+{
+    "data": {
+        "composite_score": 0.74,
+        "signals": {
+            "title_hookiness": 0.82,
+            "price_reasonableness": 0.68,
+            "venue_accessibility": 0.77,
+            "host_reputation_fit": 0.71,
+            "time_slot_demand": 0.62,
+            "skill_rarity_bonus": 0.55,
+            "narrative_authenticity": 0.88,
+            "bonded_repeat_potential": 0.79
+        },
+        "improvement_hints": [
+            "제목에 \"2시간\" 같은 러닝타임을 넣으면 클릭률이 오릅니다.",
+            "현재 가격은 p50보다 살짝 높습니다. 재료비를 분리 표기해 체감 가격을 낮춰보세요."
+        ],
+        "price_benchmark": {
+            "p25": 12000,
+            "p50": 16000,
+            "p75": 22000,
+            "p90": 30000,
+            "verdict": "slightly_above_p50"
+        }
+    }
+}
+```
+
+### ConversionHintsResponse
+
+```json
+{
+    "data": {
+        "source_virtual_spot_id": "spot-v-001",
+        "placeholder": {
+            "title": "연무동 저녁 라떼아트 2시간 실습",
+            "intro": "카페에서 바로 해보는 핸드드립 + 라떼아트. 원두와 우유 재료 포함.",
+            "skill_topic": "바리스타"
+        },
+        "pricing_suggestion": {
+            "fee_breakdown": {
+                "tuition": 12000,
+                "materials": 4000,
+                "venue_share": 2000
+            },
+            "rationale": "비슷한 워크숍 p50(16,000원) 대비 경쟁력 있는 세팅. 재료비를 분리 표기해 신뢰도 확보."
+        },
+        "plan_help": {
+            "warmup_block": "원두 소개와 추출 원리 5분 데모 (0–15분)",
+            "main_block": "핸드드립 2회 + 라떼아트 하트/로제타 각 3회 (15–90분)",
+            "closing_block": "각자 메뉴 한 잔 완성 + 피드백 (90–120분)",
+            "host_tips": [
+                "재료는 인원수+1 분량 준비",
+                "초보자 카메라 각도 교정 스크립트 미리 준비"
+            ]
+        },
+        "expected_demand": {
+            "forecast_join_count_p50": 3,
+            "forecast_join_count_p90": 6
+        }
+    }
+}
+```

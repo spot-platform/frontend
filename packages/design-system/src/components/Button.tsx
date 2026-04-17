@@ -1,27 +1,41 @@
+import { Slot } from '@radix-ui/react-slot';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../lib/cn';
+import { cva, type VariantProps } from '../lib/cva';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
-type ButtonSize = 'sm' | 'md' | 'lg';
+const buttonVariants = cva(
+    'inline-flex items-center justify-center gap-2 font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+    {
+        variants: {
+            variant: {
+                primary:
+                    'bg-primary text-primary-foreground shadow-sm hover:bg-accent-dark',
+                secondary:
+                    'border border-border-soft bg-background text-foreground shadow-xs hover:bg-neutral-50',
+                ghost: 'text-foreground hover:bg-neutral-100',
+                outline:
+                    'border border-brand-200 bg-brand-50 text-brand-900 hover:border-brand-300 hover:bg-brand-100',
+                danger: 'bg-destructive text-destructive-foreground shadow-sm hover:bg-red-700',
+            },
+            size: {
+                sm: 'h-8 rounded-lg px-3 text-sm',
+                md: 'h-9 rounded-lg px-4 text-sm',
+                lg: 'h-10 rounded-lg px-5 text-sm',
+                icon: 'h-9 w-9 rounded-lg',
+            },
+        },
+        defaultVariants: {
+            variant: 'primary',
+            size: 'md',
+        },
+    },
+);
 
-const variantStyles: Record<ButtonVariant, string> = {
-    primary:
-        'bg-brand-800 text-white hover:bg-brand-700 focus-visible:ring-brand-100',
-    secondary:
-        'border border-brand-200 bg-brand-50 text-brand-900 hover:border-brand-300 hover:bg-brand-100 focus-visible:ring-brand-100',
-    ghost: 'bg-white text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-200',
-    danger: 'bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-100',
-};
-
-const sizeStyles: Record<ButtonSize, string> = {
-    sm: 'h-9 rounded-xl px-4 text-sm',
-    md: 'h-10 rounded-2xl px-4 text-sm',
-    lg: 'h-11 rounded-2xl px-5 text-sm',
-};
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: ButtonVariant;
-    size?: ButtonSize;
+export interface ButtonProps
+    extends
+        ButtonHTMLAttributes<HTMLButtonElement>,
+        VariantProps<typeof buttonVariants> {
+    asChild?: boolean;
     startIcon?: ReactNode;
     endIcon?: ReactNode;
     fullWidth?: boolean;
@@ -29,8 +43,9 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button({
     className,
-    variant = 'primary',
-    size = 'md',
+    variant,
+    size,
+    asChild = false,
     startIcon,
     endIcon,
     fullWidth = false,
@@ -38,14 +53,14 @@ export function Button({
     children,
     ...props
 }: ButtonProps) {
+    const Comp = asChild ? Slot : 'button';
+
     return (
-        <button
-            type={type}
+        <Comp
+            type={asChild ? undefined : type}
             className={cn(
-                'inline-flex items-center justify-center gap-2 font-semibold transition focus-visible:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60',
+                buttonVariants({ variant, size }),
                 fullWidth && 'w-full',
-                variantStyles[variant],
-                sizeStyles[size],
                 className,
             )}
             {...props}
@@ -53,6 +68,8 @@ export function Button({
             {startIcon}
             {children}
             {endIcon}
-        </button>
+        </Comp>
     );
 }
+
+export { buttonVariants };

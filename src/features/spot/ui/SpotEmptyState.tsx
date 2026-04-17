@@ -1,4 +1,4 @@
-import { Inbox } from 'lucide-react';
+import { IconInbox } from '@tabler/icons-react';
 import { EmptyState } from '@/shared/ui';
 import type { SpotTabFilter } from '@/entities/spot/types';
 
@@ -26,7 +26,7 @@ export function SpotEmptyState({ tab }: SpotEmptyStateProps) {
     const { title, description } = MESSAGES[tab];
     return (
         <EmptyState
-            icon={<Inbox size={48} strokeWidth={1.2} />}
+            icon={<IconInbox size={48} stroke={1.2} />}
             title={title}
             description={description}
         />

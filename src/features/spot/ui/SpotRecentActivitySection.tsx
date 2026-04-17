@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { IconChevronRight } from '@tabler/icons-react';
 import { formatRelativeTime } from '@/shared/lib/format-time';
 import { MOCK_RECENT_ACTIVITY } from '../model/mock-dashboard';
 
@@ -23,7 +23,7 @@ export function SpotRecentActivitySection() {
                     className="flex shrink-0 items-center gap-0.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-600"
                 >
                     내역
-                    <ChevronRight className="h-3.5 w-3.5" />
+                    <IconChevronRight className="h-3.5 w-3.5" />
                 </Link>
             </div>
         </div>

@@ -3,11 +3,26 @@
 import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Eye, Heart, ImageIcon, Users } from 'lucide-react';
+import { IconEye, IconHeart, IconPhoto, IconUsers } from '@tabler/icons-react';
 import { MOCK_FEED_MANAGEMENT } from '../model/mock';
 import type { FeedItem, FeedParticipantProfile } from '../model/types';
 import { UserAvatarStatic } from '@/shared/ui';
 import { Chip } from '@frontend/design-system';
+import { useAuthStore } from '@/shared/model/auth-store';
+import { FitnessScoreBadge } from './preference/FitnessScoreBadge';
+
+type FeedCardProps = {
+    item: FeedItem;
+    // 파트너 전용 선호도 점수(0~1). 비파트너/비로그인/null이면 배지 숨김.
+    fitnessScore?: number;
+};
+
+function usePartnerFitnessScore(fitnessScore?: number): number | null {
+    const role = useAuthStore((state) => state.userPersona?.role ?? null);
+    if (role !== 'PARTNER') return null;
+    if (fitnessScore == null) return null;
+    return fitnessScore;
+}
 
 function formatPrice(price: number): string {
     return price.toLocaleString('ko-KR') + '원';
@@ -288,7 +303,14 @@ function ExploreSlotStrip({ item }: { item: FeedItem }) {
     );
 }
 
-function ExploreCard({ item }: { item: FeedItem }) {
+function ExploreCard({
+    item,
+    fitnessScore,
+}: {
+    item: FeedItem;
+    fitnessScore?: number;
+}) {
+    const partnerScore = usePartnerFitnessScore(fitnessScore);
     const isRequest = item.type === 'REQUEST';
     const participantCount = item.partnerCount ?? item.applicantCount ?? 0;
     const displayProgressPercent = !isRequest
@@ -314,7 +336,7 @@ function ExploreCard({ item }: { item: FeedItem }) {
                             />
                         ) : (
                             <div className="flex h-full w-full items-center justify-center">
-                                <ImageIcon
+                                <IconPhoto
                                     size={24}
                                     className="text-gray-300"
                                 />
@@ -340,6 +362,9 @@ function ExploreCard({ item }: { item: FeedItem }) {
                                     : '파트너 모집 중'}
                             </span>
                         </div>
+                        {partnerScore != null && (
+                            <FitnessScoreBadge score={partnerScore} size="sm" />
+                        )}
                     </div>
 
                     <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-gray-900">
@@ -389,15 +414,15 @@ function ExploreCard({ item }: { item: FeedItem }) {
 
                     <div className="mt-2 flex items-center gap-3">
                         <StatBadge
-                            icon={<Eye size={11} />}
+                            icon={<IconEye size={11} />}
                             count={item.views}
                         />
                         <StatBadge
-                            icon={<Heart size={11} />}
+                            icon={<IconHeart size={11} />}
                             count={item.likes}
                         />
                         <StatBadge
-                            icon={<Users size={11} />}
+                            icon={<IconUsers size={11} />}
                             count={
                                 item.partnerCount ?? item.applicantCount ?? 0
                             }
@@ -409,8 +434,8 @@ function ExploreCard({ item }: { item: FeedItem }) {
     );
 }
 
-export function FeedCard({ item }: { item: FeedItem }) {
-    return <ExploreCard item={item} />;
+export function FeedCard({ item, fitnessScore }: FeedCardProps) {
+    return <ExploreCard item={item} fitnessScore={fitnessScore} />;
 }
 
 function getHomePartnerProfiles(item: FeedItem): FeedParticipantProfile[] {
@@ -554,8 +579,9 @@ function HomeSlotRow({ item }: { item: FeedItem }) {
     );
 }
 
-export function HomeFeedCard({ item }: { item: FeedItem }) {
+export function HomeFeedCard({ item, fitnessScore }: FeedCardProps) {
     const router = useRouter();
+    const partnerScore = usePartnerFitnessScore(fitnessScore);
     const isRequest = item.type === 'REQUEST';
     const participantCount = item.partnerCount ?? item.applicantCount ?? 0;
     const displayProgressPercent = !isRequest
@@ -593,6 +619,11 @@ export function HomeFeedCard({ item }: { item: FeedItem }) {
                             #{item.category}
                         </span>
                     )}
+                    {partnerScore != null && (
+                        <div className="ml-auto">
+                            <FitnessScoreBadge score={partnerScore} size="sm" />
+                        </div>
+                    )}
                 </div>
 
                 <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-snug tracking-tight text-gray-900">
@@ -617,11 +648,11 @@ export function HomeFeedCard({ item }: { item: FeedItem }) {
                         )}
                         <div className="flex items-center gap-3">
                             <StatBadge
-                                icon={<Eye size={12} />}
+                                icon={<IconEye size={12} />}
                                 count={item.views}
                             />
                             <StatBadge
-                                icon={<Heart size={12} />}
+                                icon={<IconHeart size={12} />}
                                 count={item.likes}
                             />
                         </div>

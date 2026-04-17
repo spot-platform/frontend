@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { IconSparkles } from '@tabler/icons-react';
 import { Chip } from '@frontend/design-system';
 import { PostCompleteNav } from '../ui/PostCompleteNav';
 import { DetailPageShell } from '@/shared/ui';
@@ -35,10 +35,10 @@ export function CompletePageClient({ spotId }: CompletePageClientProps) {
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                     className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-accent/10"
                 >
-                    <Sparkles
+                    <IconSparkles
                         size={44}
                         className="text-accent"
-                        strokeWidth={1.5}
+                        stroke={1.5}
                     />
                 </motion.div>
 

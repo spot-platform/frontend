@@ -1,4 +1,4 @@
-import { CheckSquare } from 'lucide-react';
+import { IconSquareCheck } from '@tabler/icons-react';
 import { SectionCard } from '../SectionCard';
 import type { SpotChecklist } from '@/entities/spot/types';
 
@@ -19,7 +19,7 @@ export function ChecklistSection({ checklist }: ChecklistSectionProps) {
                 <div className="flex flex-col gap-2">
                     {/* 완료 요약 */}
                     <div className="flex items-center gap-2">
-                        <CheckSquare size={14} className="text-brand-800" />
+                        <IconSquareCheck size={14} className="text-brand-800" />
                         <span className="text-xs font-semibold text-gray-600">
                             {completed}/{items.length} 완료
                         </span>

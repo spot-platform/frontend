@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { BarChart3, CalendarRange, FileText, Handshake } from 'lucide-react';
+import {
+    IconChartBar,
+    IconCalendarEvent,
+    IconFileText,
+    IconHeartHandshake,
+} from '@tabler/icons-react';
 import { usePathname } from 'next/navigation';
 import { BottomNav } from './BottomNav';
 import { SubNavPill, SubNavPillItem } from './SubNavPill';
@@ -20,9 +25,9 @@ import { useChatNavStore } from '@/shared/model/chat-nav-store';
 import { useBottomNavMessageStore } from '@/shared/model/bottom-nav-message-store';
 
 const TEAM_CHAT_SUB_NAV_ITEMS = [
-    { step: 'vote' as const, icon: BarChart3, label: '투표' },
-    { step: 'schedule' as const, icon: CalendarRange, label: '일정' },
-    { step: 'file' as const, icon: FileText, label: '파일' },
+    { step: 'vote' as const, icon: IconChartBar, label: '투표' },
+    { step: 'schedule' as const, icon: IconCalendarEvent, label: '일정' },
+    { step: 'file' as const, icon: IconFileText, label: '파일' },
 ];
 
 export function NavWrapper() {
@@ -48,7 +53,7 @@ export function NavWrapper() {
                   ...TEAM_CHAT_SUB_NAV_ITEMS,
                   {
                       step: 'reverse-offer' as const,
-                      icon: Handshake,
+                      icon: IconHeartHandshake,
                       label: '제안',
                   },
               ]
@@ -96,7 +101,7 @@ export function NavWrapper() {
                             ({ step, icon: Icon, label }) => (
                                 <SubNavPillItem
                                     key={step}
-                                    icon={<Icon size={20} strokeWidth={1.8} />}
+                                    icon={<Icon size={20} stroke={1.8} />}
                                     label={label}
                                     onClickAction={() => openCreation(step)}
                                 />

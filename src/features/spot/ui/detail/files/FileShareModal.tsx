@@ -2,7 +2,7 @@
 
 import { Button, IconButton } from '@frontend/design-system';
 import { useRef } from 'react';
-import { Upload, Trash2, Download } from 'lucide-react';
+import { IconUpload, IconTrash, IconDownload } from '@tabler/icons-react';
 import { BottomSheet } from '@/shared/ui';
 import { useSpotFiles, useDeleteFile } from '../../../model/use-files';
 
@@ -38,7 +38,7 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
                     size="lg"
                     fullWidth
                     onClick={() => fileInputRef.current?.click()}
-                    startIcon={<Upload size={18} />}
+                    startIcon={<IconUpload size={18} />}
                     className="border-2 border-dashed text-gray-500"
                 >
                     파일 업로드
@@ -76,7 +76,7 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
                                     download
                                     className="shrink-0 text-gray-400 active:text-brand-800"
                                 >
-                                    <Download size={16} />
+                                    <IconDownload size={16} />
                                 </a>
                                 <IconButton
                                     size="sm"
@@ -84,7 +84,7 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
                                     onClick={() => deleteFile(file.id)}
                                     label="파일 삭제"
                                     className="shrink-0 text-gray-300 hover:bg-red-50 hover:text-red-400"
-                                    icon={<Trash2 size={16} />}
+                                    icon={<IconTrash size={16} />}
                                 />
                             </div>
                         ))}

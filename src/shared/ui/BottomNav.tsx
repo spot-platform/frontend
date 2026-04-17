@@ -1,13 +1,13 @@
 'use client';
 import {
-    HandHeart,
-    LayoutList,
-    Lightbulb,
-    MapPin,
-    MessageCircle,
-    Plus,
-    User,
-} from 'lucide-react';
+    IconHeartHandshake,
+    IconLayoutList,
+    IconBulb,
+    IconMapPin,
+    IconMessageCircle,
+    IconPlus,
+    IconUser,
+} from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -22,7 +22,7 @@ interface TabItem {
     label: string;
     Icon: React.ComponentType<{
         size?: number;
-        strokeWidth?: number;
+        stroke?: number;
         className?: string;
     }>;
 }
@@ -31,13 +31,13 @@ const NAV_FOOTER_BOTTOM_PADDING =
     'pb-[calc(env(safe-area-inset-bottom)+1.25rem)]';
 
 const LEFT_TABS: TabItem[] = [
-    { href: '/feed', label: '피드', Icon: LayoutList },
-    { href: '/spot', label: '스팟', Icon: MapPin },
+    { href: '/feed', label: '피드', Icon: IconLayoutList },
+    { href: '/spot', label: '스팟', Icon: IconMapPin },
 ];
 
 const RIGHT_TABS: TabItem[] = [
-    { href: '/chat', label: '채팅', Icon: MessageCircle },
-    { href: '/my', label: '마이', Icon: User },
+    { href: '/chat', label: '채팅', Icon: IconMessageCircle },
+    { href: '/my', label: '마이', Icon: IconUser },
 ];
 
 function getActivePath(pathname: string): string {
@@ -57,7 +57,7 @@ function NavTab({ tab, isActive }: { tab: TabItem; isActive: boolean }) {
         >
             <tab.Icon
                 size={22}
-                strokeWidth={isActive ? 2.5 : 1.5}
+                stroke={isActive ? 2.5 : 1.5}
                 className={`transition-colors duration-200 ${isActive ? 'text-accent' : 'text-nav-inactive'}`}
             />
             <span
@@ -89,7 +89,7 @@ function CenterButton({
                 animate={{ rotate: expanded ? 45 : 0 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             >
-                <Plus size={28} strokeWidth={2.5} className="text-white" />
+                <IconPlus size={28} stroke={2.5} className="text-white" />
             </motion.button>
         </div>
     );
@@ -155,7 +155,7 @@ export function BottomNav({
             </p>
             <div className="flex flex-col gap-2">
                 <NavTrayAction
-                    icon={<Lightbulb size={18} strokeWidth={1.8} />}
+                    icon={<IconBulb size={18} stroke={1.8} />}
                     title="알려줘"
                     description="도움이 필요한 스팟을 모집해요"
                     tonal="neutral"
@@ -165,7 +165,7 @@ export function BottomNav({
                     }}
                 />
                 <NavTrayAction
-                    icon={<HandHeart size={18} strokeWidth={1.8} />}
+                    icon={<IconHeartHandshake size={18} stroke={1.8} />}
                     title="해볼래"
                     description="내 재능으로 새로운 스팟을 열어요"
                     tonal="accent"
