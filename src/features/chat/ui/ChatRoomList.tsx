@@ -77,7 +77,7 @@ function RoomAvatar({ room }: { room: ChatRoom }) {
 
     return (
         <div className="relative shrink-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-600">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-border-soft text-base font-bold text-text-secondary">
                 {initial}
             </div>
             {room.category === 'spot' && (
@@ -108,7 +108,7 @@ export function ChatRoomList({
     return (
         <div className="flex flex-col">
             {showLifecycleFilter && (
-                <div className="sticky top-0 z-10 flex gap-1.5 border-b border-gray-100 bg-white px-4 py-2">
+                <div className="sticky top-0 z-10 flex gap-1.5 border-b border-border-soft bg-card px-4 py-2">
                     {FILTERS.map((opt) => (
                         <button
                             key={opt.value}
@@ -118,7 +118,7 @@ export function ChatRoomList({
                                 'rounded-full px-3 py-1 text-xs font-semibold transition-colors',
                                 filter === opt.value
                                     ? 'bg-brand-800 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                                    : 'bg-muted text-text-secondary hover:bg-border-soft',
                             )}
                         >
                             {opt.label}
@@ -127,7 +127,7 @@ export function ChatRoomList({
                 </div>
             )}
 
-            <div className="flex flex-col divide-y divide-gray-100">
+            <div className="flex flex-col divide-y divide-border-soft">
                 {filteredRooms.map((room) => {
                     const lastText = getLastMessageText(room);
                     const timeLabel = formatListTime(room.updatedAt);
@@ -138,7 +138,7 @@ export function ChatRoomList({
                             type="button"
                             onClick={() => router.push(`/chat/${room.id}`)}
                             className={cn(
-                                'flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50',
+                                'flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted',
                             )}
                         >
                             <RoomAvatar room={room} />
@@ -146,7 +146,7 @@ export function ChatRoomList({
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-baseline justify-between gap-2">
                                     <div className="flex min-w-0 items-center gap-2">
-                                        <span className="truncate text-sm font-semibold text-gray-900">
+                                        <span className="truncate text-sm font-semibold text-foreground">
                                             {room.title}
                                         </span>
                                         {room.category === 'personal' &&
@@ -158,12 +158,12 @@ export function ChatRoomList({
                                     </div>
                                     <span
                                         suppressHydrationWarning
-                                        className="shrink-0 text-[11px] text-gray-400"
+                                        className="shrink-0 text-[11px] text-muted-foreground"
                                     >
                                         {timeLabel}
                                     </span>
                                 </div>
-                                <p className="mt-0.5 truncate text-sm text-gray-500">
+                                <p className="mt-0.5 truncate text-sm text-muted-foreground">
                                     {lastText}
                                 </p>
                             </div>

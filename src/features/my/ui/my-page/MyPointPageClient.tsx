@@ -171,8 +171,8 @@ export function MyPointPageClient() {
             >
                 {balanceQuery.isPending && !balance ? (
                     <div className="space-y-3">
-                        <div className="h-14 animate-pulse rounded-xl bg-gray-100" />
-                        <div className="h-14 animate-pulse rounded-xl bg-gray-100" />
+                        <div className="h-14 animate-pulse rounded-xl bg-muted" />
+                        <div className="h-14 animate-pulse rounded-xl bg-muted" />
                     </div>
                 ) : balanceQuery.isError && !balance ? (
                     <EmptyState
@@ -204,7 +204,7 @@ export function MyPointPageClient() {
                 description="필요한 금액만 직접 입력해 충전할 수 있어요."
             >
                 <form
-                    className="divide-y divide-gray-200"
+                    className="divide-y divide-border-soft"
                     onSubmit={handleChargeSubmit}
                 >
                     <MyField label="충전 금액" required className="py-4">
@@ -248,7 +248,7 @@ export function MyPointPageClient() {
                 description="정산과 출금에 사용할 계좌 정보를 저장하세요."
             >
                 <form
-                    className="divide-y divide-gray-200"
+                    className="divide-y divide-border-soft"
                     onSubmit={handleAccountSubmit}
                 >
                     <MyField label="은행명" required className="py-4">
@@ -327,7 +327,7 @@ export function MyPointPageClient() {
                 description="저장된 계좌로 출금 신청을 보낼 수 있어요."
             >
                 <form
-                    className="divide-y divide-gray-200"
+                    className="divide-y divide-border-soft"
                     onSubmit={handleWithdrawSubmit}
                 >
                     <MyField label="출금 금액" required className="py-4">
@@ -375,8 +375,8 @@ export function MyPointPageClient() {
             >
                 {historyQuery.isPending && history.length === 0 ? (
                     <div className="space-y-3">
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
                     </div>
                 ) : historyQuery.isError && history.length === 0 ? (
                     <EmptyState
@@ -389,31 +389,31 @@ export function MyPointPageClient() {
                 ) : history.length === 0 ? (
                     <EmptyState title="거래 내역이 없어요" />
                 ) : (
-                    <ul className="-mx-4 divide-y divide-gray-200">
+                    <ul className="-mx-4 divide-y divide-border-soft">
                         {history.map((item) => (
                             <li
                                 key={item.id}
-                                className="px-4 py-3 transition-colors hover:bg-gray-50"
+                                className="px-4 py-3 transition-colors hover:bg-muted"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-foreground">
                                             {item.description}
                                         </p>
-                                        <p className="mt-1 text-xs text-gray-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             {item.type} ·{' '}
                                             {formatDate(item.createdAt)}
                                         </p>
                                     </div>
                                     <div className="text-right text-sm">
-                                        <p className="font-medium text-gray-900">
+                                        <p className="font-medium text-foreground">
                                             {item.type === 'USE' ||
                                             item.type === 'WITHDRAW'
                                                 ? '-'
                                                 : '+'}
                                             {formatNumber(item.amount)}P
                                         </p>
-                                        <p className="mt-1 text-xs text-gray-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             잔액{' '}
                                             {formatNumber(item.balanceAfter)}P
                                         </p>
@@ -432,8 +432,8 @@ export function MyPointPageClient() {
             >
                 {withdrawalsQuery.isPending && withdrawals.length === 0 ? (
                     <div className="space-y-3">
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
                     </div>
                 ) : withdrawalsQuery.isError && withdrawals.length === 0 ? (
                     <EmptyState
@@ -446,23 +446,23 @@ export function MyPointPageClient() {
                 ) : withdrawals.length === 0 ? (
                     <EmptyState title="출금 신청 내역이 없어요" />
                 ) : (
-                    <ul className="-mx-4 divide-y divide-gray-200">
+                    <ul className="-mx-4 divide-y divide-border-soft">
                         {withdrawals.map((item) => (
                             <li
                                 key={item.id}
-                                className="px-4 py-3 transition-colors hover:bg-gray-50"
+                                className="px-4 py-3 transition-colors hover:bg-muted"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-foreground">
                                             {formatNumber(item.amount)}P 출금
                                         </p>
-                                        <p className="mt-1 text-xs text-gray-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             신청일{' '}
                                             {formatDate(item.requestedAt)}
                                         </p>
                                     </div>
-                                    <p className="text-xs font-medium text-gray-600">
+                                    <p className="text-xs font-medium text-text-secondary">
                                         {item.status}
                                     </p>
                                 </div>

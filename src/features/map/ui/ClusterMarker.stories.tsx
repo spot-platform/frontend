@@ -45,7 +45,7 @@ const Stage = ({
 );
 
 const meta = {
-    title: 'Features/MapV3/ClusterMarker',
+    title: 'Features/Map/ClusterMarker',
     component: ClusterMarker,
     tags: ['autodocs'],
     parameters: { layout: 'fullscreen' },

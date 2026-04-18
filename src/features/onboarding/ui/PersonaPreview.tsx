@@ -45,7 +45,7 @@ export function PersonaPreview({
                 'flex flex-col items-center gap-4 rounded-2xl border border-border-soft bg-background p-6 shadow-sm'
             }
         >
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-background bg-brand-50 text-4xl shadow-md">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-background bg-accent-muted text-4xl shadow-md">
                 {emoji}
             </div>
             <div className="flex flex-col items-center gap-1 text-center">

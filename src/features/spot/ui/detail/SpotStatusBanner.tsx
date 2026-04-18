@@ -39,10 +39,10 @@ export function SpotStatusBanner({ status }: SpotStatusBannerProps) {
     const isCancelled = status === 'CANCELLED';
 
     return (
-        <div className="mx-4 rounded-2xl bg-gray-50 px-5 py-4">
+        <div className="mx-4 rounded-2xl bg-muted px-5 py-4">
             {/* 설명 텍스트 */}
             <p
-                className={`mb-3 text-sm font-semibold ${isCancelled ? 'text-red-400' : 'text-gray-700'}`}
+                className={`mb-3 text-sm font-semibold ${isCancelled ? 'text-destructive' : 'text-text-secondary'}`}
             >
                 {STATUS_DESCRIPTION[status]}
             </p>
@@ -56,7 +56,7 @@ export function SpotStatusBanner({ status }: SpotStatusBannerProps) {
                             className={`text-xs font-semibold ${
                                 idx <= activeIndex
                                     ? 'text-brand-800'
-                                    : 'text-gray-300'
+                                    : 'text-border-strong'
                             }`}
                         >
                             {step.label}
@@ -66,9 +66,9 @@ export function SpotStatusBanner({ status }: SpotStatusBannerProps) {
             )}
 
             {/* 진행 바 */}
-            <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+            <div className="h-1.5 overflow-hidden rounded-full bg-border-soft">
                 <motion.div
-                    className={`h-full rounded-full ${isCancelled ? 'bg-red-300' : 'bg-brand-800'}`}
+                    className={`h-full rounded-full ${isCancelled ? 'bg-destructive' : 'bg-brand-800'}`}
                     initial={{ width: 0 }}
                     animate={{ width: PROGRESS_WIDTH[status] }}
                     transition={{ duration: 0.6, ease: 'easeOut' }}

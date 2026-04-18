@@ -65,7 +65,7 @@ export function SpotAlertSection() {
                             ? '지금 할일'
                             : '가장 가까운 일정'}
                     </span>
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-text-secondary">
                         {alert.message}
                     </span>
                 </div>

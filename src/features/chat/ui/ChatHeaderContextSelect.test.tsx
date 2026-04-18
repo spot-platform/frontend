@@ -45,7 +45,7 @@ describe('ChatHeaderContextSelect', () => {
         expect(combobox.className).toContain('text-ellipsis');
         expect(controlShell?.className).toContain('rounded-full');
         expect(controlShell?.className).toContain('overflow-hidden');
-        expect(controlShell?.className).toContain('border-gray-200');
+        expect(controlShell?.className).toContain('border-border-soft');
         expect(popupRoot?.className).not.toContain('overflow-hidden');
 
         fireEvent.click(combobox);

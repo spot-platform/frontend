@@ -26,9 +26,11 @@ function RecruitingGroup({
         <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 px-1">
                 <TypeBadge type={type} size="md" />
-                <span className="text-xs text-gray-400">{spots.length}건</span>
+                <span className="text-xs text-muted-foreground">
+                    {spots.length}건
+                </span>
             </div>
-            <ul className="divide-y divide-gray-50">
+            <ul className="divide-y divide-border-soft">
                 {spots.map((spot) => (
                     <li key={spot.id}>
                         <RecruitingSpotRow
@@ -53,7 +55,7 @@ function InProgressGroup({ spots }: InProgressGroupProps) {
     if (spots.length === 0) return null;
 
     return (
-        <ul className="divide-y divide-gray-50">
+        <ul className="divide-y divide-border-soft">
             {spots.map((spot) => (
                 <li key={spot.id}>
                     <InProgressSpotRow spot={spot} />
@@ -89,13 +91,13 @@ export function SpotMyListSection(props: SpotMyListSectionProps) {
 
     return (
         <Section
-            className="mx-4 border border-gray-100 bg-white px-4 py-3"
+            className="mx-4 border border-border-soft bg-card px-4 py-3"
             gap="sm"
         >
-            <p className="text-sm font-bold text-gray-800">{title}</p>
+            <p className="text-sm font-bold text-text-secondary">{title}</p>
 
             {spots.length === 0 ? (
-                <p className="py-4 text-center text-sm text-gray-400">
+                <p className="py-4 text-center text-sm text-muted-foreground">
                     {emptyMessage}
                 </p>
             ) : props.mode === 'recruiting' ? (

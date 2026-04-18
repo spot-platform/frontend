@@ -157,9 +157,9 @@ export function MySupportRegisterPageClient() {
             >
                 <MyPageSection title="불러오는 중">
                     <div className="space-y-3">
-                        <div className="h-11 rounded-xl bg-gray-100" />
-                        <div className="h-28 rounded-xl bg-gray-100" />
-                        <div className="h-28 rounded-xl bg-gray-100" />
+                        <div className="h-11 rounded-xl bg-muted" />
+                        <div className="h-28 rounded-xl bg-muted" />
+                        <div className="h-28 rounded-xl bg-muted" />
                     </div>
                 </MyPageSection>
             </MyPageLayout>
@@ -212,7 +212,7 @@ export function MySupportRegisterPageClient() {
                 description="실제 심사 및 등록 정보에 반영되는 값이에요."
             >
                 <form
-                    className="divide-y divide-gray-200"
+                    className="divide-y divide-border-soft"
                     onSubmit={handleSubmit}
                 >
                     <MyField
@@ -301,7 +301,7 @@ export function MySupportRegisterPageClient() {
                                             .value as SupporterRegistrationStatus,
                                     }))
                                 }
-                                className="peer w-full appearance-none rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-10 text-sm text-gray-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition-[border-color,background-color,box-shadow,color] duration-200 hover:border-gray-400 hover:bg-gray-50/60 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
+                                className="peer w-full appearance-none rounded-xl border border-border-strong bg-card px-3 py-2.5 pr-10 text-sm text-foreground shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition-[border-color,background-color,box-shadow,color] duration-200 hover:border-nav-inactive hover:bg-muted/60 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:border-border-soft disabled:bg-muted disabled:text-muted-foreground"
                             >
                                 {STATUS_OPTIONS.map((option) => (
                                     <option
@@ -312,7 +312,7 @@ export function MySupportRegisterPageClient() {
                                     </option>
                                 ))}
                             </select>
-                            <span className="pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-gray-400 transition-colors duration-200 peer-hover:text-gray-500 peer-focus:text-brand-700 peer-disabled:text-gray-300">
+                            <span className="pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors duration-200 peer-hover:text-text-secondary peer-focus:text-brand-700 peer-disabled:text-border-strong">
                                 <svg
                                     aria-hidden="true"
                                     viewBox="0 0 16 16"

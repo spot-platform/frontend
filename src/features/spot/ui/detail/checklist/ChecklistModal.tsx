@@ -82,7 +82,7 @@ export function ChecklistModal({ open, onClose, spotId }: ChecklistModalProps) {
                         />
                     ))}
                     {localItems.length === 0 && (
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                             아직 항목이 없어요
                         </p>
                     )}

@@ -14,7 +14,7 @@ const meta = {
             <div className="p-4">
                 <Button onClick={() => setOpen(true)}>모달 열기</Button>
                 <Modal {...args} open={open} onClose={() => setOpen(false)}>
-                    <div className="rounded-2xl bg-brand-50 p-4 text-sm leading-6 text-gray-600">
+                    <div className="rounded-2xl bg-accent-muted p-4 text-sm leading-6 text-text-secondary">
                         팀이 합의한 다음 단계를 안내하거나, 중요한 확인 액션을
                         묶어 보여줄 수 있습니다.
                     </div>

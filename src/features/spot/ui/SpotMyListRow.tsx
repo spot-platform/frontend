@@ -30,10 +30,10 @@ export function RecruitingSpotRow({
 }: RecruitingRowProps) {
     return (
         <div className="flex items-center gap-3 py-2.5">
-            <div className="h-10 w-10 shrink-0 rounded-lg bg-gray-100" />
+            <div className="h-10 w-10 shrink-0 rounded-lg bg-muted" />
 
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-gray-900">
+                <p className="truncate text-sm font-semibold text-foreground">
                     {spot.title}
                 </p>
                 <p
@@ -45,14 +45,17 @@ export function RecruitingSpotRow({
 
             <button
                 onClick={onToggle}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 active:bg-gray-100"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted active:bg-border-soft"
                 aria-label={expanded ? '닫기' : '상세 보기'}
             >
                 <motion.div
                     animate={{ rotate: expanded ? 180 : 0 }}
                     transition={{ type: 'spring', stiffness: 320, damping: 30 }}
                 >
-                    <IconChevronDown size={16} className="text-gray-500" />
+                    <IconChevronDown
+                        size={16}
+                        className="text-muted-foreground"
+                    />
                 </motion.div>
             </button>
         </div>
@@ -67,10 +70,10 @@ export function InProgressSpotRow({ spot }: InProgressRowProps) {
     return (
         <Link href={`/spot/${spot.id}`} className="block active:opacity-70">
             <div className="flex items-center gap-3 py-2.5">
-                <div className="h-10 w-10 shrink-0 rounded-lg bg-gray-100" />
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-muted" />
 
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-gray-900">
+                    <p className="truncate text-sm font-semibold text-foreground">
                         {spot.title}
                     </p>
                     <p

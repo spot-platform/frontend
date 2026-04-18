@@ -45,7 +45,7 @@ export function MatchedPhasePanel({ room }: Props) {
                 <p className="text-[11px] font-semibold tracking-[0.14em] text-brand-800 uppercase">
                     진행 단계
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-foreground">
                     스팟이 진행 중이에요
                 </p>
             </div>
@@ -71,17 +71,17 @@ function Tile({
     children?: React.ReactNode;
 }) {
     return (
-        <div className="rounded-xl border border-brand-100 bg-white p-3">
+        <div className="rounded-xl border border-brand-100 bg-card p-3">
             <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-brand-800">
                     {icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-gray-900">
+                    <p className="truncate text-sm font-semibold text-foreground">
                         {title}
                     </p>
                     {subtitle && (
-                        <p className="truncate text-[11px] text-gray-500">
+                        <p className="truncate text-[11px] text-muted-foreground">
                             {subtitle}
                         </p>
                     )}
@@ -147,7 +147,7 @@ function ChecklistTile({ checklist }: { checklist?: SpotChecklist }) {
             title={`체크리스트 ${done}/${total}`}
             subtitle={`${percent}% 완료`}
         >
-            <div className="h-1 overflow-hidden rounded-full bg-gray-100">
+            <div className="h-1 overflow-hidden rounded-full bg-muted">
                 <div
                     className="h-full rounded-full bg-brand-800"
                     style={{ width: `${percent}%` }}
@@ -178,7 +178,7 @@ function ParticipantsTile({
                     />
                 ))}
                 {participants.length > MAX && (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-[11px] font-semibold text-gray-500">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">
                         +{participants.length - MAX}
                     </div>
                 )}

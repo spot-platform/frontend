@@ -89,7 +89,11 @@ function CenterButton({
                 animate={{ rotate: expanded ? 45 : 0 }}
                 transition={{ type: 'spring', stiffness: 320, damping: 30 }}
             >
-                <IconPlus size={28} stroke={2.5} className="text-white" />
+                <IconPlus
+                    size={28}
+                    stroke={2.5}
+                    className="text-primary-foreground"
+                />
             </motion.button>
         </div>
     );

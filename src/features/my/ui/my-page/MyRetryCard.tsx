@@ -17,7 +17,7 @@ export function MyRetryCard({
     return (
         <div className="flex flex-col gap-4 rounded-[1.5rem] border border-red-100 bg-red-50/80 p-4">
             <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-red-500 shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-red-500 shadow-sm">
                     <IconAlertCircle size={18} />
                 </div>
                 <div className="flex-1">
@@ -33,7 +33,7 @@ export function MyRetryCard({
             <Button
                 variant="ghost"
                 onClick={onRetry}
-                className="justify-center bg-white text-red-600 hover:bg-red-100"
+                className="justify-center bg-card text-red-600 hover:bg-red-100"
                 startIcon={
                     isRetrying ? (
                         <IconLoader2 size={16} className="animate-spin" />

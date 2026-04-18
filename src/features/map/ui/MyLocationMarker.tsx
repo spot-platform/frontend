@@ -1,4 +1,4 @@
-// map-v3 내 위치 마커. primary halo + dot.
+// map 내 위치 마커. primary halo + dot.
 
 'use client';
 

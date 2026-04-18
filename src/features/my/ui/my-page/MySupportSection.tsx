@@ -12,7 +12,7 @@ export function MySupportSection({ email }: MySupportSectionProps) {
     return (
         <Section
             gap="md"
-            className="rounded-xl border border-gray-200 bg-white p-4"
+            className="rounded-xl border border-border-soft bg-card p-4"
         >
             <MySectionHeader
                 eyebrow="Support"
@@ -25,27 +25,30 @@ export function MySupportSection({ email }: MySupportSectionProps) {
             />
 
             <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100">
-                        <IconHelpCircle size={18} className="text-gray-600" />
+                <div className="rounded-lg border border-border-soft bg-card p-4">
+                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted">
+                        <IconHelpCircle
+                            size={18}
+                            className="text-text-secondary"
+                        />
                     </div>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-foreground">
                         설정에서 관리 가능한 항목
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-gray-600">
+                    <p className="mt-1 text-xs leading-5 text-text-secondary">
                         프로필 수정, 알림 기본값, 계정 관련 액션을 한 곳에서
                         확인할 수 있어요.
                     </p>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100">
-                        <IconWallet size={18} className="text-gray-600" />
+                <div className="rounded-lg border border-border-soft bg-card p-4">
+                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted">
+                        <IconWallet size={18} className="text-text-secondary" />
                     </div>
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-foreground">
                         다음에 확인하면 좋은 것
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-gray-600">
+                    <p className="mt-1 text-xs leading-5 text-text-secondary">
                         북마크한 스팟과 최근 참여 내역을 함께 보면서 다음 액션을
                         빠르게 이어갈 수 있어요.
                     </p>

@@ -77,7 +77,7 @@ export function ExpandableNav(props: Props) {
                 {expanded && (
                     <motion.div
                         key="backdrop"
-                        className="fixed inset-0 z-40 bg-black/30"
+                        className="fixed inset-0 z-40 bg-overlay"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

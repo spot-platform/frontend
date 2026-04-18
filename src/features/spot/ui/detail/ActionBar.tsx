@@ -23,14 +23,14 @@ export function ActionBar({
     if (spot.status === 'CLOSED' || spot.status === 'CANCELLED') return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-107.5 border-t border-gray-100 bg-white px-4 pb-8 pt-3">
+        <div className="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-107.5 border-t border-border-soft bg-card px-4 pb-8 pt-3">
             <div className="flex gap-2">
                 {spot.status === 'OPEN' && isAuthor && (
                     <>
                         <Button
                             variant="secondary"
                             onClick={onCancel}
-                            className="flex-1 text-gray-600"
+                            className="flex-1 text-text-secondary"
                         >
                             취소하기
                         </Button>
@@ -45,7 +45,7 @@ export function ActionBar({
                         <Button
                             variant="secondary"
                             onClick={onCancel}
-                            className="flex-1 text-gray-600"
+                            className="flex-1 text-text-secondary"
                         >
                             취소하기
                         </Button>
@@ -63,7 +63,7 @@ export function ActionBar({
                     <Button
                         variant="secondary"
                         disabled
-                        className="flex-1 cursor-default text-gray-400"
+                        className="flex-1 cursor-default text-muted-foreground"
                     >
                         완료 대기 중
                     </Button>

@@ -79,7 +79,7 @@ export function ScheduleModal({
             snapPoint="full"
         >
             <div className="flex flex-col gap-4">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                     가능한 시간대를 탭해서 표시해주세요
                 </p>
                 <ScheduleGrid

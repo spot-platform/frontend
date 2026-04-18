@@ -25,17 +25,17 @@ export function MyField({
 }: FieldProps) {
     return (
         <label className={cn('flex flex-col gap-2', className)}>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-foreground">
                 {label}
                 {required ? (
-                    <span className="ml-0.5 text-red-500">*</span>
+                    <span className="ml-0.5 text-destructive">*</span>
                 ) : null}
             </span>
             {children}
             {error ? (
-                <span className="text-xs text-red-600">{error}</span>
+                <span className="text-xs text-destructive">{error}</span>
             ) : hint ? (
-                <span className="text-xs text-gray-500">{hint}</span>
+                <span className="text-xs text-muted-foreground">{hint}</span>
             ) : null}
         </label>
     );
@@ -46,7 +46,7 @@ export function MyInput(props: InputHTMLAttributes<HTMLInputElement>) {
         <input
             {...props}
             className={cn(
-                'w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-gray-500 disabled:bg-gray-50',
+                'w-full rounded-xl border border-border-strong px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-text-secondary disabled:bg-muted',
                 props.className,
             )}
         />
@@ -58,7 +58,7 @@ export function MyTextarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
         <textarea
             {...props}
             className={cn(
-                'min-h-28 w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-gray-500 disabled:bg-gray-50',
+                'min-h-28 w-full rounded-xl border border-border-strong px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-text-secondary disabled:bg-muted',
                 props.className,
             )}
         />
@@ -76,7 +76,7 @@ export function MyMessage({ tone, children }: MessageProps) {
             ? 'border-green-200 bg-green-50 text-green-700'
             : tone === 'error'
               ? 'border-red-200 bg-red-50 text-red-700'
-              : 'border-gray-200 bg-gray-50 text-gray-600';
+              : 'border-border-soft bg-muted text-text-secondary';
 
     return (
         <div
@@ -106,10 +106,10 @@ export function MyActionButton({
 }: ActionButtonProps) {
     const variantClassName =
         variant === 'primary'
-            ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800'
+            ? 'border-foreground bg-foreground text-background hover:bg-foreground/90'
             : variant === 'danger'
-              ? 'border-red-300 bg-white text-red-600 hover:bg-red-50'
-              : 'border-gray-300 bg-white text-gray-900 hover:bg-gray-50';
+              ? 'border-red-300 bg-card text-red-600 hover:bg-red-50'
+              : 'border-border-strong bg-card text-foreground hover:bg-muted';
 
     return (
         <button
@@ -149,15 +149,15 @@ export function MyToggleRow({
     return (
         <div
             className={cn(
-                'flex items-center justify-between gap-4 py-3 transition-colors hover:bg-gray-50/80 active:bg-gray-50',
+                'flex items-center justify-between gap-4 py-3 transition-colors hover:bg-muted/80 active:bg-muted',
                 className,
             )}
         >
             <div>
-                <p className="text-sm font-medium text-gray-900">{label}</p>
+                <p className="text-sm font-medium text-foreground">{label}</p>
                 <p
                     id={descriptionId}
-                    className="mt-1 text-xs leading-5 text-gray-500"
+                    className="mt-1 text-xs leading-5 text-muted-foreground"
                 >
                     {description}
                 </p>
@@ -173,13 +173,13 @@ export function MyToggleRow({
                 className={cn(
                     'relative h-7 w-12 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                     checked
-                        ? 'border-gray-900 bg-gray-900'
-                        : 'border-gray-300 bg-gray-200',
+                        ? 'border-foreground bg-foreground'
+                        : 'border-border-strong bg-border-soft',
                 )}
             >
                 <span
                     className={cn(
-                        'absolute top-0.5 h-5.5 w-5.5 rounded-full bg-white transition-transform',
+                        'absolute top-0.5 h-5.5 w-5.5 rounded-full bg-card transition-transform',
                         checked ? 'translate-x-6' : 'translate-x-0.5',
                     )}
                 />

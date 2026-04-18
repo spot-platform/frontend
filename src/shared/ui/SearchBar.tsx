@@ -33,7 +33,7 @@ export function SearchBar({
         <div className="flex items-center gap-2 px-4 py-2.5">
             <div
                 className={`relative flex flex-1 items-center rounded-full transition-colors duration-150 ${
-                    isFocused ? 'bg-gray-200' : 'bg-gray-100'
+                    isFocused ? 'bg-border-soft' : 'bg-muted'
                 }`}
             >
                 <Input
@@ -66,7 +66,7 @@ export function SearchBar({
                                             inputRef.current?.focus();
                                         }}
                                         label="검색어 지우기"
-                                        className="h-5 w-5 rounded-full bg-gray-400 text-white hover:bg-gray-500 focus-visible:ring-2 focus-visible:ring-gray-300"
+                                        className="h-5 w-5 rounded-full bg-nav-inactive text-primary-foreground hover:bg-muted-foreground focus-visible:ring-2 focus-visible:ring-border-strong"
                                         icon={
                                             <IconX
                                                 size={12}
@@ -79,7 +79,7 @@ export function SearchBar({
                             ) : null}
                         </AnimatePresence>
                     }
-                    className="h-11 rounded-full border-transparent bg-transparent pl-4 pr-11 text-sm text-gray-900 focus:border-transparent focus:ring-0 [&::-webkit-search-cancel-button]:hidden"
+                    className="h-11 rounded-full border-transparent bg-transparent pl-4 pr-11 text-sm text-foreground focus:border-transparent focus:ring-0 [&::-webkit-search-cancel-button]:hidden"
                     aria-label="검색"
                 />
 
@@ -91,7 +91,7 @@ export function SearchBar({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.15 }}
-                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none"
+                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground select-none"
                             aria-hidden
                         >
                             {placeholder}

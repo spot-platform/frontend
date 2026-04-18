@@ -14,7 +14,7 @@ const Stage = ({
 );
 
 const meta = {
-    title: 'Features/MapV3/ClusterBottomSheetHeader',
+    title: 'Features/Map/ClusterBottomSheetHeader',
     component: ClusterBottomSheetHeader,
     tags: ['autodocs'],
     parameters: { layout: 'fullscreen' },

@@ -22,7 +22,7 @@ export function ChecklistItem({
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                     item.completed
                         ? 'border-brand-800 bg-brand-800'
-                        : 'border-gray-300 bg-white'
+                        : 'border-border-strong bg-card'
                 }`}
             >
                 {item.completed && (
@@ -40,14 +40,14 @@ export function ChecklistItem({
             <span
                 className={`flex-1 text-sm ${
                     item.completed
-                        ? 'text-gray-400 line-through'
-                        : 'text-gray-700'
+                        ? 'text-muted-foreground line-through'
+                        : 'text-text-secondary'
                 }`}
             >
                 {item.text}
             </span>
             {item.assigneeNickname && (
-                <span className="text-[10px] text-gray-400">
+                <span className="text-[10px] text-muted-foreground">
                     {item.assigneeNickname}
                 </span>
             )}
@@ -55,7 +55,7 @@ export function ChecklistItem({
                 <button
                     type="button"
                     onClick={onDelete}
-                    className="text-gray-300 active:text-red-400"
+                    className="text-border-strong active:text-destructive"
                 >
                     <IconTrash size={14} />
                 </button>

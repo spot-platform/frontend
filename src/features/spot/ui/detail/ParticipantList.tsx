@@ -17,8 +17,8 @@ export function ParticipantList({
     const overflow = participants.length - MAX_VISIBLE;
 
     return (
-        <div className="mx-4 rounded-2xl border border-gray-100 bg-white px-5 py-4">
-            <h2 className="mb-3 text-sm font-bold text-gray-700">
+        <div className="mx-4 rounded-2xl border border-border-soft bg-card px-5 py-4">
+            <h2 className="mb-3 text-sm font-bold text-text-secondary">
                 참여자 {participants.length}명
             </h2>
             <div className="flex flex-wrap items-start gap-3">
@@ -54,10 +54,10 @@ export function ParticipantList({
                 })}
                 {overflow > 0 && (
                     <div className="flex flex-col items-center gap-1">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
                             +{overflow}
                         </div>
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-muted-foreground">
                             더보기
                         </span>
                     </div>

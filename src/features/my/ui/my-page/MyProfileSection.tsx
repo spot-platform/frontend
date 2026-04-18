@@ -27,7 +27,7 @@ export function MyProfileSection({
     return (
         <Section
             gap="lg"
-            className="rounded-xl border border-gray-200 bg-white p-5"
+            className="rounded-xl border border-border-soft bg-card p-5"
         >
             <div className="relative flex items-center justify-between gap-3">
                 <div className="inline-flex w-fit items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-brand-700 uppercase">
@@ -35,7 +35,7 @@ export function MyProfileSection({
                 </div>
                 <Link
                     href="/my/settings"
-                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-white"
+                    className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-text-secondary transition hover:bg-card"
                 >
                     계정 설정
                     <IconChevronRight size={14} />
@@ -72,10 +72,10 @@ function ProfileSummary({ profile }: { profile: UserProfile }) {
                     <p className="text-xs font-semibold tracking-[0.16em] text-brand-700 uppercase">
                         {formatMonth(profile.joinedAt)}부터 함께했어요
                     </p>
-                    <h1 className="mt-2 text-[1.75rem] leading-9 font-black tracking-[-0.04em] text-gray-950">
+                    <h1 className="mt-2 text-[1.75rem] leading-9 font-black tracking-[-0.04em] text-foreground">
                         {displayName}
                     </h1>
-                    <p className="mt-1 break-all text-sm leading-6 text-gray-500">
+                    <p className="mt-1 break-all text-sm leading-6 text-muted-foreground">
                         {profile.email}
                     </p>
                 </div>
@@ -94,14 +94,14 @@ function ProfileSummary({ profile }: { profile: UserProfile }) {
                     </p>
                 </div>
 
-                <div className="rounded-lg border border-gray-100 bg-white p-4">
-                    <p className="text-xs font-semibold tracking-[0.16em] text-gray-500 uppercase">
+                <div className="rounded-lg border border-border-soft bg-card p-4">
+                    <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                         가입일
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                    <p className="mt-2 text-sm font-semibold text-foreground">
                         {formatDate(profile.joinedAt)}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-gray-500">
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
                         차분하게 계정을 관리하고 활동 흐름을 이어가 보세요.
                     </p>
                 </div>
@@ -117,14 +117,14 @@ function ProfileSkeleton() {
                 <div className="h-18 w-18 rounded-lg bg-brand-100" />
                 <div className="flex-1 space-y-3 pt-1">
                     <div className="h-3 w-28 rounded-full bg-brand-100" />
-                    <div className="h-8 w-36 rounded-full bg-gray-200" />
-                    <div className="h-4 w-48 rounded-full bg-gray-100" />
+                    <div className="h-8 w-36 rounded-full bg-border-soft" />
+                    <div className="h-4 w-48 rounded-full bg-muted" />
                 </div>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-[1.4fr_1fr]">
                 <div className="h-28 rounded-lg bg-brand-50" />
-                <div className="h-28 rounded-lg bg-gray-100" />
+                <div className="h-28 rounded-lg bg-muted" />
             </div>
         </div>
     );

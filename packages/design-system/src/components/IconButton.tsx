@@ -11,8 +11,8 @@ const iconButtonVariants = cva(
                 primary:
                     'bg-primary text-primary-foreground shadow-sm hover:bg-accent-dark',
                 secondary:
-                    'border border-border-soft bg-background text-foreground hover:bg-neutral-50',
-                ghost: 'text-text-secondary hover:bg-neutral-100',
+                    'border border-border-soft bg-background text-foreground hover:bg-muted',
+                ghost: 'text-text-secondary hover:bg-muted',
             },
             size: {
                 sm: 'h-8 w-8',

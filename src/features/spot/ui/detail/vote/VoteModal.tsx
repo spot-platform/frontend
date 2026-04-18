@@ -61,7 +61,7 @@ function CreateVoteForm({
     return (
         <div className="flex flex-col gap-4">
             <div>
-                <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                <label className="mb-1.5 block text-xs font-semibold text-text-secondary">
                     질문
                 </label>
                 <Input
@@ -73,7 +73,7 @@ function CreateVoteForm({
             </div>
 
             <div>
-                <label className="mb-1.5 block text-xs font-semibold text-gray-600">
+                <label className="mb-1.5 block text-xs font-semibold text-text-secondary">
                     선택지
                 </label>
                 <div className="flex flex-col gap-2">
@@ -95,7 +95,7 @@ function CreateVoteForm({
                                     variant="ghost"
                                     onClick={() => handleRemoveOption(idx)}
                                     label={`선택지 ${idx + 1} 삭제`}
-                                    className="text-gray-400"
+                                    className="text-muted-foreground"
                                     icon={<IconX size={16} />}
                                 />
                             )}
@@ -107,7 +107,7 @@ function CreateVoteForm({
                             size="sm"
                             onClick={handleAddOption}
                             startIcon={<IconPlus size={14} />}
-                            className="justify-start border-dashed text-xs text-gray-500"
+                            className="justify-start border-dashed text-xs text-muted-foreground"
                         >
                             선택지 추가
                         </Button>
@@ -122,7 +122,9 @@ function CreateVoteForm({
                     onChange={(e) => setMultiSelect(e.target.checked)}
                     className="accent-brand-800"
                 />
-                <span className="text-sm text-gray-600">복수 선택 허용</span>
+                <span className="text-sm text-text-secondary">
+                    복수 선택 허용
+                </span>
             </label>
 
             <Button onClick={handleSubmit} disabled={isPending} fullWidth>
@@ -173,7 +175,7 @@ function CastVoteForm({
 
     return (
         <div className="flex flex-col gap-4">
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-semibold text-text-secondary">
                 {vote.question}
             </p>
             <div className="flex flex-col gap-2">
@@ -223,7 +225,9 @@ export function VoteModal(props: VoteModalProps) {
                     onClose={props.onClose}
                 />
             ) : (
-                <p className="text-sm text-gray-400">투표를 불러오는 중...</p>
+                <p className="text-sm text-muted-foreground">
+                    투표를 불러오는 중...
+                </p>
             )}
         </BottomSheet>
     );

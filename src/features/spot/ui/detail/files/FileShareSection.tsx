@@ -22,24 +22,29 @@ export function FileShareSection({ files }: FileShareSectionProps) {
             manageLabel="파일 관리"
         >
             {files.length === 0 ? (
-                <p className="text-xs text-gray-400">공유된 파일이 없어요</p>
+                <p className="text-xs text-muted-foreground">
+                    공유된 파일이 없어요
+                </p>
             ) : (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-1.5">
-                        <IconPaperclip size={12} className="text-gray-400" />
-                        <span className="text-xs text-gray-500">
+                        <IconPaperclip
+                            size={12}
+                            className="text-muted-foreground"
+                        />
+                        <span className="text-xs text-muted-foreground">
                             {files.length}개 파일
                         </span>
                     </div>
                     {preview.map((file) => (
                         <div
                             key={file.id}
-                            className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
+                            className="flex items-center justify-between rounded-lg bg-muted px-3 py-2"
                         >
-                            <span className="truncate text-xs text-gray-700">
+                            <span className="truncate text-xs text-text-secondary">
                                 {file.name}
                             </span>
-                            <span className="ml-2 shrink-0 text-[10px] text-gray-400">
+                            <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">
                                 {formatBytes(file.sizeBytes)}
                             </span>
                         </div>

@@ -17,7 +17,7 @@ type Props = { room: SpotChatRoom };
 const STATUS_STYLES: Record<SupporterApplication['status'], string> = {
     LEADING: 'border-emerald-100 bg-emerald-50 text-emerald-700',
     REVIEWING: 'border-brand-800/10 bg-brand-800/5 text-brand-800',
-    WAITING: 'border-gray-200 bg-gray-100 text-gray-500',
+    WAITING: 'border-border-soft bg-muted text-muted-foreground',
 };
 
 const STATUS_LABELS: Record<SupporterApplication['status'], string> = {
@@ -44,10 +44,10 @@ export function OpenPhasePanel({ room }: Props) {
                 <p className="text-[11px] font-semibold tracking-[0.14em] text-amber-700 uppercase">
                     모집 단계
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-900">
+                <p className="mt-1 text-sm font-semibold text-foreground">
                     아직 매칭 전 상태예요
                 </p>
-                <p className="mt-1 text-xs leading-5 text-gray-500">
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     모집 정보가 연결되면 여기에 지원 현황이 표시됩니다.
                 </p>
             </section>
@@ -84,12 +84,12 @@ export function OpenPhasePanel({ room }: Props) {
                     <p className="text-[11px] font-semibold tracking-[0.14em] text-amber-700 uppercase">
                         모집 단계
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-gray-900">
+                    <p className="mt-1 text-sm font-semibold text-foreground">
                         {flow.stageLabel}
                     </p>
                 </div>
                 <Chip
-                    className="border-amber-200 bg-white text-amber-700"
+                    className="border-amber-200 bg-card text-amber-700"
                     size="sm"
                 >
                     {flow.demand.deadlineLabel}
@@ -112,9 +112,9 @@ export function OpenPhasePanel({ room }: Props) {
             </div>
 
             <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>{progressLabel}</span>
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-foreground">
                         {progressPercent}%
                     </span>
                 </div>
@@ -124,15 +124,15 @@ export function OpenPhasePanel({ room }: Props) {
                         style={{ width: `${progressPercent}%` }}
                     />
                 </div>
-                <p className="text-xs leading-5 text-gray-500">
+                <p className="text-xs leading-5 text-muted-foreground">
                     {flow.demand.hostNote}
                 </p>
             </div>
 
             <div className="border-t border-amber-100 pt-3">
-                <p className="mb-2 text-xs font-semibold text-gray-700">
+                <p className="mb-2 text-xs font-semibold text-text-secondary">
                     지원 현황{' '}
-                    <span className="text-gray-400">
+                    <span className="text-muted-foreground">
                         {flow.applications.length}건
                     </span>
                 </p>
@@ -148,9 +148,9 @@ export function OpenPhasePanel({ room }: Props) {
 
             {confirmedCount > 0 && (
                 <div className="border-t border-amber-100 pt-3">
-                    <p className="mb-2 text-xs font-semibold text-gray-700">
+                    <p className="mb-2 text-xs font-semibold text-text-secondary">
                         참여 중인 파트너{' '}
-                        <span className="text-gray-400">
+                        <span className="text-muted-foreground">
                             {confirmedCount}명
                         </span>
                     </p>
@@ -174,14 +174,14 @@ function StatBlock({
 }) {
     return (
         <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 {icon}
                 {label}
             </div>
-            <p className="text-sm font-semibold tracking-tight text-gray-900">
+            <p className="text-sm font-semibold tracking-tight text-foreground">
                 {value}
             </p>
-            <p className="text-[11px] text-gray-500">{meta}</p>
+            <p className="text-[11px] text-muted-foreground">{meta}</p>
         </div>
     );
 }
@@ -221,7 +221,7 @@ function ApplicantGrid({
                         avatarUrl={app.avatarUrl}
                         size="md"
                     />
-                    <p className="max-w-14 truncate text-[11px] font-medium text-gray-700">
+                    <p className="max-w-14 truncate text-[11px] font-medium text-text-secondary">
                         {app.nickname}
                     </p>
                     <span

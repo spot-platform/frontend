@@ -64,8 +64,8 @@ export function MyHistoryPageClient() {
                 {participationsQuery.isPending &&
                 participations.length === 0 ? (
                     <div className="space-y-3">
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
                     </div>
                 ) : participationsQuery.isError &&
                   participations.length === 0 ? (
@@ -79,24 +79,24 @@ export function MyHistoryPageClient() {
                 ) : participations.length === 0 ? (
                     <EmptyState title="최근 활동 기록이 없어요" />
                 ) : (
-                    <ul className="-mx-4 divide-y divide-gray-200">
+                    <ul className="-mx-4 divide-y divide-border-soft">
                         {participations.map((item) => (
                             <li
                                 key={`${item.spotId}-${item.joinedAt}`}
-                                className="px-4 py-3 transition-colors hover:bg-gray-50"
+                                className="px-4 py-3 transition-colors hover:bg-muted"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-foreground">
                                             {item.spotTitle}
                                         </p>
-                                        <p className="mt-1 text-xs text-gray-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             {item.spotType} ·{' '}
                                             {getRoleLabel(item.role)} ·{' '}
                                             {item.status}
                                         </p>
                                     </div>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                         {formatDate(item.joinedAt)}
                                     </p>
                                 </div>
@@ -113,8 +113,8 @@ export function MyHistoryPageClient() {
             >
                 {supporterProfileQuery.isPending && !supporterProfile ? (
                     <div className="space-y-3">
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
                     </div>
                 ) : supporterProfileQuery.isError && !supporterProfile ? (
                     <EmptyState
@@ -128,23 +128,23 @@ export function MyHistoryPageClient() {
                   supporterProfile.history.length === 0 ? (
                     <EmptyState title="서포터 활동 기록이 없어요" />
                 ) : (
-                    <ul className="-mx-4 divide-y divide-gray-200">
+                    <ul className="-mx-4 divide-y divide-border-soft">
                         {supporterProfile.history.map((item) => (
                             <li
                                 key={item.spotId}
-                                className="px-4 py-3 transition-colors hover:bg-gray-50"
+                                className="px-4 py-3 transition-colors hover:bg-muted"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-foreground">
                                             {item.spotTitle}
                                         </p>
-                                        <p className="mt-1 text-xs text-gray-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             {item.spotType} · 리뷰{' '}
                                             {item.reviewCount}개
                                         </p>
                                     </div>
-                                    <div className="text-right text-xs text-gray-500">
+                                    <div className="text-right text-xs text-muted-foreground">
                                         <p>{formatDate(item.completedAt)}</p>
                                         <p>
                                             {typeof item.avgRating === 'number'
@@ -164,7 +164,7 @@ export function MyHistoryPageClient() {
                 description="가장 최근에 받은 후기를 빠르게 확인하세요."
             >
                 {supportSummaryQuery.isPending && !supportSummary ? (
-                    <div className="h-24 animate-pulse rounded-xl bg-gray-100" />
+                    <div className="h-24 animate-pulse rounded-xl bg-muted" />
                 ) : supportSummaryQuery.isError && !supportSummary ? (
                     <EmptyState
                         title="리뷰 요약을 불러오지 못했어요"
@@ -180,7 +180,7 @@ export function MyHistoryPageClient() {
                             value={`${supportSummary.latestReview.rating}점`}
                             detail={
                                 <>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-muted-foreground">
                                         {formatDate(
                                             supportSummary.latestReview
                                                 .createdAt,
@@ -188,7 +188,7 @@ export function MyHistoryPageClient() {
                                         ·{' '}
                                         {supportSummary.latestReview.spotTitle}
                                     </span>
-                                    <span className="mt-2 block text-sm leading-6 text-gray-600">
+                                    <span className="mt-2 block text-sm leading-6 text-text-secondary">
                                         {supportSummary.latestReview.comment ||
                                             '남겨진 코멘트가 없어요.'}
                                     </span>

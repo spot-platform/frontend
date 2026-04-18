@@ -20,7 +20,9 @@ export function VoteSection({ votes }: VoteSectionProps) {
             manageLabel="새 투표"
         >
             {activeVotes.length === 0 ? (
-                <p className="text-xs text-gray-400">진행 중인 투표가 없어요</p>
+                <p className="text-xs text-muted-foreground">
+                    진행 중인 투표가 없어요
+                </p>
             ) : (
                 <div className="flex flex-col gap-4">
                     {activeVotes.map((vote) => {
@@ -30,7 +32,7 @@ export function VoteSection({ votes }: VoteSectionProps) {
                         );
                         return (
                             <div key={vote.id}>
-                                <p className="mb-2 text-xs font-semibold text-gray-600">
+                                <p className="mb-2 text-xs font-semibold text-text-secondary">
                                     {vote.question}
                                 </p>
                                 <div className="flex flex-col gap-1.5">

@@ -1,4 +1,4 @@
-// map-v3 라이브 티커. 단일 이벤트 카드를 fade+slide 로 교체 렌더.
+// map 라이브 티커. 단일 이벤트 카드를 fade+slide 로 교체 렌더.
 
 'use client';
 

@@ -61,11 +61,11 @@ function ProfileBadge({ type, size }: { type: ProfileType; size: Size }) {
     return (
         <span
             className={cn(
-                'absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full font-black ring-1 ring-white',
+                'absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full font-black ring-1 ring-card',
                 BADGE_SIZE[size],
                 isSupporter
-                    ? 'bg-accent text-white'
-                    : 'bg-brand-800 text-white',
+                    ? 'bg-accent text-primary-foreground'
+                    : 'bg-brand-800 text-primary-foreground',
             )}
         >
             {isSupporter ? 'S' : 'P'}
@@ -114,7 +114,7 @@ export function UserAvatar({
     ) : (
         <div
             className={cn(
-                'flex shrink-0 items-center justify-center rounded-full font-bold text-white',
+                'flex shrink-0 items-center justify-center rounded-full font-bold text-primary-foreground',
                 SIZE_CLASSES[size],
                 bg,
             )}
@@ -138,7 +138,7 @@ export function UserAvatar({
                         className={cn(
                             'max-w-12 truncate font-medium',
                             LABEL_SIZE[size],
-                            dark ? 'text-white/70' : 'text-gray-600',
+                            dark ? 'text-white/70' : 'text-text-secondary',
                         )}
                     >
                         {nickname}
@@ -147,7 +147,9 @@ export function UserAvatar({
                         <span
                             className={cn(
                                 LABEL_SIZE[size],
-                                dark ? 'text-white/40' : 'text-gray-400',
+                                dark
+                                    ? 'text-white/40'
+                                    : 'text-muted-foreground',
                             )}
                         >
                             {sublabel}
@@ -187,7 +189,7 @@ export function UserAvatarStatic({
     ) : (
         <div
             className={cn(
-                'flex shrink-0 items-center justify-center rounded-full font-bold text-white',
+                'flex shrink-0 items-center justify-center rounded-full font-bold text-primary-foreground',
                 SIZE_CLASSES[size],
                 bg,
             )}
@@ -208,7 +210,7 @@ export function UserAvatarStatic({
                         className={cn(
                             'max-w-12 truncate font-medium',
                             LABEL_SIZE[size],
-                            dark ? 'text-white/70' : 'text-gray-600',
+                            dark ? 'text-white/70' : 'text-text-secondary',
                         )}
                     >
                         {nickname}
@@ -217,7 +219,9 @@ export function UserAvatarStatic({
                         <span
                             className={cn(
                                 LABEL_SIZE[size],
-                                dark ? 'text-white/40' : 'text-gray-400',
+                                dark
+                                    ? 'text-white/40'
+                                    : 'text-muted-foreground',
                             )}
                         >
                             {sublabel}

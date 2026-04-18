@@ -42,8 +42,8 @@ export function ArchetypeSelector({
                         className={cn(
                             'flex flex-col items-center gap-1 rounded-2xl border p-3 text-center transition-colors',
                             isSelected
-                                ? 'border-primary bg-brand-50'
-                                : 'border-border-soft bg-background hover:bg-neutral-50',
+                                ? 'border-primary bg-accent-muted'
+                                : 'border-border-soft bg-background hover:bg-muted',
                         )}
                     >
                         <span className="text-3xl">

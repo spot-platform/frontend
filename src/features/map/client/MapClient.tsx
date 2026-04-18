@@ -1,3 +1,4 @@
+// /map 메인 클라이언트. 2026-04-19 map-v3 에서 승격.
 'use client';
 
 import {
@@ -5,17 +6,16 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { SpotMarker } from '@/features/map/ui/SpotMarker';
 import { MapHeader } from '@/features/map/ui/MapHeader';
 import { FilterChipBar } from '@/features/map/ui/FilterChipBar';
 import { MapFooter } from '@/features/map/ui/MapFooter';
 import { LayerTransition } from '@/features/map/ui/LayerTransition';
 import { PostTypeSheet } from '@/features/map/ui/PostTypeSheet';
-import { PersonaAvatar } from '@/features/simulation/ui/PersonaAvatar';
 import { PersonaProfileCard } from '@/features/simulation/ui/PersonaProfileCard';
 import { ChatLever } from '@/features/chat/ui/ChatLever';
 import { ChatDrawer } from '@/features/chat/ui/ChatDrawer';
@@ -23,7 +23,6 @@ import { FeedBottomSheet } from '@/features/feed/ui/FeedBottomSheet';
 import { SpotPreviewSheet } from '@/features/feed/ui/SpotPreviewSheet';
 import { LayerToggle } from '@/features/layer/ui/LayerToggle';
 import { useLayerStore } from '@/features/layer/model/use-layer-store';
-import { MOCK_SPOTS } from '@/features/map/model/mock-spots';
 import { MOCK_PERSONAS } from '@/features/simulation/model/mock-personas';
 import { MOCK_WAYPOINTS } from '@/features/simulation/model/mock-waypoints';
 import { MOCK_EVENT_SEQUENCE } from '@/features/simulation/model/mock-event-sequence';
@@ -34,8 +33,20 @@ import { useTimelineSimulation } from '@/features/simulation/model/use-timeline-
 import { useAnimatedCoords } from '@/features/simulation/model/use-animated-coords';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import { useMapUrlState } from '@/features/map/model/use-map-url-state';
+import { useActivityClusters } from '@/features/map/model/use-activity-clusters';
+import { ClusterMarker } from '@/features/map/ui/ClusterMarker';
+import { PersonaDotMarker } from '@/features/map/ui/PersonaDotMarker';
+import { ClusterBottomSheetHeader } from '@/features/map/ui/ClusterBottomSheetHeader';
+import { LiveTicker } from '@/features/map/ui/LiveTicker';
+import { ThemeSegment } from '@/features/map/ui/ThemeSegment';
+import {
+    createTickerAdapter,
+    type TickerEvent,
+} from '@/features/map/model/ticker-adapter';
+import { useTheme } from '@/shared/model/use-theme';
 import type { BottomSheetSnapPoint } from '@frontend/design-system';
-import type { GeoCoord, SpotMapItem } from '@/entities/spot/types';
+import type { GeoCoord } from '@/entities/spot/types';
+import type { Persona } from '@/entities/persona/types';
 import type { MapOverlayItem } from '@/features/map/ui/MapCanvas';
 
 type SimulationMode = 'sse' | 'legacy' | 'off';
@@ -46,16 +57,17 @@ function resolveSimulationMode(raw: string | null): SimulationMode {
     return 'sse';
 }
 
-const MapCanvas = dynamic(
-    () => import('@/features/map/ui/MapCanvas').then((m) => m.MapCanvas),
+const MapV3Canvas = dynamic(
+    () => import('@/features/map/ui/MapV3Canvas').then((m) => m.MapV3Canvas),
     { ssr: false },
 );
 
-export function MapPageClient() {
+export function MapClient() {
     const [urlState, updateUrl] = useMapUrlState();
     const {
         spot: selectedSpotId,
         persona: selectedPersonaId,
+        cluster: selectedClusterId,
         sheet: sheetSnap,
         chat: chatDrawerOpen,
     } = urlState;
@@ -66,6 +78,9 @@ export function MapPageClient() {
     const [followingPersonaId, setFollowingPersonaId] = useState<string | null>(
         null,
     );
+
+    const { resolvedTheme } = useTheme();
+    const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light';
 
     const searchParams = useSearchParams();
     const simulationMode = resolveSimulationMode(searchParams.get('sim'));
@@ -83,8 +98,6 @@ export function MapPageClient() {
         simulationMode === 'legacy' ? MOCK_EVENT_SEQUENCE : [],
     );
 
-    const eventSpots =
-        simulationMode === 'sse' ? sseSimulation.spots : legacyPlayer.spots;
     const personaTargets =
         simulationMode === 'sse'
             ? sseSimulation.personaTargets
@@ -92,10 +105,6 @@ export function MapPageClient() {
     const animatedPersonaCoords = useAnimatedCoords(personaTargets, {
         durationMs: simulationMode === 'sse' ? 1300 : 1800,
     });
-    const spotStatuses =
-        simulationMode === 'sse'
-            ? sseSimulation.spotStatuses
-            : legacyPlayer.spotStatuses;
 
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
@@ -109,16 +118,9 @@ export function MapPageClient() {
     const activeLayer = useLayerStore((s) => s.activeLayer);
 
     const handleMapClick = useCallback(() => {
-        updateUrl({ spot: null, persona: null });
+        updateUrl({ spot: null, persona: null, cluster: null });
         setFollowingPersonaId(null);
     }, [updateUrl]);
-
-    const handlePersonaClick = useCallback(
-        (personaId: string) => {
-            updateUrl({ persona: personaId, spot: null });
-        },
-        [updateUrl],
-    );
 
     const handleSheetChange = useCallback(
         (snap: BottomSheetSnapPoint) => {
@@ -164,117 +166,139 @@ export function MapPageClient() {
         }
     }, [followedLat, followedLng]);
 
-    const allSpots = useMemo(() => {
-        const byId = new Map<string, SpotMapItem>();
-        for (const spot of MOCK_SPOTS) byId.set(spot.id, spot);
-        for (const spot of eventSpots) byId.set(spot.id, spot);
-        return Array.from(byId.values());
-    }, [eventSpots]);
-
-    const handleSpotSelect = useCallback(
-        (spotId: string) => {
-            const spot = allSpots.find((s) => s.id === spotId);
-            if (spot) setCenter(spot.coord);
-            updateUrl({ spot: spotId, sheet: 'peek' });
-        },
-        [allSpots, updateUrl],
-    );
-
     const handleToggleListView = useCallback(() => {
         updateUrl({ sheet: sheetSnap === 'peek' ? 'half' : 'peek' });
     }, [sheetSnap, updateUrl]);
 
-    const getSpotStatus = useCallback(
-        (spot: SpotMapItem) => spotStatuses.get(spot.id) ?? spot.status,
-        [spotStatuses],
-    );
-
-    const filteredSpots = useMemo(() => {
+    // 필터 통과한 페르소나만 클러스터링 입력으로 사용.
+    const filteredPersonas = useMemo<Persona[]>(() => {
         const q = searchQuery.trim().toLowerCase();
-        return allSpots.filter((spot) => {
-            if (feedType === 'offer' && spot.type !== 'OFFER') return false;
-            if (feedType === 'request' && spot.type !== 'REQUEST') return false;
+        return MOCK_PERSONAS.filter((p) => {
+            if (feedType === 'offer' && p.intent !== 'offer') return false;
+            if (feedType === 'request' && p.intent !== 'request') return false;
             if (
                 categories.length > 0 &&
-                !(categories as readonly string[]).includes(spot.category)
-            )
+                !(categories as readonly string[]).includes(p.category)
+            ) {
                 return false;
+            }
             if (q.length > 0) {
-                const haystack = `${spot.title} ${spot.category}`.toLowerCase();
+                const haystack = `${p.name} ${p.category}`.toLowerCase();
                 if (!haystack.includes(q)) return false;
             }
             return true;
         });
-    }, [allSpots, feedType, categories, searchQuery]);
+    }, [feedType, categories, searchQuery]);
 
-    const selectedSpot = useMemo(
-        () => allSpots.find((s) => s.id === selectedSpotId) ?? null,
-        [allSpots, selectedSpotId],
+    const clusters = useActivityClusters(filteredPersonas, positions, {
+        radiusMeters: 80,
+    });
+
+    const handleClusterSelect = useCallback(
+        (clusterId: string) => {
+            updateUrl({ cluster: clusterId });
+        },
+        [updateUrl],
     );
 
-    const selectedSpotLat = selectedSpot?.coord.lat;
-    const selectedSpotLng = selectedSpot?.coord.lng;
-    useEffect(() => {
-        if (selectedSpotLat == null || selectedSpotLng == null) return;
-        startTransition(() =>
-            setCenter({ lat: selectedSpotLat, lng: selectedSpotLng }),
-        );
-    }, [selectedSpotLat, selectedSpotLng]);
+    // v3 는 spot marker 가 아닌 cluster 중심이라 SpotPreviewSheet 은 null 로 구동한다.
+    // selectedSpotId 는 URL 상태 호환성만 유지.
+    void selectedSpotId;
+    const selectedSpot = null;
 
     const showSpots = activeLayer === 'mixed' || activeLayer === 'real';
     const showPersonas = activeLayer === 'mixed' || activeLayer === 'virtual';
 
-    const spotOverlays: MapOverlayItem[] = useMemo(() => {
+    // cluster overlays (layer=mixed|real)
+    const clusterOverlays: MapOverlayItem[] = useMemo(() => {
         if (!showSpots) return [];
-        return filteredSpots.map((spot) => ({
-            key: `spot-${spot.id}`,
-            position: spot.coord,
+        return clusters.map((cluster) => ({
+            key: `cluster-${cluster.id}`,
+            position: cluster.centerCoord,
             clickable: true,
             render: () => (
-                <SpotMarker
-                    spot={{ ...spot, status: getSpotStatus(spot) }}
-                    isSelected={selectedSpotId === spot.id}
-                    onSelect={handleSpotSelect}
+                <ClusterMarker
+                    cluster={cluster}
+                    selected={selectedClusterId === cluster.id}
+                    onSelectAction={handleClusterSelect}
                 />
             ),
         }));
-    }, [
-        filteredSpots,
-        selectedSpotId,
-        getSpotStatus,
-        handleSpotSelect,
-        showSpots,
-    ]);
+    }, [clusters, selectedClusterId, handleClusterSelect, showSpots]);
 
+    // 클러스터에 속한 페르소나 id 집합
+    const clusteredPersonaIds = useMemo(() => {
+        const ids = new Set<string>();
+        for (const c of clusters) {
+            for (const p of c.personas) ids.add(p.id);
+        }
+        return ids;
+    }, [clusters]);
+
+    // 단독 페르소나만 dot 으로 렌더
     const personaOverlays: MapOverlayItem[] = useMemo(() => {
         if (!showPersonas) return [];
-        return MOCK_PERSONAS.map((persona) => {
-            const coord = getPersonaCoord(persona.id);
-            return {
-                key: `persona-${persona.id}`,
-                position: coord,
-                render: () => (
-                    <PersonaAvatar
-                        persona={persona}
-                        coord={coord}
-                        onClick={handlePersonaClick}
-                        isFollowing={followingPersonaId === persona.id}
-                    />
-                ),
-            };
-        });
-    }, [getPersonaCoord, handlePersonaClick, showPersonas, followingPersonaId]);
+        return filteredPersonas
+            .filter((p) => !clusteredPersonaIds.has(p.id))
+            .map((persona) => {
+                const coord = getPersonaCoord(persona.id);
+                return {
+                    key: `persona-${persona.id}`,
+                    position: coord,
+                    render: () => (
+                        <PersonaDotMarker
+                            persona={{
+                                id: persona.id,
+                                emoji: persona.emoji,
+                                name: persona.name,
+                            }}
+                            moving
+                        />
+                    ),
+                };
+            });
+    }, [filteredPersonas, clusteredPersonaIds, getPersonaCoord, showPersonas]);
 
     const overlays: MapOverlayItem[] = useMemo(
-        () => [...spotOverlays, ...personaOverlays],
-        [spotOverlays, personaOverlays],
+        () => [...clusterOverlays, ...personaOverlays],
+        [clusterOverlays, personaOverlays],
+    );
+
+    // Live ticker: SSE mode 일 때 currentFrame 을 어댑터로 흘려 보냄.
+    const tickerAdapterRef = useRef(
+        createTickerAdapter({
+            personaLookup: new Map(
+                MOCK_PERSONAS.map((p) => [
+                    p.id,
+                    { emoji: p.emoji, name: p.name },
+                ]),
+            ),
+        }),
+    );
+    const [tickerEvent, setTickerEvent] = useState<TickerEvent | null>(null);
+    const currentFrame = sseSimulation.currentFrame;
+    useEffect(() => {
+        if (simulationMode !== 'sse') return;
+        if (!currentFrame) return;
+        const ev = tickerAdapterRef.current.push(currentFrame);
+        if (ev) setTickerEvent(ev);
+    }, [currentFrame, simulationMode]);
+
+    const clusterCounts = useMemo(
+        () => ({
+            total: clusters.length,
+            offer: clusters.filter((c) => c.intent === 'offer').length,
+            request: clusters.filter((c) => c.intent === 'request').length,
+        }),
+        [clusters],
     );
 
     return (
         <>
-            <MapCanvas
+            <MapV3Canvas
                 center={center}
-                onMapClick={handleMapClick}
+                theme={theme}
+                onMapClickAction={handleMapClick}
                 overlays={overlays}
             />
 
@@ -288,12 +312,21 @@ export function MapPageClient() {
                 onLayerToggle={() => setLayerToggleOpen(true)}
             />
 
+            <LiveTicker
+                event={tickerEvent}
+                sseActive={simulationMode === 'sse'}
+            />
+
             <FeedBottomSheet
                 snapPoint={sheetSnap}
                 onSnapChange={handleSheetChange}
                 feedType={feedType}
                 categories={categories}
             />
+
+            {sheetSnap === 'peek' && (
+                <ClusterBottomSheetHeader counts={clusterCounts} radiusKm={1} />
+            )}
 
             <SpotPreviewSheet
                 selectedSpot={selectedSpot}
@@ -318,7 +351,14 @@ export function MapPageClient() {
             <LayerToggle
                 open={layerToggleOpen}
                 onClose={() => setLayerToggleOpen(false)}
-            />
+            >
+                <div className="mt-4 flex items-center justify-between rounded-lg border border-border-soft bg-card px-3 py-3">
+                    <span className="text-sm font-semibold text-foreground">
+                        테마
+                    </span>
+                    <ThemeSegment />
+                </div>
+            </LayerToggle>
 
             <PostTypeSheet
                 open={postTypeSheetOpen}

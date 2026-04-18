@@ -6,7 +6,7 @@ const meta = {
     component: Carousel,
     decorators: [
         (Story) => (
-            <div className="bg-white py-6 max-w-sm mx-auto">
+            <div className="bg-card py-6 max-w-sm mx-auto">
                 <Story />
             </div>
         ),
@@ -24,7 +24,7 @@ type Story = StoryObj<typeof meta>;
 function SampleCard({ label, color }: { label: string; color: string }) {
     return (
         <div
-            className={`flex h-40 items-center justify-center rounded-xl text-white font-bold text-lg ${color}`}
+            className={`flex h-40 items-center justify-center rounded-xl text-primary-foreground font-bold text-lg ${color}`}
         >
             {label}
         </div>
@@ -41,21 +41,21 @@ function FeedStyleCard({
     pct: number;
 }) {
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col gap-2">
-            <p className="text-sm font-semibold text-gray-900 line-clamp-2">
+        <div className="rounded-xl border border-border-soft bg-card p-4 flex flex-col gap-2">
+            <p className="text-sm font-semibold text-foreground line-clamp-2">
                 {title}
             </p>
-            <p className="text-xs text-gray-400">{sub}</p>
+            <p className="text-xs text-muted-foreground">{sub}</p>
             <div className="mt-auto">
                 <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-500">{pct}% 달성</span>
-                    <span className="font-bold text-teal-700">
+                    <span className="text-muted-foreground">{pct}% 달성</span>
+                    <span className="font-bold text-primary">
                         {100 - pct}% 남음
                     </span>
                 </div>
-                <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
-                        className="h-full rounded-full bg-teal-700"
+                        className="h-full rounded-full bg-primary"
                         style={{ width: `${pct}%` }}
                     />
                 </div>
@@ -72,13 +72,13 @@ function PollStyleCard({
     options: string[];
 }) {
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col gap-3">
-            <p className="text-sm font-semibold text-gray-900">{question}</p>
+        <div className="rounded-xl border border-border-soft bg-card p-4 flex flex-col gap-3">
+            <p className="text-sm font-semibold text-foreground">{question}</p>
             <div className="flex flex-col gap-2">
                 {options.map((opt) => (
                     <button
                         key={opt}
-                        className="rounded-lg border border-gray-200 py-2 text-sm text-gray-700 hover:border-teal-700 hover:text-teal-700 transition-colors"
+                        className="rounded-lg border border-border-soft py-2 text-sm text-text-secondary hover:border-primary hover:text-primary transition-colors"
                     >
                         {opt}
                     </button>

@@ -76,7 +76,7 @@ function RoomRow({ room, onClick }: { room: ChatRoom; onClick: () => void }) {
         <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors active:bg-neutral-50"
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors active:bg-muted"
         >
             <RoomAvatar room={room} />
             <div className="min-w-0 flex-1">
@@ -124,7 +124,7 @@ function ChatSection({ icon, title, count, rooms, onRoomClick }: SectionProps) {
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     {title}
                 </h3>
-                <span className="text-xs text-neutral-400">{count}</span>
+                <span className="text-xs text-muted-foreground">{count}</span>
             </div>
             {rooms.length === 0 ? (
                 <p className="px-4 py-4 text-xs text-muted-foreground">

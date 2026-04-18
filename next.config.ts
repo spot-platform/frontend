@@ -27,6 +27,11 @@ export default withSerwist({
                 destination: '/map?sheet=half',
                 permanent: false,
             },
+            {
+                source: '/map-v3',
+                destination: '/map',
+                permanent: true,
+            },
         ];
     },
 });

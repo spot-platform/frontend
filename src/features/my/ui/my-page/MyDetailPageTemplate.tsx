@@ -32,11 +32,11 @@ export function MyDetailPageTemplate({
                 bottomInset="lg"
                 className="bg-surface"
             >
-                <section className="border-b border-gray-200 pb-4">
-                    <h1 className="text-lg font-semibold text-gray-900">
+                <section className="border-b border-border-soft pb-4">
+                    <h1 className="text-lg font-semibold text-foreground">
                         {title}
                     </h1>
-                    <p className="mt-2 text-sm leading-6 text-gray-600">
+                    <p className="mt-2 text-sm leading-6 text-text-secondary">
                         {description}
                     </p>
                 </section>
@@ -44,9 +44,9 @@ export function MyDetailPageTemplate({
                 {sections.map((section) => (
                     <section
                         key={section.title}
-                        className="rounded-2xl border border-gray-200 bg-white"
+                        className="rounded-2xl border border-border-soft bg-card"
                     >
-                        <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900">
+                        <h2 className="border-b border-border-soft px-4 py-3 text-sm font-semibold text-foreground">
                             {section.title}
                         </h2>
                         <ul>
@@ -56,16 +56,16 @@ export function MyDetailPageTemplate({
                                     className={[
                                         'px-4 py-3',
                                         index > 0
-                                            ? 'border-t border-gray-200'
+                                            ? 'border-t border-border-soft'
                                             : '',
                                     ]
                                         .filter(Boolean)
                                         .join(' ')}
                                 >
-                                    <p className="text-sm font-medium text-gray-900">
+                                    <p className="text-sm font-medium text-foreground">
                                         {item.label}
                                     </p>
-                                    <p className="mt-1 text-sm leading-6 text-gray-600">
+                                    <p className="mt-1 text-sm leading-6 text-text-secondary">
                                         {item.description}
                                     </p>
                                 </li>

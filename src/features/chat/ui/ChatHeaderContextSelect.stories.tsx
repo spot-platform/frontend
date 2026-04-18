@@ -7,17 +7,24 @@ const options = [
     { label: '브랜드 협업 스팟 with a much longer title', value: 'spot-2' },
 ];
 
+function Stage({
+    dark,
+    children,
+}: {
+    dark?: boolean;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className={dark ? 'dark' : ''}>
+            <div className="w-80 bg-card p-4">{children}</div>
+        </div>
+    );
+}
+
 const meta = {
     title: 'Features/Chat/ChatHeaderContextSelect',
     component: ChatHeaderContextSelect,
     tags: ['autodocs'],
-    decorators: [
-        (Story) => (
-            <div className="w-80 bg-white p-4">
-                <Story />
-            </div>
-        ),
-    ],
     args: {
         value: 'spot-1',
         options,
@@ -29,10 +36,40 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+    render: (args) => (
+        <Stage>
+            <ChatHeaderContextSelect {...args} />
+        </Stage>
+    ),
+};
 
 export const Personal: Story = {
     args: {
         value: 'personal',
     },
+    render: (args) => (
+        <Stage>
+            <ChatHeaderContextSelect {...args} />
+        </Stage>
+    ),
+};
+
+export const DarkDefault: Story = {
+    render: (args) => (
+        <Stage dark>
+            <ChatHeaderContextSelect {...args} />
+        </Stage>
+    ),
+};
+
+export const DarkPersonal: Story = {
+    args: {
+        value: 'personal',
+    },
+    render: (args) => (
+        <Stage dark>
+            <ChatHeaderContextSelect {...args} />
+        </Stage>
+    ),
 };

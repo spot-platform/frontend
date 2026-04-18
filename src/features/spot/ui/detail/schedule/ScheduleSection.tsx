@@ -26,23 +26,23 @@ export function ScheduleSection({ schedule }: ScheduleSectionProps) {
                 </div>
             ) : topSlots.length > 0 ? (
                 <div className="flex flex-col gap-1.5">
-                    <p className="text-xs text-gray-400">후보 일정</p>
+                    <p className="text-xs text-muted-foreground">후보 일정</p>
                     {topSlots.map((slot, i) => (
                         <div
                             key={i}
-                            className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
+                            className="flex items-center justify-between rounded-lg bg-muted px-3 py-2"
                         >
-                            <span className="text-xs text-gray-600">
+                            <span className="text-xs text-text-secondary">
                                 {slot.date} {slot.hour}:00
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted-foreground">
                                 {slot.availableUserIds.length}명 가능
                             </span>
                         </div>
                     ))}
                 </div>
             ) : (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted-foreground">
                     아직 일정이 없어요. 가용 시간을 입력해보세요.
                 </p>
             )}

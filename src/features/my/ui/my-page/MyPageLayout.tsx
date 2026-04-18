@@ -26,11 +26,11 @@ export function MyPageLayout({
                 bottomInset="lg"
                 className="bg-surface"
             >
-                <section className="mx-[-1rem] border-b border-gray-200 bg-white px-4 pb-4">
-                    <h1 className="text-lg font-semibold text-gray-900">
+                <section className="mx-[-1rem] border-b border-border-soft bg-card px-4 pb-4">
+                    <h1 className="text-lg font-semibold text-foreground">
                         {title}
                     </h1>
-                    <p className="mt-2 text-sm leading-6 text-gray-600">
+                    <p className="mt-2 text-sm leading-6 text-text-secondary">
                         {description}
                     </p>
                     {actions ? <div className="mt-3">{actions}</div> : null}
@@ -59,14 +59,14 @@ export function MyPageSection({
     contentClassName,
 }: MyPageSectionProps) {
     return (
-        <section className={cn('mx-[-1rem] bg-white', className)}>
-            <div className="flex items-start justify-between gap-3 border-b border-gray-200 px-4 py-3">
+        <section className={cn('mx-[-1rem] bg-card', className)}>
+            <div className="flex items-start justify-between gap-3 border-b border-border-soft px-4 py-3">
                 <div>
-                    <h2 className="text-sm font-semibold text-gray-900">
+                    <h2 className="text-sm font-semibold text-foreground">
                         {title}
                     </h2>
                     {description ? (
-                        <p className="mt-1 text-xs leading-5 text-gray-500">
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
                             {description}
                         </p>
                     ) : null}
@@ -88,7 +88,7 @@ export function MyPageSummaryList({
     className,
 }: MyPageSummaryListProps) {
     return (
-        <dl className={cn('divide-y divide-gray-200', className)}>
+        <dl className={cn('divide-y divide-border-soft', className)}>
             {children}
         </dl>
     );
@@ -117,9 +117,9 @@ export function MyPageSummaryRow({
             )}
         >
             <div className="min-w-0 flex-1">
-                <dt className="text-xs text-gray-500">{label}</dt>
+                <dt className="text-xs text-muted-foreground">{label}</dt>
                 {detail ? (
-                    <dd className="mt-1 text-sm leading-5 text-gray-600">
+                    <dd className="mt-1 text-sm leading-5 text-text-secondary">
                         {detail}
                     </dd>
                 ) : null}
@@ -127,7 +127,7 @@ export function MyPageSummaryRow({
             {typeof value !== 'undefined' ? (
                 <dd
                     className={cn(
-                        'shrink-0 text-right text-sm font-medium text-gray-900',
+                        'shrink-0 text-right text-sm font-medium text-foreground',
                         valueClassName,
                     )}
                 >

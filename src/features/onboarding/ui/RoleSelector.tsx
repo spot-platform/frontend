@@ -58,8 +58,8 @@ export function RoleSelector({
                         className={cn(
                             'flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-colors',
                             isSelected
-                                ? 'border-primary bg-brand-50'
-                                : 'border-border-soft bg-background hover:bg-neutral-50',
+                                ? 'border-primary bg-accent-muted'
+                                : 'border-border-soft bg-background hover:bg-muted',
                         )}
                     >
                         <span className="text-3xl">{option.emoji}</span>

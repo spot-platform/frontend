@@ -35,8 +35,8 @@ export function ReviewModal({
     return (
         <BottomSheet open={open} onClose={onClose} title="후기 남기기">
             <div className="flex flex-col gap-5">
-                <p className="text-sm text-gray-600">
-                    <span className="font-semibold text-gray-900">
+                <p className="text-sm text-text-secondary">
+                    <span className="font-semibold text-foreground">
                         {targetNickname}
                     </span>
                     와의 활동은 어떠셨나요?
@@ -56,7 +56,7 @@ export function ReviewModal({
                                 className={
                                     star <= rating
                                         ? 'fill-yellow-400 text-yellow-400'
-                                        : 'text-gray-200'
+                                        : 'text-border-soft'
                                 }
                             />
                         </button>

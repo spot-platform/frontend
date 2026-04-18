@@ -16,7 +16,7 @@ const Stage = ({
 );
 
 const meta = {
-    title: 'Features/MapV3/PersonaDotMarker',
+    title: 'Features/Map/PersonaDotMarker',
     component: PersonaDotMarker,
     tags: ['autodocs'],
     parameters: { layout: 'fullscreen' },

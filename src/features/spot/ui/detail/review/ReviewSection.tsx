@@ -48,10 +48,10 @@ export function ReviewSection({
                                 size={14}
                                 className="fill-yellow-400 text-yellow-400"
                             />
-                            <span className="text-sm font-bold text-gray-700">
+                            <span className="text-sm font-bold text-text-secondary">
                                 {avgRating}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted-foreground">
                                 ({reviews.length}개 후기)
                             </span>
                         </div>
@@ -59,10 +59,10 @@ export function ReviewSection({
                     {reviews.map((review) => (
                         <div
                             key={review.id}
-                            className="rounded-xl bg-gray-50 px-4 py-3"
+                            className="rounded-xl bg-muted px-4 py-3"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-gray-600">
+                                <span className="text-xs font-semibold text-text-secondary">
                                     {review.reviewerNickname}
                                 </span>
                                 <div className="flex">
@@ -73,14 +73,14 @@ export function ReviewSection({
                                             className={
                                                 i < review.rating
                                                     ? 'fill-yellow-400 text-yellow-400'
-                                                    : 'text-gray-200'
+                                                    : 'text-border-soft'
                                             }
                                         />
                                     ))}
                                 </div>
                             </div>
                             {review.comment && (
-                                <p className="mt-1 text-xs leading-relaxed text-gray-600">
+                                <p className="mt-1 text-xs leading-relaxed text-text-secondary">
                                     {review.comment}
                                 </p>
                             )}
@@ -88,7 +88,9 @@ export function ReviewSection({
                     ))}
                 </div>
             ) : (
-                <p className="text-xs text-gray-400">아직 후기가 없어요</p>
+                <p className="text-xs text-muted-foreground">
+                    아직 후기가 없어요
+                </p>
             )}
         </SectionCard>
     );

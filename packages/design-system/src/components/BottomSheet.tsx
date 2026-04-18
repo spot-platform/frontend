@@ -49,7 +49,7 @@ export function BottomSheet({
             }}
         >
             <VaulDrawer.Portal>
-                <VaulDrawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
+                <VaulDrawer.Overlay className="fixed inset-0 z-50 bg-overlay" />
                 <VaulDrawer.Content
                     aria-describedby={undefined}
                     className={cn(
@@ -57,7 +57,7 @@ export function BottomSheet({
                         className,
                     )}
                 >
-                    <div className="mx-auto mt-3 mb-2 h-1 w-10 shrink-0 rounded-full bg-neutral-300" />
+                    <div className="mx-auto mt-3 mb-2 h-1 w-10 shrink-0 rounded-full bg-border-strong" />
                     {title ? (
                         <VaulDrawer.Title className="px-4 pb-2 text-base font-semibold text-foreground">
                             {title}

@@ -17,7 +17,7 @@ export function MyOverviewSection({
     return (
         <Section
             gap="md"
-            className="rounded-xl border border-gray-200 bg-white p-4"
+            className="rounded-xl border border-border-soft bg-card p-4"
         >
             <MySectionHeader
                 eyebrow="Overview"
@@ -54,15 +54,15 @@ export function MyOverviewSection({
 function StatCard({
     label,
     value,
-    accent = 'text-gray-950',
+    accent = 'text-foreground',
 }: {
     label: string;
     value: string;
     accent?: string;
 }) {
     return (
-        <div className="rounded-lg border border-gray-100 bg-surface px-4 py-3.5">
-            <p className="text-xs font-semibold tracking-[0.14em] text-gray-400 uppercase">
+        <div className="rounded-lg border border-border-soft bg-surface px-4 py-3.5">
+            <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                 {label}
             </p>
             <p

@@ -93,7 +93,7 @@ function getReverseOfferStatusLabel(
 
 function PersonalContextCard({ room }: { room: PersonalChatRoom }) {
     return (
-        <section className="rounded-xl border border-gray-200 bg-white p-5">
+        <section className="rounded-xl border border-border-soft bg-card p-5">
             <div className="flex items-start gap-4">
                 <UserAvatarStatic
                     userId={room.partnerId}
@@ -107,7 +107,7 @@ function PersonalContextCard({ room }: { room: PersonalChatRoom }) {
                 />
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-lg font-bold text-gray-900">
+                        <p className="text-lg font-bold text-foreground">
                             {room.partnerName}
                         </p>
                         <Chip
@@ -116,7 +116,7 @@ function PersonalContextCard({ room }: { room: PersonalChatRoom }) {
                                 'border-transparent font-semibold',
                                 room.counterpartRole === 'SUPPORTER'
                                     ? 'bg-brand-50 text-brand-800'
-                                    : 'bg-gray-100 text-gray-700',
+                                    : 'bg-muted text-text-secondary',
                             )}
                         >
                             {room.counterpartRole === 'SUPPORTER'
@@ -124,19 +124,19 @@ function PersonalContextCard({ room }: { room: PersonalChatRoom }) {
                                 : '파트너'}
                         </Chip>
                     </div>
-                    <p className="mt-2 text-sm font-medium text-gray-600">
+                    <p className="mt-2 text-sm font-medium text-text-secondary">
                         {room.presenceLabel}
                     </p>
-                    <p className="mt-3 text-sm leading-6 text-gray-500">
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
                         {room.description}
                     </p>
                 </div>
             </div>
-            <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
-                <p className="text-xs font-medium text-gray-400">
+            <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-soft pt-4">
+                <p className="text-xs font-medium text-muted-foreground">
                     {room.metaLabel}
                 </p>
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-text-secondary">
                     최근 활동 {formatMetaDate(room.updatedAt)}
                 </span>
             </div>
@@ -183,7 +183,7 @@ function ThreadItemCard({
             : tone === 'schedule'
               ? mine
                   ? 'bg-brand-50 text-brand-800'
-                  : 'bg-gray-100 text-gray-700'
+                  : 'bg-muted text-text-secondary'
               : tone === 'reverse-offer'
                 ? mine
                     ? 'bg-emerald-50 text-emerald-700'
@@ -194,13 +194,15 @@ function ThreadItemCard({
                       : 'bg-accent-muted text-accent'
                   : mine
                     ? 'bg-brand-100 text-brand-900'
-                    : 'bg-gray-100 text-gray-700';
+                    : 'bg-muted text-text-secondary';
 
     return (
         <div
             className={cn(
                 'w-full min-w-0 rounded-3xl border px-4 py-4 shadow-sm',
-                mine ? 'border-brand-100 bg-white' : 'border-gray-100 bg-white',
+                mine
+                    ? 'border-brand-100 bg-card'
+                    : 'border-border-soft bg-card',
             )}
         >
             <div className="flex items-start gap-3">
@@ -213,20 +215,20 @@ function ThreadItemCard({
                     {icon}
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold tracking-[0.14em] text-gray-400 uppercase">
+                    <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                         {eyebrow}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-gray-900">
+                    <p className="mt-1 text-sm font-semibold text-foreground">
                         {title}
                     </p>
                     {description ? (
-                        <p className="mt-1 text-sm leading-6 text-gray-500">
+                        <p className="mt-1 text-sm leading-6 text-muted-foreground">
                             {description}
                         </p>
                     ) : null}
                     {children ? <div className="mt-3">{children}</div> : null}
                     {footer ? (
-                        <p className="mt-3 text-xs font-medium text-gray-400">
+                        <p className="mt-3 text-xs font-medium text-muted-foreground">
                             {footer}
                         </p>
                     ) : null}
@@ -258,7 +260,7 @@ function renderThreadEntryContent(
                     'rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
                     mine
                         ? 'rounded-br-md bg-brand-800 text-white'
-                        : 'rounded-bl-md border border-gray-100 bg-gray-50 text-gray-800',
+                        : 'rounded-bl-md border border-border-soft bg-muted text-text-secondary',
                 )}
             >
                 {message.content}
@@ -275,10 +277,10 @@ function renderThreadEntryContent(
                 : message.shortcut.actionKind === 'schedule'
                   ? mine
                       ? 'bg-brand-50 text-brand-800'
-                      : 'bg-gray-100 text-gray-700'
+                      : 'bg-muted text-text-secondary'
                   : mine
                     ? 'bg-brand-100 text-brand-900'
-                    : 'bg-gray-100 text-gray-700';
+                    : 'bg-muted text-text-secondary';
 
         const shortcutIcon =
             message.shortcut.actionKind === 'vote' ? (
@@ -296,8 +298,8 @@ function renderThreadEntryContent(
                 className={cn(
                     'flex w-full items-start gap-3 rounded-2xl border px-3.5 py-3 text-left transition active:scale-[0.99]',
                     mine
-                        ? 'border-brand-100 bg-white hover:bg-brand-50/40'
-                        : 'border-gray-200 bg-white hover:bg-gray-50',
+                        ? 'border-brand-100 bg-card hover:bg-brand-50/40'
+                        : 'border-border-soft bg-card hover:bg-muted',
                 )}
             >
                 <div
@@ -309,19 +311,19 @@ function renderThreadEntryContent(
                     {shortcutIcon}
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold tracking-[0.12em] text-gray-400 uppercase">
+                    <p className="text-[11px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                         {message.shortcut.label}
                     </p>
-                    <p className="mt-1 line-clamp-2 break-words text-sm leading-5 font-semibold text-gray-900">
+                    <p className="mt-1 line-clamp-2 break-words text-sm leading-5 font-semibold text-foreground">
                         {message.shortcut.title}
                     </p>
-                    <p className="mt-0.5 line-clamp-2 break-words text-xs leading-5 text-gray-500">
+                    <p className="mt-0.5 line-clamp-2 break-words text-xs leading-5 text-muted-foreground">
                         {message.shortcut.preview}
                     </p>
                 </div>
                 <IconArrowUpRight
                     size={16}
-                    className="mt-0.5 shrink-0 text-gray-400"
+                    className="mt-0.5 shrink-0 text-muted-foreground"
                 />
             </button>
         );
@@ -353,12 +355,12 @@ function renderThreadEntryContent(
                         {message.vote.options.map((option) => (
                             <div
                                 key={option.id}
-                                className="flex items-center justify-between rounded-2xl bg-gray-50 px-3 py-2"
+                                className="flex items-center justify-between rounded-2xl bg-muted px-3 py-2"
                             >
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-text-secondary">
                                     {option.label}
                                 </span>
-                                <span className="text-xs font-semibold text-gray-400">
+                                <span className="text-xs font-semibold text-muted-foreground">
                                     {option.voterIds.length}표
                                 </span>
                             </div>
@@ -477,13 +479,13 @@ function renderThreadEntryContent(
                         </button>
                         <button
                             type="button"
-                            className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-gray-100 py-2 text-xs font-semibold text-gray-600"
+                            className="flex flex-1 items-center justify-center gap-1 rounded-xl bg-muted py-2 text-xs font-semibold text-text-secondary"
                         >
                             협의
                         </button>
                         <button
                             type="button"
-                            className="flex items-center justify-center rounded-xl bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-400"
+                            className="flex items-center justify-center rounded-xl bg-muted px-3 py-2 text-xs font-semibold text-muted-foreground"
                         >
                             <IconX size={13} />
                         </button>
@@ -699,7 +701,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     return (
         <>
             <div className="flex min-h-[calc(100vh-3.5rem)] flex-col bg-surface">
-                <div className="fixed left-0 right-0 top-0 z-40 border-b border-gray-200 bg-white">
+                <div className="fixed left-0 right-0 top-0 z-40 border-b border-border-soft bg-card">
                     <div className="mx-auto max-w-107.5">
                         <div className="flex min-h-14 items-center justify-between gap-3 px-4 py-2">
                             <div className="flex items-center gap-2">
@@ -709,19 +711,19 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                     size="sm"
                                     onClick={() => router.back()}
                                     label="뒤로가기"
-                                    className="text-gray-700"
+                                    className="text-text-secondary"
                                     icon={
                                         <IconArrowLeft
                                             size={22}
-                                            className="text-gray-700"
+                                            className="text-text-secondary"
                                         />
                                     }
                                 />
                                 <div className="min-w-0">
-                                    <p className="truncate text-base font-semibold text-gray-900">
+                                    <p className="truncate text-base font-semibold text-foreground">
                                         {currentRoom.title}
                                     </p>
-                                    <p className="truncate text-xs text-gray-400">
+                                    <p className="truncate text-xs text-muted-foreground">
                                         {headerSubtitle}
                                     </p>
                                 </div>
@@ -734,11 +736,11 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                     size="sm"
                                     onClick={() => router.push('/map')}
                                     label="맵으로 돌아가기"
-                                    className="text-gray-700"
+                                    className="text-text-secondary"
                                     icon={
                                         <IconMap
                                             size={20}
-                                            className="text-gray-700"
+                                            className="text-text-secondary"
                                         />
                                     }
                                 />
@@ -751,11 +753,11 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                             openRoomInfo(currentRoom.id)
                                         }
                                         label="참여자 정보"
-                                        className="text-gray-700"
+                                        className="text-text-secondary"
                                         icon={
                                             <IconUsers
                                                 size={20}
-                                                className="text-gray-700"
+                                                className="text-text-secondary"
                                             />
                                         }
                                     />
@@ -791,10 +793,10 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                         <section className="px-1 pb-2">
                             <div className="mb-4 flex items-center justify-between gap-3 px-1">
                                 <div>
-                                    <p className="text-[11px] font-semibold tracking-[0.16em] text-gray-400 uppercase">
+                                    <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                                         Thread
                                     </p>
-                                    <h2 className="mt-1 text-base font-bold text-gray-900">
+                                    <h2 className="mt-1 text-base font-bold text-foreground">
                                         {currentRoom.category === 'spot'
                                             ? '스팟 대화'
                                             : '개인 대화'}
@@ -827,14 +829,14 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                             >
                                                 {showDate && (
                                                     <div className="flex justify-center">
-                                                        <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-500">
+                                                        <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
                                                             {formatDateChip(
                                                                 message.createdAt,
                                                             )}
                                                         </span>
                                                     </div>
                                                 )}
-                                                <div className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[11px] text-gray-500 shadow-sm">
+                                                <div className="rounded-full border border-border-soft bg-card px-3 py-1.5 text-[11px] text-muted-foreground shadow-sm">
                                                     {message.content}
                                                 </div>
                                             </div>
@@ -866,7 +868,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                         >
                                             {showDate && (
                                                 <div className="flex justify-center">
-                                                    <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-500">
+                                                    <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
                                                         {formatDateChip(
                                                             message.createdAt,
                                                         )}
@@ -909,7 +911,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                         isFirstInGroup &&
                                                         currentRoom.category ===
                                                             'spot' && (
-                                                            <span className="px-1 text-[11px] font-medium text-gray-400">
+                                                            <span className="px-1 text-[11px] font-medium text-muted-foreground">
                                                                 {
                                                                     message.authorName
                                                                 }
@@ -936,7 +938,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                         </div>
 
                                                         {isLastInGroup && (
-                                                            <span className="shrink-0 px-1 text-[11px] text-gray-400">
+                                                            <span className="shrink-0 px-1 text-[11px] text-muted-foreground">
                                                                 {formatTime(
                                                                     message.createdAt,
                                                                 )}
@@ -954,20 +956,20 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                     </div>
                 </div>
 
-                <div className="shrink-0 border-t border-gray-200 bg-white px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 md:pb-[calc(env(safe-area-inset-bottom)+6rem)]">
+                <div className="shrink-0 border-t border-border-soft bg-card px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 md:pb-[calc(env(safe-area-inset-bottom)+6rem)]">
                     <div className="mx-auto flex max-w-3xl items-end gap-2">
                         {currentRoom.category === 'spot' ? (
                             <button
                                 type="button"
                                 onClick={() => setShortcutPickerOpen(true)}
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 active:scale-[0.98]"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-soft bg-card text-text-secondary shadow-sm transition hover:bg-muted active:scale-[0.98]"
                                 aria-label="바로가기 공유"
                             >
                                 <IconPlus size={18} />
                             </button>
                         ) : null}
 
-                        <div className="flex min-h-11 flex-1 items-end rounded-[26px] border border-gray-200 bg-gray-50 px-4 py-2 shadow-sm">
+                        <div className="flex min-h-11 flex-1 items-end rounded-[26px] border border-border-soft bg-muted px-4 py-2 shadow-sm">
                             <textarea
                                 ref={textareaRef}
                                 value={draft}
@@ -981,7 +983,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                         ? '메시지를 남겨보세요'
                                         : '메시지를 입력하세요'
                                 }
-                                className="max-h-[120px] min-h-[24px] flex-1 resize-none bg-transparent py-1 text-sm text-gray-900 outline-none placeholder:text-gray-400"
+                                className="max-h-[120px] min-h-[24px] flex-1 resize-none bg-transparent py-1 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                             />
                         </div>
 
@@ -997,7 +999,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                         ) : (
                             <button
                                 type="button"
-                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors active:bg-gray-200"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors active:bg-border-soft"
                                 aria-label="음성메시지"
                             >
                                 {currentRoom.category === 'personal' ? (
@@ -1020,7 +1022,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                 >
                     <div className="flex flex-col gap-4 pb-2">
                         <section className="flex flex-col gap-2">
-                            <p className="text-[11px] font-semibold tracking-[0.14em] text-gray-400 uppercase">
+                            <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                                 새로 만들기
                             </p>
                             <div className="grid grid-cols-2 gap-2">
@@ -1060,7 +1062,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                         label: '파일',
                                         description: '첨부 파일 공유',
                                         icon: <IconFileText size={18} />,
-                                        tone: 'bg-gray-100 text-gray-700',
+                                        tone: 'bg-muted text-text-secondary',
                                     },
                                 ].map(
                                     ({
@@ -1077,7 +1079,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                 setShortcutPickerOpen(false);
                                                 openCreation(step);
                                             }}
-                                            className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left transition hover:bg-gray-50 active:scale-[0.99]"
+                                            className="flex items-start gap-3 rounded-2xl border border-border-soft bg-card px-3 py-3 text-left transition hover:bg-muted active:scale-[0.99]"
                                         >
                                             <div
                                                 className={cn(
@@ -1088,10 +1090,10 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                 {icon}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-semibold text-gray-900">
+                                                <p className="text-sm font-semibold text-foreground">
                                                     {label}
                                                 </p>
-                                                <p className="mt-0.5 text-xs text-gray-500">
+                                                <p className="mt-0.5 text-xs text-muted-foreground">
                                                     {description}
                                                 </p>
                                             </div>
@@ -1101,16 +1103,16 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                             </div>
                         </section>
 
-                        <p className="text-[11px] font-semibold tracking-[0.14em] text-gray-400 uppercase">
+                        <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                             바로가기 공유
                         </p>
-                        <p className="text-sm leading-6 text-gray-500">
+                        <p className="text-sm leading-6 text-muted-foreground">
                             이 방에 이미 등록된 투표, 일정, 파일만 바로가기
                             메시지로 공유할 수 있어요.
                         </p>
 
                         {shareableActionItems.length > 0 ? (
-                            <div className="overflow-hidden rounded-[20px] border border-gray-200 bg-white">
+                            <div className="overflow-hidden rounded-[20px] border border-border-soft bg-card">
                                 {shareableActionItems.map((item, index) => {
                                     const itemIcon =
                                         item.kind === 'vote' ? (
@@ -1125,7 +1127,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                             ? 'bg-amber-50 text-amber-700'
                                             : item.kind === 'schedule'
                                               ? 'bg-brand-50 text-brand-800'
-                                              : 'bg-gray-100 text-gray-700';
+                                              : 'bg-muted text-text-secondary';
                                     const itemTitle =
                                         item.kind === 'vote'
                                             ? item.vote.question
@@ -1147,9 +1149,9 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                 handleShortcutShare(item)
                                             }
                                             className={cn(
-                                                'flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-gray-50 active:scale-[0.99]',
+                                                'flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-muted active:scale-[0.99]',
                                                 index > 0 &&
-                                                    'border-t border-gray-100',
+                                                    'border-t border-border-soft',
                                             )}
                                         >
                                             <div
@@ -1161,16 +1163,16 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                                 {itemIcon}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="line-clamp-2 break-words text-sm leading-5 font-semibold text-gray-900">
+                                                <p className="line-clamp-2 break-words text-sm leading-5 font-semibold text-foreground">
                                                     {itemTitle}
                                                 </p>
-                                                <p className="mt-0.5 line-clamp-2 break-words text-xs leading-5 text-gray-500">
+                                                <p className="mt-0.5 line-clamp-2 break-words text-xs leading-5 text-muted-foreground">
                                                     {itemDescription}
                                                 </p>
                                             </div>
                                             <IconArrowUpRight
                                                 size={16}
-                                                className="mt-0.5 shrink-0 text-gray-400"
+                                                className="mt-0.5 shrink-0 text-muted-foreground"
                                             />
                                         </button>
                                     );

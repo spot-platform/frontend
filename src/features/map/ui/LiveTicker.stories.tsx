@@ -23,7 +23,7 @@ const Stage = ({
 );
 
 const meta = {
-    title: 'Features/MapV3/LiveTicker',
+    title: 'Features/Map/LiveTicker',
     component: LiveTicker,
     tags: ['autodocs'],
     parameters: { layout: 'fullscreen' },

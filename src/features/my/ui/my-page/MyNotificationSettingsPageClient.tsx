@@ -66,8 +66,8 @@ export function MyNotificationSettingsPageClient() {
             >
                 <MyPageSection title="불러오는 중">
                     <div className="space-y-3">
-                        <div className="h-18 rounded-xl bg-gray-100" />
-                        <div className="h-18 rounded-xl bg-gray-100" />
+                        <div className="h-18 rounded-xl bg-muted" />
+                        <div className="h-18 rounded-xl bg-muted" />
                     </div>
                 </MyPageSection>
             </MyPageLayout>
@@ -97,7 +97,7 @@ export function MyNotificationSettingsPageClient() {
                 description={`마지막 변경 ${formatDateTime(settings.updatedAt)}`}
                 contentClassName="py-0"
             >
-                <div className="-mx-4 divide-y divide-gray-200">
+                <div className="-mx-4 divide-y divide-border-soft">
                     <MyToggleRow
                         label="서비스 공지"
                         description="정책 변경, 점검, 공지사항을 받아요."

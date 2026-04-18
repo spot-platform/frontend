@@ -16,7 +16,7 @@ const Stage = ({
 );
 
 const meta = {
-    title: 'Features/MapV3/MyLocationMarker',
+    title: 'Features/Map/MyLocationMarker',
     component: MyLocationMarker,
     tags: ['autodocs'],
     parameters: { layout: 'fullscreen' },

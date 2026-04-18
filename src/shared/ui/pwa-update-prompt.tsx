@@ -34,13 +34,13 @@ export function PwaUpdatePrompt() {
     };
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-black px-4 py-3 text-white shadow-lg">
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-foreground px-4 py-3 text-background shadow-lg">
             <span className="text-sm">새 버전이 있습니다</span>
             <Button
                 onClick={handleUpdate}
                 variant="ghost"
                 size="sm"
-                className="ml-4 h-auto rounded-lg bg-white px-3 py-1 text-black hover:bg-gray-100"
+                className="ml-4 h-auto rounded-lg bg-background px-3 py-1 text-foreground hover:bg-muted"
             >
                 업데이트
             </Button>

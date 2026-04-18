@@ -1,4 +1,4 @@
-// map-v3 FeedBottomSheet 위에 덧입히는 얇은 헤더. 원본 시트 수정 없이 collapsed 영역 덮기.
+// map FeedBottomSheet 위에 덧입히는 얇은 헤더. 원본 시트 수정 없이 collapsed 영역 덮기.
 
 'use client';
 

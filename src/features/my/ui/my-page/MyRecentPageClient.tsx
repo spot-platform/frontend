@@ -87,8 +87,8 @@ export function MyRecentPageClient() {
 
                 {recentViewsQuery.isPending && recentViews.length === 0 ? (
                     <div className="space-y-3">
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
-                        <div className="h-18 animate-pulse rounded-xl bg-gray-100" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
+                        <div className="h-18 animate-pulse rounded-xl bg-muted" />
                     </div>
                 ) : recentViewsQuery.isError && recentViews.length === 0 ? (
                     <EmptyState
@@ -101,21 +101,21 @@ export function MyRecentPageClient() {
                 ) : recentViews.length === 0 ? (
                     <EmptyState title="최근 본 게시글이 없어요" />
                 ) : (
-                    <ul className="-mx-4 divide-y divide-gray-200">
+                    <ul className="-mx-4 divide-y divide-border-soft">
                         {recentViews.map((item) => (
                             <li
                                 key={item.id}
-                                className="px-4 py-3 transition-colors hover:bg-gray-50"
+                                className="px-4 py-3 transition-colors hover:bg-muted"
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="min-w-0 flex-1">
                                         <Link
                                             href={`/spot/${item.targetId}`}
-                                            className="text-sm font-medium text-gray-900 underline-offset-2 hover:underline"
+                                            className="text-sm font-medium text-foreground underline-offset-2 hover:underline"
                                         >
                                             {item.title}
                                         </Link>
-                                        <p className="mt-1 text-xs text-gray-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             {item.type}
                                             {item.authorNickname
                                                 ? ` · ${item.authorNickname}`
@@ -127,7 +127,7 @@ export function MyRecentPageClient() {
                                             조회일 {formatDate(item.viewedAt)}
                                         </p>
                                         {item.description ? (
-                                            <p className="mt-2 text-sm text-gray-600">
+                                            <p className="mt-2 text-sm text-text-secondary">
                                                 {item.description}
                                             </p>
                                         ) : null}

@@ -43,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
                         startAdornment && 'pl-10',
                         endAdornment && 'pr-10',
                         error
-                            ? 'border-destructive focus:border-destructive focus:ring-red-200'
+                            ? 'border-destructive focus:border-destructive focus:ring-destructive-border'
                             : 'border-input',
                         className,
                     )}

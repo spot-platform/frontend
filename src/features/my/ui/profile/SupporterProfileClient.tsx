@@ -28,7 +28,7 @@ function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
                         'transition-colors',
                         i <= Math.round(rating)
                             ? 'fill-amber-400 text-amber-400'
-                            : 'fill-gray-100 text-gray-200',
+                            : 'fill-muted text-border-soft',
                     )}
                 />
             ))}
@@ -73,8 +73,8 @@ function SectionLabel({
 }) {
     return (
         <div className="flex items-center gap-1.5">
-            <Icon size={13} className="text-gray-400" />
-            <span className="text-[11px] font-semibold tracking-[0.16em] text-gray-400 uppercase">
+            <Icon size={13} className="text-muted-foreground" />
+            <span className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 {label}
             </span>
         </div>
@@ -86,8 +86,8 @@ function SectionLabel({
 function MediaGallery({ urls }: { urls: string[] }) {
     if (urls.length === 0) {
         return (
-            <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50">
-                <div className="flex flex-col items-center gap-1.5 text-gray-300">
+            <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-border-soft bg-muted">
+                <div className="flex flex-col items-center gap-1.5 text-border-strong">
                     <IconPhoto size={24} />
                     <span className="text-xs">등록된 사진·동영상이 없어요</span>
                 </div>
@@ -99,7 +99,7 @@ function MediaGallery({ urls }: { urls: string[] }) {
             {urls.map((url, i) => (
                 <div
                     key={i}
-                    className="aspect-square overflow-hidden rounded-xl bg-gray-100"
+                    className="aspect-square overflow-hidden rounded-xl bg-muted"
                 >
                     <img
                         src={url}
@@ -121,28 +121,28 @@ function ReviewCard({ review }: { review: ProfileReview }) {
         day: 'numeric',
     });
     return (
-        <div className="flex flex-col gap-2 rounded-2xl border border-gray-100 bg-surface p-4">
+        <div className="flex flex-col gap-2 rounded-2xl border border-border-soft bg-surface p-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-xs font-bold text-gray-600">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-text-secondary">
                         {review.reviewerNickname.slice(0, 1)}
                     </div>
-                    <span className="text-sm font-semibold text-gray-800">
+                    <span className="text-sm font-semibold text-text-secondary">
                         {review.reviewerNickname}
                     </span>
                 </div>
                 <StarRating rating={review.rating} size={12} />
             </div>
             {review.comment && (
-                <p className="text-sm leading-6 text-gray-600">
+                <p className="text-sm leading-6 text-text-secondary">
                     {review.comment}
                 </p>
             )}
             <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-foreground">
                     {review.spotTitle}
                 </span>
-                <span className="text-xs text-gray-300">{date}</span>
+                <span className="text-xs text-border-strong">{date}</span>
             </div>
         </div>
     );
@@ -171,7 +171,7 @@ function HistoryRow({ item }: { item: ProfileHistory }) {
             >
                 {typeLabel}
             </span>
-            <p className="min-w-0 flex-1 truncate text-sm text-gray-800">
+            <p className="min-w-0 flex-1 truncate text-sm text-text-secondary">
                 {item.spotTitle}
             </p>
             <div className="flex shrink-0 items-center gap-1.5">
@@ -181,12 +181,12 @@ function HistoryRow({ item }: { item: ProfileHistory }) {
                             size={11}
                             className="fill-amber-400 text-amber-400"
                         />
-                        <span className="text-xs font-semibold text-gray-600">
+                        <span className="text-xs font-semibold text-text-secondary">
                             {item.avgRating.toFixed(1)}
                         </span>
                     </div>
                 )}
-                <span className="text-xs text-gray-300">{date}</span>
+                <span className="text-xs text-border-strong">{date}</span>
             </div>
         </div>
     );
@@ -204,7 +204,7 @@ export function SupporterProfileClient({
             <DetailHeader title="서포터 프로필" />
             {/* 헤더 카드 */}
             <Section
-                className="rounded-xl border border-gray-200 bg-white p-5"
+                className="rounded-xl border border-border-soft bg-card p-5"
                 gap="md"
             >
                 <div className="flex items-start gap-4">
@@ -216,37 +216,39 @@ export function SupporterProfileClient({
                         <p className="text-[11px] font-semibold tracking-[0.16em] text-brand-700 uppercase">
                             {profile.field}
                         </p>
-                        <h1 className="mt-1.5 text-2xl font-black tracking-[-0.03em] text-gray-950">
+                        <h1 className="mt-1.5 text-2xl font-black tracking-[-0.03em] text-foreground">
                             {profile.nickname}
                         </h1>
                         <div className="mt-2 flex items-center gap-2">
                             <StarRating rating={profile.avgRating} />
-                            <span className="text-sm font-bold text-gray-800">
+                            <span className="text-sm font-bold text-text-secondary">
                                 {profile.avgRating.toFixed(1)}
                             </span>
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted-foreground">
                                 ({profile.reviewCount}개 후기)
                             </span>
                         </div>
                     </div>
                 </div>
-                <p className="text-sm leading-7 text-gray-600">{profile.bio}</p>
+                <p className="text-sm leading-7 text-text-secondary">
+                    {profile.bio}
+                </p>
             </Section>
 
             {/* 분야 & 경력 */}
             <Section
-                className="rounded-xl border border-gray-100 bg-white p-4"
+                className="rounded-xl border border-border-soft bg-card p-4"
                 gap="sm"
             >
                 <SectionLabel icon={IconBriefcase} label="경력" />
-                <p className="text-sm leading-7 text-gray-700">
+                <p className="text-sm leading-7 text-text-secondary">
                     {profile.career}
                 </p>
             </Section>
 
             {/* 미디어 */}
             <Section
-                className="rounded-xl border border-gray-100 bg-white p-4"
+                className="rounded-xl border border-border-soft bg-card p-4"
                 gap="sm"
             >
                 <SectionLabel icon={IconPhoto} label="사진 · 동영상" />
@@ -255,20 +257,20 @@ export function SupporterProfileClient({
 
             {/* 별점 & 리뷰 */}
             <Section
-                className="rounded-xl border border-gray-100 bg-white p-4"
+                className="rounded-xl border border-border-soft bg-card p-4"
                 gap="md"
             >
                 <div className="flex items-center justify-between">
                     <SectionLabel icon={IconStar} label="리뷰" />
                     <div className="flex items-center gap-1.5">
                         <StarRating rating={profile.avgRating} size={16} />
-                        <span className="text-base font-black text-gray-900">
+                        <span className="text-base font-black text-foreground">
                             {profile.avgRating.toFixed(1)}
                         </span>
                     </div>
                 </div>
                 {profile.reviews.length === 0 ? (
-                    <p className="py-4 text-center text-sm text-gray-400">
+                    <p className="py-4 text-center text-sm text-muted-foreground">
                         아직 리뷰가 없어요
                     </p>
                 ) : (
@@ -282,16 +284,16 @@ export function SupporterProfileClient({
 
             {/* 히스토리 */}
             <Section
-                className="rounded-xl border border-gray-100 bg-white p-4"
+                className="rounded-xl border border-border-soft bg-card p-4"
                 gap="sm"
             >
                 <SectionLabel icon={IconHistory} label="IconHistory" />
                 {profile.history.length === 0 ? (
-                    <p className="py-4 text-center text-sm text-gray-400">
+                    <p className="py-4 text-center text-sm text-muted-foreground">
                         완료된 스팟이 없어요
                     </p>
                 ) : (
-                    <ul className="divide-y divide-gray-50">
+                    <ul className="divide-y divide-border-soft">
                         {profile.history.map((item) => (
                             <li key={item.spotId}>
                                 <HistoryRow item={item} />

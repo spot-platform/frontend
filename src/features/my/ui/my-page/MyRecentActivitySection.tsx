@@ -26,7 +26,7 @@ export function MyRecentActivitySection({
     return (
         <Section
             gap="md"
-            className="rounded-xl border border-gray-100 bg-white p-4"
+            className="rounded-xl border border-border-soft bg-card p-4"
         >
             <div className="flex items-start justify-between gap-3">
                 <MySectionHeader
@@ -52,7 +52,7 @@ export function MyRecentActivitySection({
                     isRetrying={isRetrying}
                 />
             ) : participations.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-gray-200 bg-surface px-4">
+                <div className="rounded-lg border border-dashed border-border-soft bg-surface px-4">
                     <EmptyState
                         title="아직 참여한 스팟이 없어요"
                         description="관심 있는 요청이나 제안을 북마크하거나 새 스팟을 탐색해 보세요."
@@ -84,7 +84,7 @@ function ParticipationCard({
     return (
         <Link
             href={`/spot/${participation.spotId}`}
-            className="rounded-lg border border-gray-100 bg-surface px-4 py-4 transition hover:border-brand-100 hover:bg-brand-50/50"
+            className="rounded-lg border border-border-soft bg-surface px-4 py-4 transition hover:border-brand-100 hover:bg-brand-50/50"
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -95,10 +95,10 @@ function ParticipationCard({
                             {getRoleLabel(participation.role)}
                         </Chip>
                     </div>
-                    <p className="line-clamp-2 text-sm font-semibold leading-6 text-gray-900">
+                    <p className="line-clamp-2 text-sm font-semibold leading-6 text-foreground">
                         {participation.spotTitle}
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-gray-500">
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
                         {formatDate(participation.joinedAt)} 참여 시작
                     </p>
                 </div>
@@ -113,7 +113,7 @@ function ParticipationListSkeleton() {
             {Array.from({ length: 3 }).map((_, index) => (
                 <div
                     key={index}
-                    className="h-28 animate-pulse rounded-lg border border-gray-100 bg-surface"
+                    className="h-28 animate-pulse rounded-lg border border-border-soft bg-surface"
                 />
             ))}
         </div>

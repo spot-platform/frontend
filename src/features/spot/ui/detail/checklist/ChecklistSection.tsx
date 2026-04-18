@@ -14,18 +14,20 @@ export function ChecklistSection({ checklist }: ChecklistSectionProps) {
     return (
         <SectionCard title="체크리스트" manageModal="checklist">
             {items.length === 0 ? (
-                <p className="text-xs text-gray-400">체크리스트가 없어요</p>
+                <p className="text-xs text-muted-foreground">
+                    체크리스트가 없어요
+                </p>
             ) : (
                 <div className="flex flex-col gap-2">
                     {/* 완료 요약 */}
                     <div className="flex items-center gap-2">
                         <IconSquareCheck size={14} className="text-brand-800" />
-                        <span className="text-xs font-semibold text-gray-600">
+                        <span className="text-xs font-semibold text-text-secondary">
                             {completed}/{items.length} 완료
                         </span>
                     </div>
                     {/* 진행 바 */}
-                    <div className="h-1 overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-1 overflow-hidden rounded-full bg-muted">
                         <div
                             className="h-full rounded-full bg-brand-800 transition-all"
                             style={{
@@ -44,14 +46,14 @@ export function ChecklistSection({ checklist }: ChecklistSectionProps) {
                                     className={`h-1.5 w-1.5 rounded-full ${
                                         item.completed
                                             ? 'bg-brand-800'
-                                            : 'bg-gray-200'
+                                            : 'bg-border-soft'
                                     }`}
                                 />
                                 <span
                                     className={`text-xs ${
                                         item.completed
-                                            ? 'text-gray-400 line-through'
-                                            : 'text-gray-600'
+                                            ? 'text-muted-foreground line-through'
+                                            : 'text-text-secondary'
                                     }`}
                                 >
                                     {item.text}
@@ -59,7 +61,7 @@ export function ChecklistSection({ checklist }: ChecklistSectionProps) {
                             </div>
                         ))}
                         {items.length > 3 && (
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted-foreground">
                                 +{items.length - 3}개 더
                             </span>
                         )}

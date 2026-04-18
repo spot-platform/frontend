@@ -1,4 +1,4 @@
-// map-v3 Canvas. 기존 MapCanvas 와 동일한 동기적 Map 생성 패턴을 따른다.
+// map 메인 Canvas. 2026-04-19 map-v3 에서 승격. 기존 MapCanvas 와 동일한 동기적 Map 생성 패턴을 따른다.
 // StrictMode double-invoke 시 async mountMap 은 race 가 나서 타일 레이어가 비게 되는 버그가 있음.
 
 'use client';
@@ -123,7 +123,7 @@ function NaverMapV3({
         } catch (err) {
             if (typeof console !== 'undefined') {
                 console.warn(
-                    '[map-v3] Naver Map init with customStyleId failed. Falling back to default style.',
+                    '[map] Naver Map init with customStyleId failed. Falling back to default style.',
                     err,
                 );
             }

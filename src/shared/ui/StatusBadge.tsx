@@ -14,10 +14,10 @@ const SIZE_CLASSES: Record<Size, string> = {
 };
 
 const STATUS_STYLES: Record<SpotStatus, string> = {
-    OPEN: 'border-transparent bg-emerald-100 text-emerald-700',
+    OPEN: 'border-transparent bg-success-soft text-success',
     MATCHED: 'border-transparent bg-blue-100 text-blue-700',
-    CLOSED: 'border-transparent bg-gray-100 text-gray-500',
-    CANCELLED: 'border-transparent bg-red-100 text-red-500',
+    CLOSED: 'border-transparent bg-muted text-muted-foreground',
+    CANCELLED: 'border-transparent bg-destructive-soft text-destructive',
 };
 
 const STATUS_LABELS: Record<SpotStatus, string> = {

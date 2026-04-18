@@ -1,4 +1,5 @@
-// map-v3 네이버 지도 팩토리. mount / unmount / applyStyle 3종 API 를 idempotent 하게 제공.
+// map 네이버 지도 팩토리. mount / unmount / applyStyle 3종 API 를 idempotent 하게 제공.
+// 현재 사용처 0 — MapV3Canvas 가 자체 SDK loader 를 사용한다. 정리는 별도 PR에서.
 
 import { loadNaverMapSDK, waitForNaverMaps } from '@/features/map/ui/MapCanvas';
 
@@ -67,7 +68,7 @@ export async function mountMap(
         // customStyleId invalid 등 초기화 실패 → 스타일 없이 재시도.
         if (typeof console !== 'undefined') {
             console.warn(
-                '[map-v3] Naver Map init with customStyleId failed. Falling back to default style.',
+                '[map] Naver Map init with customStyleId failed. Falling back to default style.',
                 err,
             );
         }
@@ -126,7 +127,7 @@ export function applyStyle(map: naver.maps.Map, theme: Theme): boolean {
     } catch (err) {
         if (typeof console !== 'undefined') {
             console.warn(
-                '[map-v3] applyStyle setOptions failed. Caller should remount.',
+                '[map] applyStyle setOptions failed. Caller should remount.',
                 err,
             );
         }

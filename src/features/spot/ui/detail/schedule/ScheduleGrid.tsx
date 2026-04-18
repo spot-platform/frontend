@@ -38,11 +38,11 @@ export function ScheduleGrid({
             <table className="min-w-full text-xs">
                 <thead>
                     <tr>
-                        <th className="w-10 pb-2 text-gray-400" />
+                        <th className="w-10 pb-2 text-muted-foreground" />
                         {dates.map((d) => (
                             <th
                                 key={d}
-                                className="pb-2 text-center font-semibold text-gray-600"
+                                className="pb-2 text-center font-semibold text-text-secondary"
                             >
                                 {d.slice(5)} {/* MM-DD */}
                             </th>
@@ -52,7 +52,7 @@ export function ScheduleGrid({
                 <tbody>
                     {hours.map((hour) => (
                         <tr key={hour}>
-                            <td className="pr-2 text-right text-gray-400">
+                            <td className="pr-2 text-right text-muted-foreground">
                                 {hour}:00
                             </td>
                             {dates.map((date) => {
@@ -68,7 +68,7 @@ export function ScheduleGrid({
                                                     ? 'bg-brand-800 text-white'
                                                     : count > 0
                                                       ? 'bg-brand-800/20 text-brand-800'
-                                                      : 'bg-gray-100 text-gray-300'
+                                                      : 'bg-muted text-border-strong'
                                             }`}
                                         >
                                             {count > 0 ? count : ''}

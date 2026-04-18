@@ -16,18 +16,20 @@ export function ProgressNoteSection({ notes }: ProgressNoteSectionProps) {
             manageLabel="노트 보기"
         >
             {!latest ? (
-                <p className="text-xs text-gray-400">아직 노트가 없어요</p>
+                <p className="text-xs text-muted-foreground">
+                    아직 노트가 없어요
+                </p>
             ) : (
                 <div className="flex gap-2">
                     <IconNote
                         size={14}
-                        className="mt-0.5 shrink-0 text-gray-300"
+                        className="mt-0.5 shrink-0 text-border-strong"
                     />
                     <div>
-                        <p className="line-clamp-2 text-xs leading-relaxed text-gray-600">
+                        <p className="line-clamp-2 text-xs leading-relaxed text-text-secondary">
                             {latest.content}
                         </p>
-                        <p className="mt-1 text-[10px] text-gray-400">
+                        <p className="mt-1 text-[10px] text-muted-foreground">
                             {latest.authorNickname} · {notes.length}개 노트
                         </p>
                     </div>

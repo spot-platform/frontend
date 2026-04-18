@@ -41,7 +41,7 @@ export const MultipleGroups: Story = {
         const [secondaryValue, setSecondaryValue] = useState('rent');
 
         return (
-            <div className="flex w-80 flex-col gap-6 bg-white p-6">
+            <div className="flex w-80 flex-col gap-6 bg-card p-6">
                 <Tab
                     options={options}
                     value={primaryValue}

@@ -39,7 +39,7 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
                     fullWidth
                     onClick={() => fileInputRef.current?.click()}
                     startIcon={<IconUpload size={18} />}
-                    className="border-2 border-dashed text-gray-500"
+                    className="border-2 border-dashed text-muted-foreground"
                 >
                     파일 업로드
                 </Button>
@@ -52,7 +52,7 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
 
                 {/* 파일 목록 */}
                 {files.length === 0 ? (
-                    <p className="text-center text-sm text-gray-400">
+                    <p className="text-center text-sm text-muted-foreground">
                         공유된 파일이 없어요
                     </p>
                 ) : (
@@ -60,13 +60,13 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
                         {files.map((file) => (
                             <div
                                 key={file.id}
-                                className="flex items-center gap-3 rounded-xl border border-gray-100 px-4 py-3"
+                                className="flex items-center gap-3 rounded-xl border border-border-soft px-4 py-3"
                             >
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-semibold text-gray-800">
+                                    <p className="truncate text-sm font-semibold text-text-secondary">
                                         {file.name}
                                     </p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-muted-foreground">
                                         {file.uploaderNickname} ·{' '}
                                         {formatBytes(file.sizeBytes)}
                                     </p>
@@ -74,7 +74,7 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
                                 <a
                                     href={file.url}
                                     download
-                                    className="shrink-0 text-gray-400 active:text-brand-800"
+                                    className="shrink-0 text-muted-foreground active:text-brand-800"
                                 >
                                     <IconDownload size={16} />
                                 </a>
@@ -83,7 +83,7 @@ export function FileShareModal({ open, onClose, spotId }: FileShareModalProps) {
                                     variant="ghost"
                                     onClick={() => deleteFile(file.id)}
                                     label="파일 삭제"
-                                    className="shrink-0 text-gray-300 hover:bg-red-50 hover:text-red-400"
+                                    className="shrink-0 text-border-strong hover:bg-red-50 hover:text-destructive"
                                     icon={<IconTrash size={16} />}
                                 />
                             </div>

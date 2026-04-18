@@ -7,7 +7,7 @@ const meta = {
     component: Tabs,
     decorators: [
         (Story) => (
-            <div className="bg-white p-8">
+            <div className="bg-card p-8">
                 <Story />
             </div>
         ),

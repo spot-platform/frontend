@@ -118,9 +118,9 @@ export function MySupportProfilePageClient() {
             >
                 <MyPageSection title="불러오는 중">
                     <div className="space-y-3">
-                        <div className="h-11 rounded-xl bg-gray-100" />
-                        <div className="h-24 rounded-xl bg-gray-100" />
-                        <div className="h-24 rounded-xl bg-gray-100" />
+                        <div className="h-11 rounded-xl bg-muted" />
+                        <div className="h-24 rounded-xl bg-muted" />
+                        <div className="h-24 rounded-xl bg-muted" />
                     </div>
                 </MyPageSection>
             </MyPageLayout>
@@ -170,7 +170,7 @@ export function MySupportProfilePageClient() {
                 description="분야, 경력, 소개, 미디어 주소를 직접 수정해 저장하세요."
             >
                 <form
-                    className="divide-y divide-gray-200"
+                    className="divide-y divide-border-soft"
                     onSubmit={handleSubmit}
                 >
                     <MyField
@@ -281,26 +281,26 @@ export function MySupportProfilePageClient() {
                 {profile.reviews.length === 0 ? (
                     <EmptyState title="아직 받은 리뷰가 없어요" />
                 ) : (
-                    <ul className="-mx-4 divide-y divide-gray-200">
+                    <ul className="-mx-4 divide-y divide-border-soft">
                         {profile.reviews.map((review) => (
                             <li
                                 key={review.id}
-                                className="px-4 py-3 transition-colors hover:bg-gray-50"
+                                className="px-4 py-3 transition-colors hover:bg-muted"
                             >
                                 <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-medium text-gray-900">
+                                    <p className="text-sm font-medium text-foreground">
                                         {review.reviewerNickname}
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                         {review.rating}점 ·{' '}
                                         {formatDate(review.createdAt)}
                                     </p>
                                 </div>
-                                <p className="mt-1 text-sm text-gray-600">
+                                <p className="mt-1 text-sm text-text-secondary">
                                     {review.comment ||
                                         '남겨진 코멘트가 없어요.'}
                                 </p>
-                                <p className="mt-1 text-xs text-gray-500">
+                                <p className="mt-1 text-xs text-muted-foreground">
                                     {review.spotTitle}
                                 </p>
                             </li>
@@ -317,23 +317,23 @@ export function MySupportProfilePageClient() {
                 {profile.history.length === 0 ? (
                     <EmptyState title="완료된 서포터 활동이 없어요" />
                 ) : (
-                    <ul className="-mx-4 divide-y divide-gray-200">
+                    <ul className="-mx-4 divide-y divide-border-soft">
                         {profile.history.map((item) => (
                             <li
                                 key={item.spotId}
-                                className="px-4 py-3 transition-colors hover:bg-gray-50"
+                                className="px-4 py-3 transition-colors hover:bg-muted"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">
+                                        <p className="text-sm font-medium text-foreground">
                                             {item.spotTitle}
                                         </p>
-                                        <p className="mt-1 text-xs text-gray-500">
+                                        <p className="mt-1 text-xs text-muted-foreground">
                                             완료일{' '}
                                             {formatDate(item.completedAt)}
                                         </p>
                                     </div>
-                                    <div className="text-right text-xs text-gray-500">
+                                    <div className="text-right text-xs text-muted-foreground">
                                         <p>{item.reviewCount}개 리뷰</p>
                                         <p>
                                             {typeof item.avgRating === 'number'

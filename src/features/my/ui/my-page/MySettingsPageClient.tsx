@@ -177,9 +177,9 @@ export function MySettingsPageClient() {
             >
                 <MyPageSection title="불러오는 중">
                     <div className="space-y-3">
-                        <div className="h-11 rounded-xl bg-gray-100" />
-                        <div className="h-11 rounded-xl bg-gray-100" />
-                        <div className="h-11 rounded-xl bg-gray-100" />
+                        <div className="h-11 rounded-xl bg-muted" />
+                        <div className="h-11 rounded-xl bg-muted" />
+                        <div className="h-11 rounded-xl bg-muted" />
                     </div>
                 </MyPageSection>
             </MyPageLayout>
@@ -222,7 +222,7 @@ export function MySettingsPageClient() {
                 description="현재 계정에 연결된 정보를 수정해 저장하세요."
             >
                 <form
-                    className="divide-y divide-gray-200"
+                    className="divide-y divide-border-soft"
                     onSubmit={handleProfileSubmit}
                 >
                     <MyField
@@ -329,7 +329,7 @@ export function MySettingsPageClient() {
                 description="현재 비밀번호를 확인한 뒤 새 비밀번호로 변경하세요."
             >
                 <form
-                    className="divide-y divide-gray-200"
+                    className="divide-y divide-border-soft"
                     onSubmit={handlePasswordSubmit}
                 >
                     <MyField

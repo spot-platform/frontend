@@ -55,24 +55,24 @@ export function TimelineItem({ event, isLast }: TimelineItemProps) {
                 >
                     <Icon size={14} stroke={2} />
                 </div>
-                {!isLast && <div className="mt-1 w-0.5 flex-1 bg-gray-100" />}
+                {!isLast && <div className="mt-1 w-0.5 flex-1 bg-muted" />}
             </div>
 
             {/* 콘텐츠 */}
             <div className={`min-w-0 flex-1 ${isLast ? '' : 'pb-4'}`}>
                 <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-text-secondary">
                         {KIND_LABELS[event.kind]}
                     </span>
-                    <span className="shrink-0 text-[10px] text-gray-400">
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
                         {relativeTime}
                     </span>
                 </div>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                     {event.actorNickname}
                 </p>
                 {event.content && (
-                    <p className="mt-1 rounded-lg bg-gray-50 px-3 py-2 text-xs leading-relaxed text-gray-600">
+                    <p className="mt-1 rounded-lg bg-muted px-3 py-2 text-xs leading-relaxed text-text-secondary">
                         {event.content}
                     </p>
                 )}

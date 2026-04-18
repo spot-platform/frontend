@@ -263,10 +263,10 @@ export function Dropdown({
                         tabIndex={tabIndex}
                         title={title}
                         className={cn(
-                            'peer flex h-9 w-full items-center rounded-lg border bg-background pr-9 text-left text-sm text-foreground shadow-xs outline-none transition-colors hover:border-neutral-400 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+                            'peer flex h-9 w-full items-center rounded-lg border bg-background pr-9 text-left text-sm text-foreground shadow-xs outline-none transition-colors hover:border-nav-inactive focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
                             leadingAdornment ? 'pl-10' : 'px-3',
                             error
-                                ? 'border-destructive hover:border-destructive focus-visible:border-destructive focus-visible:ring-red-200'
+                                ? 'border-destructive hover:border-destructive focus-visible:border-destructive focus-visible:ring-destructive-border'
                                 : 'border-input',
                             className,
                         )}
@@ -347,10 +347,10 @@ export function Dropdown({
                                                 'flex w-full items-center rounded-md px-2.5 py-1.5 text-left text-sm outline-none transition-colors',
                                                 option.disabled
                                                     ? 'cursor-not-allowed text-muted-foreground/50'
-                                                    : 'text-popover-foreground hover:bg-neutral-100',
+                                                    : 'text-popover-foreground hover:bg-muted',
                                                 isHighlighted &&
                                                     !option.disabled &&
-                                                    'bg-neutral-100',
+                                                    'bg-muted',
                                                 isSelected &&
                                                     !option.disabled &&
                                                     'bg-brand-50 text-brand-700',

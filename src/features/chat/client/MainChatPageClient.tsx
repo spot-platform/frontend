@@ -187,10 +187,10 @@ function SpotRoomListRow({
         <button
             type="button"
             onClick={onOpen}
-            className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
+            className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
         >
             <div className="relative shrink-0">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-600">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-border-soft text-base font-bold text-text-secondary">
                     {room.title.slice(0, 1)}
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-800 text-[8px] font-bold text-white">
@@ -200,17 +200,17 @@ function SpotRoomListRow({
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate text-sm font-semibold text-gray-900">
+                    <span className="truncate text-sm font-semibold text-foreground">
                         {room.title}
                     </span>
                     <span
                         suppressHydrationWarning
-                        className="shrink-0 text-[11px] text-gray-400"
+                        className="shrink-0 text-[11px] text-muted-foreground"
                     >
                         {formatListTime(room.updatedAt)}
                     </span>
                 </div>
-                <p className="mt-0.5 truncate text-sm text-gray-500">
+                <p className="mt-0.5 truncate text-sm text-muted-foreground">
                     {getLastSpotRoomPreview(room)}
                 </p>
             </div>
@@ -223,30 +223,30 @@ function FileListRow({ files }: { files: SharedFile[] }) {
     const [open, setOpen] = useState(false);
 
     return (
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-border-soft">
             {/* 헤더 행 — 1대1 채팅 행과 동일한 높이/패딩 */}
             <button
                 type="button"
                 onClick={() => setOpen((p) => !p)}
-                className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
             >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                     <IconFileText size={20} />
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-sm font-semibold text-gray-900">
+                        <span className="text-sm font-semibold text-foreground">
                             파일
                         </span>
-                        <span className="shrink-0 text-[11px] text-gray-400">
+                        <span className="shrink-0 text-[11px] text-muted-foreground">
                             {files.length}개
                         </span>
                     </div>
-                    <p className="mt-0.5 truncate text-sm text-gray-500">
+                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
                         {files.map((f) => f.name).join(', ')}
                     </p>
                 </div>
-                <span className="shrink-0 text-gray-300">
+                <span className="shrink-0 text-border-strong">
                     {open ? (
                         <IconChevronDown size={16} />
                     ) : (
@@ -260,16 +260,16 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                 files.map((file) => (
                     <div
                         key={file.id}
-                        className="flex items-center gap-3 bg-gray-50 px-4 py-3"
+                        className="flex items-center gap-3 bg-muted px-4 py-3"
                     >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-sm">
                             <IconFileText size={16} />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-gray-800">
+                            <p className="truncate text-sm font-medium text-text-secondary">
                                 {file.name}
                             </p>
-                            <p className="text-[11px] text-gray-400">
+                            <p className="text-[11px] text-muted-foreground">
                                 {file.uploaderNickname} ·{' '}
                                 {formatFileSize(file.sizeBytes)}
                             </p>
@@ -278,7 +278,7 @@ function FileListRow({ files }: { files: SharedFile[] }) {
                             href={file.url}
                             download={file.name}
                             onClick={(e) => e.stopPropagation()}
-                            className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 active:bg-gray-300"
+                            className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-border-soft hover:text-text-secondary active:bg-border-strong"
                             aria-label={`${file.name} 다운로드`}
                         >
                             <IconDownload size={16} />
@@ -321,31 +321,31 @@ function SpotItemList({
         hasFiles;
 
     return (
-        <div className="flex flex-col divide-y divide-gray-100">
+        <div className="flex flex-col divide-y divide-border-soft">
             <SpotRoomListRow room={room} onOpen={onOpenRoom} />
 
             {reverseOfferItem && reverseOfferItem.kind === 'reverse-offer' && (
                 <button
                     type="button"
                     onClick={() => onActionItem(reverseOfferItem)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
+                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                         <IconHeartHandshake size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-semibold text-gray-900">
+                            <span className="truncate text-sm font-semibold text-foreground">
                                 역제안 진행 상태
                             </span>
                             <span
                                 suppressHydrationWarning
-                                className="shrink-0 text-[11px] text-gray-400"
+                                className="shrink-0 text-[11px] text-muted-foreground"
                             >
                                 {formatListTime(reverseOfferItem.updatedAt)}
                             </span>
                         </div>
-                        <p className="mt-0.5 truncate text-sm text-gray-500">
+                        <p className="mt-0.5 truncate text-sm text-muted-foreground">
                             {getReverseOfferStatusLabel(
                                 reverseOfferItem.reverseOffer.status,
                             )}{' '}
@@ -364,24 +364,24 @@ function SpotItemList({
                     key={item.id}
                     type="button"
                     onClick={() => onActionItem(item)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
+                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500">
                         <IconChartBar size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-semibold text-gray-900">
+                            <span className="truncate text-sm font-semibold text-foreground">
                                 {item.kind === 'vote' ? item.vote.question : ''}
                             </span>
                             <span
                                 suppressHydrationWarning
-                                className="shrink-0 text-[11px] text-gray-400"
+                                className="shrink-0 text-[11px] text-muted-foreground"
                             >
                                 {formatListTime(item.updatedAt)}
                             </span>
                         </div>
-                        <p className="mt-0.5 truncate text-sm text-gray-500">
+                        <p className="mt-0.5 truncate text-sm text-muted-foreground">
                             {item.kind === 'vote'
                                 ? `${item.vote.options.length}개 선택지 · ${item.vote.multiSelect ? '복수 선택' : '단일 선택'}`
                                 : ''}
@@ -408,26 +408,26 @@ function SpotItemList({
                             onActionItem(scheduleItem);
                         }
                     }}
-                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50"
+                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
                 >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
                         <IconCalendarEvent size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-semibold text-gray-900">
+                            <span className="truncate text-sm font-semibold text-foreground">
                                 {room.spot.schedule.confirmedSlot
                                     ? '일정 확정'
                                     : '일정 조율 중'}
                             </span>
                             <span
                                 suppressHydrationWarning
-                                className="shrink-0 text-[11px] text-gray-400"
+                                className="shrink-0 text-[11px] text-muted-foreground"
                             >
                                 {formatListTime(room.updatedAt)}
                             </span>
                         </div>
-                        <p className="mt-0.5 truncate text-sm text-gray-500">
+                        <p className="mt-0.5 truncate text-sm text-muted-foreground">
                             {buildScheduleSubtitle(room.spot.schedule)}
                         </p>
                     </div>
@@ -438,7 +438,7 @@ function SpotItemList({
             {hasFiles && <FileListRow files={room.spot.files} />}
 
             {!hasItems ? (
-                <div className="px-4 py-4 text-sm text-gray-400">
+                <div className="px-4 py-4 text-sm text-muted-foreground">
                     아직 등록된 투표·일정·파일·역제안이 없어요.
                 </div>
             ) : null}
@@ -686,9 +686,9 @@ export function MainChatPageClient({
 
     return (
         <Main>
-            <div className="flex min-h-0 flex-1 flex-col bg-white">
+            <div className="flex min-h-0 flex-1 flex-col bg-card">
                 {/* 헤더 */}
-                <div className="shrink-0 border-b border-gray-100 bg-white">
+                <div className="shrink-0 border-b border-border-soft bg-card">
                     <div className="flex min-h-14 items-center justify-between gap-3 px-4 py-2">
                         <div className="min-w-0 max-w-60 flex-1">
                             {isPersonalMode ? (
@@ -719,11 +719,11 @@ export function MainChatPageClient({
                                             )
                                         }
                                         label="개인 채팅 검색"
-                                        className="text-gray-700"
+                                        className="text-text-secondary"
                                         icon={
                                             <IconSearch
                                                 size={22}
-                                                className="text-gray-700"
+                                                className="text-text-secondary"
                                             />
                                         }
                                     />
@@ -733,11 +733,11 @@ export function MainChatPageClient({
                                         size="sm"
                                         onClick={openPersonalCreate}
                                         label="채팅 생성"
-                                        className="text-gray-700"
+                                        className="text-text-secondary"
                                         icon={
                                             <IconMessageCirclePlus
                                                 size={22}
-                                                className="text-gray-700"
+                                                className="text-text-secondary"
                                             />
                                         }
                                     />
@@ -749,11 +749,11 @@ export function MainChatPageClient({
                                     size="sm"
                                     onClick={() => setSubNavOpen(!subNavOpen)}
                                     label="항목 추가"
-                                    className="text-gray-700"
+                                    className="text-text-secondary"
                                     icon={
                                         <IconMessageCirclePlus
                                             size={22}
-                                            className="text-gray-700"
+                                            className="text-text-secondary"
                                         />
                                     }
                                 />
@@ -765,11 +765,11 @@ export function MainChatPageClient({
                                     size="sm"
                                     onClick={openFriendAdd}
                                     label="친구 추가"
-                                    className="text-gray-700"
+                                    className="text-text-secondary"
                                     icon={
                                         <IconUserPlus
                                             size={22}
-                                            className="text-gray-700"
+                                            className="text-text-secondary"
                                         />
                                     }
                                 />
@@ -780,11 +780,11 @@ export function MainChatPageClient({
                                 size="sm"
                                 onClick={() => push('/map')}
                                 label="맵으로 돌아가기"
-                                className="text-gray-700"
+                                className="text-text-secondary"
                                 icon={
                                     <IconMap
                                         size={22}
-                                        className="text-gray-700"
+                                        className="text-text-secondary"
                                     />
                                 }
                             />
@@ -792,7 +792,7 @@ export function MainChatPageClient({
                     </div>
 
                     {isPersonalMode && isPersonalSearchOpen ? (
-                        <div className="border-t border-gray-100">
+                        <div className="border-t border-border-soft">
                             <SearchBar
                                 value={personalSearchQuery}
                                 onChange={setPersonalSearchQuery}
@@ -822,8 +822,8 @@ export function MainChatPageClient({
                                         className={cn(
                                             'shrink-0',
                                             selected
-                                                ? 'border-gray-900 bg-gray-900 text-white'
-                                                : 'border-gray-200 bg-white text-gray-700',
+                                                ? 'border-foreground bg-foreground text-background'
+                                                : 'border-border-soft bg-card text-text-secondary',
                                         )}
                                     >
                                         {filter.label}
@@ -840,7 +840,7 @@ export function MainChatPageClient({
                         filteredPersonalRooms.length > 0 ? (
                             <ChatRoomList rooms={filteredPersonalRooms} />
                         ) : (
-                            <div className="px-4 py-10 text-center text-sm text-gray-400">
+                            <div className="px-4 py-10 text-center text-sm text-muted-foreground">
                                 {personalSearchQuery.trim()
                                     ? '검색한 닉네임과 맞는 개인 채팅이 없어요.'
                                     : '현재 필터에 맞는 개인 채팅이 없어요.'}
@@ -855,7 +855,7 @@ export function MainChatPageClient({
                             onActionItem={(item) => openActionItem(item)}
                         />
                     ) : (
-                        <div className="px-4 py-10 text-center text-sm text-gray-400">
+                        <div className="px-4 py-10 text-center text-sm text-muted-foreground">
                             참여 중인 팀 채팅이 없어요.
                         </div>
                     )}
@@ -899,7 +899,7 @@ export function MainChatPageClient({
                             label: '파일',
                             description: '첨부 파일 공유',
                             icon: <IconFileText size={18} />,
-                            tone: 'bg-gray-100 text-gray-700',
+                            tone: 'bg-muted text-text-secondary',
                         },
                         ...(selectedSpotRoom &&
                         isSupporterForSpot(selectedSpotRoom)
@@ -922,7 +922,7 @@ export function MainChatPageClient({
                                 openCreation(step);
                             }}
                             className={cn(
-                                'flex items-start gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left transition hover:bg-gray-50 active:scale-[0.99]',
+                                'flex items-start gap-3 rounded-2xl border border-border-soft bg-card px-3 py-3 text-left transition hover:bg-muted active:scale-[0.99]',
                             )}
                         >
                             <div
@@ -934,10 +934,10 @@ export function MainChatPageClient({
                                 {icon}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-gray-900">
+                                <p className="text-sm font-semibold text-foreground">
                                     {label}
                                 </p>
-                                <p className="mt-0.5 text-xs text-gray-500">
+                                <p className="mt-0.5 text-xs text-muted-foreground">
                                     {description}
                                 </p>
                             </div>

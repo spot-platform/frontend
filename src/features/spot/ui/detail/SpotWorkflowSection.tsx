@@ -50,24 +50,24 @@ export function SpotWorkflowSection({
                     <p className="text-xs font-semibold text-brand-800">
                         현재 단계
                     </p>
-                    <p className="mt-1 text-base font-bold text-gray-900">
+                    <p className="mt-1 text-base font-bold text-foreground">
                         {workflow.progressLabel}
                     </p>
                 </div>
 
                 {voteSummary && (
-                    <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4">
+                    <div className="rounded-2xl border border-border-soft bg-muted px-4 py-4">
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                                     <IconThumbUp className="h-3.5 w-3.5 text-brand-800" />
                                     파트너 투표 요약
                                 </div>
-                                <p className="mt-1 text-sm font-bold text-gray-900">
+                                <p className="mt-1 text-sm font-bold text-foreground">
                                     {voteSummary.question}
                                 </p>
                             </div>
-                            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-brand-800">
+                            <span className="rounded-full bg-card px-2.5 py-1 text-[11px] font-semibold text-brand-800">
                                 합의도 {voteSummary.consensusRate}%
                             </span>
                         </div>
@@ -87,24 +87,24 @@ export function SpotWorkflowSection({
                                         <div className="flex items-center justify-between text-xs">
                                             <span
                                                 className={cn(
-                                                    'font-medium text-gray-600',
+                                                    'font-medium text-text-secondary',
                                                     option.isWinner &&
                                                         'font-semibold text-brand-800',
                                                 )}
                                             >
                                                 {option.label}
                                             </span>
-                                            <span className="text-gray-400">
+                                            <span className="text-muted-foreground">
                                                 {percent}%
                                             </span>
                                         </div>
-                                        <div className="h-1.5 overflow-hidden rounded-full bg-white">
+                                        <div className="h-1.5 overflow-hidden rounded-full bg-card">
                                             <div
                                                 className={cn(
                                                     'h-full rounded-full',
                                                     option.isWinner
                                                         ? 'bg-brand-800'
-                                                        : 'bg-gray-300',
+                                                        : 'bg-border-strong',
                                                 )}
                                                 style={{ width: `${percent}%` }}
                                             />
@@ -114,20 +114,20 @@ export function SpotWorkflowSection({
                             })}
                         </div>
 
-                        <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                        <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                             {voteSummary.summary}
                         </p>
-                        <p className="mt-2 text-xs font-semibold text-gray-500">
+                        <p className="mt-2 text-xs font-semibold text-muted-foreground">
                             최다 선택 안건 · {voteSummary.decidedLabel}
                         </p>
                     </div>
                 )}
 
                 {workflow.finalApproval && (
-                    <div className="rounded-2xl border border-gray-100 px-4 py-4">
+                    <div className="rounded-2xl border border-border-soft px-4 py-4">
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                                     {workflow.finalApproval.status ===
                                     'APPROVED' ? (
                                         <IconCircleCheck className="h-3.5 w-3.5 text-emerald-600" />
@@ -136,7 +136,7 @@ export function SpotWorkflowSection({
                                     )}
                                     호스트 최종 승인
                                 </div>
-                                <p className="mt-1 text-sm font-bold text-gray-900">
+                                <p className="mt-1 text-sm font-bold text-foreground">
                                     {workflow.finalApproval.approverNickname}님
                                     확인 단계
                                 </p>
@@ -145,11 +145,11 @@ export function SpotWorkflowSection({
                                 status={workflow.finalApproval.status}
                             />
                         </div>
-                        <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                        <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                             {workflow.finalApproval.note}
                         </p>
                         {workflow.finalApproval.approvedAt && (
-                            <p className="mt-2 text-xs text-gray-400">
+                            <p className="mt-2 text-xs text-muted-foreground">
                                 승인 시각 ·{' '}
                                 {new Date(
                                     workflow.finalApproval.approvedAt,
@@ -160,14 +160,14 @@ export function SpotWorkflowSection({
                 )}
 
                 {workflow.settlementApproval && (
-                    <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4">
+                    <div className="rounded-2xl border border-border-soft bg-muted px-4 py-4">
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                                     <IconReceipt className="h-3.5 w-3.5 text-accent" />
                                     정산 승인 상태
                                 </div>
-                                <p className="mt-1 text-sm font-bold text-gray-900">
+                                <p className="mt-1 text-sm font-bold text-foreground">
                                     요청{' '}
                                     {formatPoints(
                                         workflow.settlementApproval
@@ -180,7 +180,7 @@ export function SpotWorkflowSection({
                             />
                         </div>
 
-                        <div className="mt-4 rounded-2xl bg-white px-4 py-3">
+                        <div className="mt-4 rounded-2xl bg-card px-4 py-3">
                             <div className="space-y-2">
                                 {workflow.settlementApproval.lineItems.map(
                                     (lineItem) => (
@@ -188,17 +188,17 @@ export function SpotWorkflowSection({
                                             key={lineItem.label}
                                             className="flex items-center justify-between text-sm"
                                         >
-                                            <span className="text-gray-500">
+                                            <span className="text-muted-foreground">
                                                 {lineItem.label}
                                             </span>
-                                            <span className="font-semibold text-gray-900">
+                                            <span className="font-semibold text-foreground">
                                                 {formatPoints(lineItem.amount)}
                                             </span>
                                         </div>
                                     ),
                                 )}
                                 {forfeitPool && forfeitPool.toPool > 0 && (
-                                    <div className="flex items-center justify-between text-sm italic text-gray-500">
+                                    <div className="flex items-center justify-between text-sm italic text-muted-foreground">
                                         <span>자동 산입 · 이탈자 보증금</span>
                                         <span className="font-semibold">
                                             {formatPoints(forfeitPool.toPool)}
@@ -209,9 +209,9 @@ export function SpotWorkflowSection({
 
                             {workflow.settlementApproval.status ===
                                 'APPROVED' && (
-                                <div className="mt-3 border-t border-gray-100 pt-3">
+                                <div className="mt-3 border-t border-border-soft pt-3">
                                     <div className="flex items-center justify-between text-sm">
-                                        <span className="text-gray-500">
+                                        <span className="text-muted-foreground">
                                             최종 승인 금액
                                         </span>
                                         <span className="font-bold text-brand-800">
@@ -225,7 +225,7 @@ export function SpotWorkflowSection({
                             )}
                         </div>
 
-                        <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                        <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                             {workflow.settlementApproval.summary}
                         </p>
 
@@ -234,11 +234,11 @@ export function SpotWorkflowSection({
                 )}
 
                 {!workflow.settlementApproval && actions && (
-                    <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-4">
-                        <p className="text-sm font-semibold text-gray-900">
+                    <div className="rounded-2xl border border-dashed border-border-soft px-4 py-4">
+                        <p className="text-sm font-semibold text-foreground">
                             정산 대기
                         </p>
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-muted-foreground">
                             활동이 끝났어요. 호스트가 정산 내역을 제출해 주세요.
                         </p>
                         {actions}

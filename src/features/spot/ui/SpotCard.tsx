@@ -38,30 +38,30 @@ export function SpotCard({ spot, currentUserId }: SpotCardProps) {
     return (
         <Link href={`/spot/${spot.id}`} className="block active:opacity-80">
             <article
-                className={`mx-4 rounded-xl border border-gray-200 border-l-4 bg-white px-4 py-3.5 ${STATUS_BORDER[spot.status]}`}
+                className={`mx-4 rounded-xl border border-border-soft border-l-4 bg-card px-4 py-3.5 ${STATUS_BORDER[spot.status]}`}
             >
                 {/* 상단: 뱃지 행 */}
                 <div className="mb-2 flex items-center gap-1.5">
                     <StatusBadge status={spot.status} />
                     <TypeBadge type={spot.type} />
                     {isAuthor && (
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                             내 스팟
                         </span>
                     )}
                 </div>
 
                 {/* 제목 */}
-                <h3 className="line-clamp-1 text-sm font-semibold text-gray-900">
+                <h3 className="line-clamp-1 text-sm font-semibold text-foreground">
                     {spot.title}
                 </h3>
 
                 {/* 포인트 + 상대시간 */}
                 <div className="mt-1 flex items-center justify-between">
-                    <span className="text-sm font-bold text-gray-900">
+                    <span className="text-sm font-bold text-foreground">
                         {spot.pointCost.toLocaleString('ko-KR')}P
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                         {relativeTime}
                     </span>
                 </div>
@@ -73,8 +73,8 @@ export function SpotCard({ spot, currentUserId }: SpotCardProps) {
                     >
                         {STATUS_STRIP[spot.status]}
                     </span>
-                    <span className="text-xs text-gray-300">·</span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-border-strong">·</span>
+                    <span className="text-xs text-muted-foreground">
                         {spot.authorNickname}
                     </span>
                 </div>

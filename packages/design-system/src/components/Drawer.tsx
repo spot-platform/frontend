@@ -51,7 +51,7 @@ function DrawerContent({
                 )}
                 {...props}
             >
-                <div className="mx-auto mt-3 mb-2 h-1 w-10 shrink-0 rounded-full bg-neutral-300" />
+                <div className="mx-auto mt-3 mb-2 h-1 w-10 shrink-0 rounded-full bg-border-strong" />
                 {children}
             </VaulDrawer.Content>
         </DrawerPortal>

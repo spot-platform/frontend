@@ -114,7 +114,7 @@ export function SettlementSubmitSheet({
         >
             <div className="space-y-5 pb-6">
                 <section className="space-y-3">
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-foreground">
                         정산 항목
                     </p>
                     <div className="space-y-2">
@@ -150,7 +150,7 @@ export function SettlementSubmitSheet({
                                 <button
                                     type="button"
                                     aria-label="항목 제거"
-                                    className="mt-2 rounded-full p-1 text-gray-400 hover:bg-gray-100"
+                                    className="mt-2 rounded-full p-1 text-muted-foreground hover:bg-muted"
                                     onClick={() => handleRemove(item.id)}
                                 >
                                     <IconX className="h-4 w-4" />
@@ -169,23 +169,23 @@ export function SettlementSubmitSheet({
                 </section>
 
                 {forfeitToPool > 0 && (
-                    <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-sm">
+                    <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-sm">
                         <div>
-                            <p className="text-xs font-semibold text-gray-400">
+                            <p className="text-xs font-semibold text-muted-foreground">
                                 자동 산입
                             </p>
-                            <p className="italic text-gray-500">
+                            <p className="italic text-muted-foreground">
                                 이탈자 보증금 (정산 풀 편입분)
                             </p>
                         </div>
-                        <p className="font-semibold text-gray-700">
+                        <p className="font-semibold text-text-secondary">
                             {forfeitToPool.toLocaleString('ko-KR')}P
                         </p>
                     </div>
                 )}
 
                 <section className="space-y-2">
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-foreground">
                         정산 요약
                     </p>
                     <Textarea
@@ -196,9 +196,11 @@ export function SettlementSubmitSheet({
                     />
                 </section>
 
-                <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-sm">
-                    <span className="text-gray-500">총 승인 예정 금액</span>
-                    <span className="font-bold text-gray-900">
+                <div className="flex items-center justify-between rounded-xl border border-border-soft px-4 py-3 text-sm">
+                    <span className="text-muted-foreground">
+                        총 승인 예정 금액
+                    </span>
+                    <span className="font-bold text-foreground">
                         {grandTotal.toLocaleString('ko-KR')}P
                     </span>
                 </div>

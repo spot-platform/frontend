@@ -37,11 +37,11 @@ export function HeaderTabs({
                             if (!active) onChange(option.value);
                         }}
                         className={cn(
-                            'relative cursor-pointer select-none text-lg font-black leading-none tracking-[-0.03em] text-black focus:outline-none',
+                            'relative cursor-pointer select-none text-lg font-black leading-none tracking-[-0.03em] text-foreground focus:outline-none',
                             'transition-[transform,color,opacity] duration-800 ease-[cubic-bezier(0.22,1,0.36,1)] origin-left will-change-transform',
                             active
                                 ? 'scale-100 opacity-100'
-                                : 'scale-[0.88] text-gray-400 opacity-90',
+                                : 'scale-[0.88] text-muted-foreground opacity-90',
                         )}
                     >
                         {option.label}

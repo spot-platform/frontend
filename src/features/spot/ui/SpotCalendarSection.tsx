@@ -34,8 +34,8 @@ export function SpotCalendarSection() {
     const marked = getMarkedDates();
 
     return (
-        <div className="mx-4 rounded-2xl border border-gray-100 bg-white px-4 py-3.5">
-            <p className="mb-3 text-xs font-semibold text-gray-400">
+        <div className="mx-4 rounded-2xl border border-border-soft bg-card px-4 py-3.5">
+            <p className="mb-3 text-xs font-semibold text-muted-foreground">
                 주간 캘린더
             </p>
             <div className="grid grid-cols-7 gap-1">
@@ -49,14 +49,14 @@ export function SpotCalendarSection() {
                             key={dateStr}
                             className="flex flex-col items-center gap-1"
                         >
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-muted-foreground">
                                 {DAY_LABELS[i]}
                             </span>
                             <div
                                 className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
                                     isToday
                                         ? 'bg-brand-800 text-white'
-                                        : 'text-gray-700'
+                                        : 'text-text-secondary'
                                 }`}
                             >
                                 {date.getDate()}

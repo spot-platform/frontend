@@ -57,7 +57,7 @@ export function PartnerProfileClient({
             <DetailHeader title="파트너 프로필" />
             {/* 프로필 카드 */}
             <Section
-                className="rounded-xl border border-gray-200 bg-white p-6 pb-10"
+                className="rounded-xl border border-border-soft bg-card p-6 pb-10"
                 px="md"
                 gap="lg"
             >
@@ -68,10 +68,10 @@ export function PartnerProfileClient({
                         avatarUrl={initialProfile.avatarUrl}
                     />
                     <div>
-                        <p className="text-[11px] font-semibold tracking-[0.16em] text-gray-400 uppercase">
+                        <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                             Partner
                         </p>
-                        <h1 className="mt-1 text-2xl font-black tracking-[-0.03em] text-gray-950">
+                        <h1 className="mt-1 text-2xl font-black tracking-[-0.03em] text-foreground">
                             {initialProfile.nickname}
                         </h1>
                     </div>
@@ -79,7 +79,7 @@ export function PartnerProfileClient({
 
                 {/* 관심 카테고리 */}
                 <div className="flex flex-col gap-2">
-                    <p className="text-center text-[11px] font-semibold tracking-[0.14em] text-gray-400 uppercase">
+                    <p className="text-center text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                         관심 카테고리
                     </p>
                     <div className="flex flex-wrap justify-center gap-2">

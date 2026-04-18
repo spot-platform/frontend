@@ -24,7 +24,7 @@ const chipVariants = cva(
                 tone: 'neutral',
                 selected: false,
                 className:
-                    'border border-neutral-200 bg-neutral-100 text-neutral-600',
+                    'border border-border-soft bg-muted text-text-secondary',
             },
             {
                 tone: 'neutral',
@@ -35,7 +35,7 @@ const chipVariants = cva(
                 tone: 'brand',
                 selected: false,
                 className:
-                    'border border-neutral-200 bg-background text-neutral-700',
+                    'border border-border-soft bg-background text-text-secondary',
             },
             {
                 tone: 'brand',

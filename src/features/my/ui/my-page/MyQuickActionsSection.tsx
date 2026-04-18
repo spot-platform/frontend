@@ -33,7 +33,7 @@ export function MyQuickActionsSection() {
     return (
         <Section
             gap="md"
-            className="rounded-xl border border-gray-200 bg-white p-4"
+            className="rounded-xl border border-border-soft bg-card p-4"
         >
             <MySectionHeader
                 eyebrow="Quick access"
@@ -48,22 +48,22 @@ export function MyQuickActionsSection() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-3 rounded-lg border border-gray-100 bg-surface px-4 py-3 transition hover:border-brand-200 hover:bg-brand-50"
+                            className="flex items-center gap-3 rounded-lg border border-border-soft bg-surface px-4 py-3 transition hover:border-brand-200 hover:bg-brand-50"
                         >
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-brand-700">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-muted text-brand-700">
                                 <Icon size={18} />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-gray-900">
+                                <p className="text-sm font-semibold text-foreground">
                                     {item.label}
                                 </p>
-                                <p className="text-xs leading-5 text-gray-500">
+                                <p className="text-xs leading-5 text-muted-foreground">
                                     {item.description}
                                 </p>
                             </div>
                             <IconChevronRight
                                 size={18}
-                                className="shrink-0 text-gray-300"
+                                className="shrink-0 text-border-strong"
                             />
                         </Link>
                     );

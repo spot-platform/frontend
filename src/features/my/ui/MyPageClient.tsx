@@ -102,23 +102,25 @@ export function MyPageClient() {
 
     return (
         <Main px="md" gap="md" className="pb-6">
-            <Section className="mx-[-1rem] border-b border-gray-200 bg-white px-4 py-4 rounded-none">
-                <p className="text-xs font-medium text-gray-500">내 정보</p>
+            <Section className="mx-[-1rem] border-b border-border-soft bg-card px-4 py-4 rounded-none">
+                <p className="text-xs font-medium text-muted-foreground">
+                    내 정보
+                </p>
                 {profileQuery.isPending ? (
                     <div className="mt-2 space-y-2">
-                        <div className="h-6 w-28 rounded bg-gray-100" />
-                        <div className="h-4 w-44 rounded bg-gray-100" />
+                        <div className="h-6 w-28 rounded bg-muted" />
+                        <div className="h-4 w-44 rounded bg-muted" />
                     </div>
                 ) : (
                     <div className="mt-2 space-y-1">
-                        <h1 className="text-lg font-semibold text-gray-900">
+                        <h1 className="text-lg font-semibold text-foreground">
                             {getDisplayName(profile?.nickname)}
                         </h1>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-text-secondary">
                             {profile?.email ?? '계정 정보를 확인할 수 없어요.'}
                         </p>
                         {typeof profile?.pointBalance === 'number' && (
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-text-secondary">
                                 보유 포인트 {formatNumber(profile.pointBalance)}
                                 P
                             </p>
@@ -130,22 +132,22 @@ export function MyPageClient() {
             {MY_GROUPS.map((group) => (
                 <Section
                     key={group.title}
-                    className="mx-[-1rem] bg-white rounded-none"
+                    className="mx-[-1rem] bg-card rounded-none"
                 >
-                    <h2 className="border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-900">
+                    <h2 className="border-b border-border-soft px-4 py-3 text-sm font-semibold text-foreground">
                         {group.title}
                     </h2>
-                    <div className="divide-y divide-gray-200">
+                    <div className="divide-y divide-border-soft">
                         {group.items.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="block px-4 py-3 transition-colors hover:bg-gray-50 active:bg-gray-100"
+                                className="block px-4 py-3 transition-colors hover:bg-muted active:bg-border-soft"
                             >
-                                <p className="text-sm font-medium text-gray-900">
+                                <p className="text-sm font-medium text-foreground">
                                     {item.label}
                                 </p>
-                                <p className="mt-1 text-xs leading-5 text-gray-500">
+                                <p className="mt-1 text-xs leading-5 text-muted-foreground">
                                     {item.description}
                                 </p>
                             </Link>
@@ -158,13 +160,13 @@ export function MyPageClient() {
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="mx-[-1rem] border-b border-t border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50 active:bg-gray-100"
+                className="mx-[-1rem] border-b border-t border-border-soft bg-card px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted active:bg-border-soft"
             >
                 {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
             </button>
 
             {logoutError ? (
-                <p className="text-sm text-red-600">{logoutError}</p>
+                <p className="text-sm text-destructive">{logoutError}</p>
             ) : null}
         </Main>
     );

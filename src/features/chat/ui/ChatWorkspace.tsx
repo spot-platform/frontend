@@ -100,13 +100,13 @@ function MessageThread({
     messages: ChatMessage[];
 }) {
     return (
-        <section className="rounded-xl border border-gray-200 bg-white px-4 py-4">
+        <section className="rounded-xl border border-border-soft bg-card px-4 py-4">
             <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                    <p className="text-[11px] font-semibold tracking-[0.16em] text-gray-400 uppercase">
+                    <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                         Thread
                     </p>
-                    <h2 className="mt-1 text-base font-bold text-gray-900">
+                    <h2 className="mt-1 text-base font-bold text-foreground">
                         {room.category === 'personal'
                             ? '개인 메시지'
                             : '스팟 메시지'}
@@ -141,7 +141,7 @@ function MessageThread({
                         <div key={message.id} className="flex flex-col gap-3">
                             {shouldRenderDateChip && (
                                 <div className="flex justify-center">
-                                    <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-500">
+                                    <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
                                         {formatDateChip(message.createdAt)}
                                     </span>
                                 </div>
@@ -149,7 +149,7 @@ function MessageThread({
 
                             {message.kind === 'system' ? (
                                 <div className="flex justify-center">
-                                    <div className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[11px] text-gray-500 shadow-sm">
+                                    <div className="rounded-full border border-border-soft bg-card px-3 py-1.5 text-[11px] text-muted-foreground shadow-sm">
                                         {message.content}
                                     </div>
                                 </div>
@@ -160,7 +160,7 @@ function MessageThread({
                                         mine ? 'items-end' : 'items-start',
                                     )}
                                 >
-                                    <span className="px-1 text-[11px] font-medium text-gray-400">
+                                    <span className="px-1 text-[11px] font-medium text-muted-foreground">
                                         {mine ? '나' : message.authorName}
                                     </span>
                                     <div
@@ -168,12 +168,12 @@ function MessageThread({
                                             'max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
                                             mine
                                                 ? 'rounded-br-md bg-brand-800 text-white'
-                                                : 'rounded-bl-md border border-gray-100 bg-gray-50 text-gray-800',
+                                                : 'rounded-bl-md border border-border-soft bg-muted text-text-secondary',
                                         )}
                                     >
                                         {getThreadEntryText(message)}
                                     </div>
-                                    <span className="px-1 text-[11px] text-gray-400">
+                                    <span className="px-1 text-[11px] text-muted-foreground">
                                         {formatTime(message.createdAt)}
                                     </span>
                                 </div>
@@ -240,7 +240,7 @@ function RoomSection({
 }) {
     return (
         <section className="flex flex-col gap-2.5">
-            <h3 className="text-xs font-semibold tracking-[0.16em] text-gray-400 uppercase">
+            <h3 className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 {title}
             </h3>
             <div className="flex flex-col gap-2">
@@ -256,15 +256,15 @@ function RoomSection({
                                 'flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors',
                                 active
                                     ? 'border-brand-200 bg-brand-50'
-                                    : 'border-gray-100 bg-white',
+                                    : 'border-border-soft bg-card',
                             )}
                         >
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-sm font-bold text-gray-700">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-muted text-sm font-bold text-text-secondary">
                                 {getRoomInitial(room)}
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <p className="truncate text-sm font-semibold text-gray-900">
+                                    <p className="truncate text-sm font-semibold text-foreground">
                                         {room.title}
                                     </p>
                                     {room.category === 'spot' && room.spot ? (
@@ -273,12 +273,12 @@ function RoomSection({
                                             size="sm"
                                         />
                                     ) : (
-                                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">
+                                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                                             Personal
                                         </span>
                                     )}
                                 </div>
-                                <p className="mt-1 truncate text-xs text-gray-500">
+                                <p className="mt-1 truncate text-xs text-muted-foreground">
                                     {room.subtitle}
                                 </p>
                             </div>
@@ -385,14 +385,14 @@ export function ChatWorkspace({
                     <button
                         type="button"
                         onClick={() => setIsRoomSheetOpen(true)}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-4 text-left"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border-soft bg-card px-4 py-4 text-left"
                     >
                         <div className="min-w-0">
-                            <p className="text-[11px] font-semibold tracking-[0.16em] text-gray-400 uppercase">
+                            <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                                 Room switcher
                             </p>
                             <div className="mt-1 flex items-center gap-2">
-                                <span className="truncate text-base font-bold text-gray-900">
+                                <span className="truncate text-base font-bold text-foreground">
                                     {activeRoom.title}
                                 </span>
                                 <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
@@ -401,16 +401,16 @@ export function ChatWorkspace({
                                         : '스팟 채팅'}
                                 </span>
                             </div>
-                            <p className="mt-1 truncate text-sm text-gray-500">
+                            <p className="mt-1 truncate text-sm text-muted-foreground">
                                 {activeRoom.subtitle}
                             </p>
                         </div>
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-500">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                             <IconChevronDown size={18} />
                         </div>
                     </button>
 
-                    <section className="rounded-xl border border-gray-200 bg-white p-5">
+                    <section className="rounded-xl border border-border-soft bg-card p-5">
                         <div className="flex items-start gap-3">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-base font-bold text-brand-800">
                                 {getRoomInitial(activeRoom)}
@@ -434,13 +434,13 @@ export function ChatWorkspace({
                                         </span>
                                     )}
                                 </div>
-                                <h1 className="mt-3 text-lg font-bold leading-tight text-gray-900">
+                                <h1 className="mt-3 text-lg font-bold leading-tight text-foreground">
                                     {activeRoom.title}
                                 </h1>
-                                <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
                                     {activeRoom.description}
                                 </p>
-                                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                     <span>{activeRoom.metaLabel}</span>
                                     <span>·</span>
                                     <span>
@@ -460,7 +460,7 @@ export function ChatWorkspace({
                 </div>
 
                 <div className="fixed inset-x-0 bottom-20 z-20 mx-auto max-w-107.5 px-4">
-                    <div className="rounded-xl border border-gray-200 bg-white p-3">
+                    <div className="rounded-xl border border-border-soft bg-card p-3">
                         <div className="flex items-end gap-3">
                             <label className="min-w-0 flex-1">
                                 <span className="sr-only">메시지 입력</span>
@@ -471,14 +471,14 @@ export function ChatWorkspace({
                                     }
                                     rows={1}
                                     placeholder={`${activeRoom.title}에게 메시지 보내기`}
-                                    className="min-h-11 w-full resize-none rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none placeholder:text-gray-400"
+                                    className="min-h-11 w-full resize-none rounded-2xl bg-muted px-4 py-3 text-sm text-text-secondary outline-none placeholder:text-muted-foreground"
                                 />
                             </label>
                             <button
                                 type="button"
                                 onClick={handleSend}
                                 disabled={!draft.trim()}
-                                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-800 text-white disabled:bg-gray-300"
+                                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-800 text-white disabled:bg-border-strong"
                                 aria-label="메시지 보내기"
                             >
                                 <IconSend size={18} />

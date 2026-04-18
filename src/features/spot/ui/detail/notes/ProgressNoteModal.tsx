@@ -57,16 +57,16 @@ export function ProgressNoteModal({
 
                 {/* 노트 목록 */}
                 {notes.length > 0 && (
-                    <div className="flex flex-col gap-3 border-t border-gray-100 pt-4">
+                    <div className="flex flex-col gap-3 border-t border-border-soft pt-4">
                         {notes.map((note) => (
                             <div
                                 key={note.id}
-                                className="rounded-xl bg-gray-50 px-4 py-3"
+                                className="rounded-xl bg-muted px-4 py-3"
                             >
-                                <p className="text-xs font-semibold text-gray-500">
+                                <p className="text-xs font-semibold text-muted-foreground">
                                     {note.authorNickname}
                                 </p>
-                                <p className="mt-1 text-sm leading-relaxed text-gray-700">
+                                <p className="mt-1 text-sm leading-relaxed text-text-secondary">
                                     {note.content}
                                 </p>
                             </div>
