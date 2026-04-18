@@ -68,7 +68,7 @@ export function CategoryGrid({ selected, onChange }: CategoryGridProps) {
                                 'text-center text-xs leading-tight',
                                 isActive
                                     ? 'font-bold text-brand-800'
-                                    : 'text-gray-500',
+                                    : 'text-muted-foreground',
                             )}
                         >
                             {cat.label}

@@ -27,7 +27,7 @@ function formatPrice(price: number): string {
 
 function StatBadge({ icon, count }: { icon: React.ReactNode; count: number }) {
     return (
-        <span className="flex items-center gap-0.5 text-[11px] text-gray-400">
+        <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
             {icon}
             <span>{count.toLocaleString()}</span>
         </span>
@@ -38,26 +38,26 @@ function SupporterRequestCard({ item }: { item: FeedItem }) {
     const [applied, setApplied] = useState(false);
 
     return (
-        <Link href={`/feed/${item.id}`} className="block active:bg-gray-50">
-            <article className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3">
+        <Link href={`/feed/${item.id}`} className="block active:bg-muted">
+            <article className="flex flex-col gap-3 rounded-xl border border-border-soft bg-card px-3 py-3">
                 <div className="flex gap-3">
                     <div className="flex min-w-0 flex-1 flex-col">
                         <div className="flex items-center gap-1.5">
                             <span className="rounded-full border border-accent px-2 py-0.5 text-[10px] font-semibold text-accent">
                                 요청
                             </span>
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-muted-foreground">
                                 서포터 구하는 중
                             </span>
                         </div>
-                        <h3 className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug text-gray-900">
+                        <h3 className="mt-1.5 line-clamp-2 text-sm font-semibold leading-snug text-foreground">
                             {item.title}
                         </h3>
-                        <p className="mt-0.5 truncate text-xs text-gray-400">
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
                             {item.location} · {item.authorNickname}
                         </p>
                         <div className="mt-2 flex items-center justify-between">
-                            <span className="text-sm font-bold text-gray-900">
+                            <span className="text-sm font-bold text-foreground">
                                 희망 {formatPrice(item.price)}
                             </span>
                         </div>
@@ -86,7 +86,7 @@ function SupporterRequestCard({ item }: { item: FeedItem }) {
                         className={cn(
                             'flex-1 rounded-lg shadow-none',
                             applied
-                                ? 'bg-gray-100 text-gray-400'
+                                ? 'bg-muted text-muted-foreground'
                                 : 'bg-accent text-white',
                         )}
                     >
@@ -133,7 +133,7 @@ export function SupporterRequestSection() {
                             className={`shrink-0 ${
                                 isActive
                                     ? 'border-accent bg-accent text-white'
-                                    : 'border-gray-200 bg-gray-100 text-gray-600'
+                                    : 'border-border-soft bg-muted text-text-secondary'
                             }`}
                         >
                             {budget}
@@ -149,7 +149,7 @@ export function SupporterRequestSection() {
                         <SupporterRequestCard key={item.id} item={item} />
                     ))
                 ) : (
-                    <p className="py-8 text-center text-sm text-gray-400">
+                    <p className="py-8 text-center text-sm text-muted-foreground">
                         해당 카테고리의 요청이 없습니다
                     </p>
                 )}

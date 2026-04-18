@@ -1,3 +1,4 @@
+import type { SpotCategory } from '@/entities/spot/categories';
 import type { GeoCoord } from '@/entities/spot/types';
 
 export type PersonaArchetype =
@@ -7,12 +8,17 @@ export type PersonaArchetype =
     | 'connector'
     | 'learner';
 
+export type PersonaIntent = 'offer' | 'request';
+
 export type Persona = {
     id: string;
     emoji: string;
     name: string;
     archetype: PersonaArchetype;
     initialCoord: GeoCoord;
+    category: SpotCategory;
+    intent: PersonaIntent;
+    interestItemIds?: string[];
 };
 
 export type UserPersonaRole = 'SUPPORTER' | 'PARTNER';

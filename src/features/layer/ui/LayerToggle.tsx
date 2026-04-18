@@ -15,6 +15,7 @@ import {
 type LayerToggleProps = {
     open: boolean;
     onClose: () => void;
+    children?: React.ReactNode;
 };
 
 const LAYER_OPTIONS: {
@@ -43,7 +44,7 @@ const LAYER_OPTIONS: {
     },
 ];
 
-export function LayerToggle({ open, onClose }: LayerToggleProps) {
+export function LayerToggle({ open, onClose, children }: LayerToggleProps) {
     const { activeLayer, setLayer } = useLayerStore();
 
     return (
@@ -88,6 +89,7 @@ export function LayerToggle({ open, onClose }: LayerToggleProps) {
                             </button>
                         );
                     })}
+                    {children}
                 </div>
             </DrawerContent>
         </Drawer>

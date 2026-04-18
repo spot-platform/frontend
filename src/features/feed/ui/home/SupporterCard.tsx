@@ -8,7 +8,7 @@ const CATEGORY_COLOR: Record<string, string> = {
     운동: 'bg-emerald-100 text-emerald-700',
     공예: 'bg-pink-100 text-pink-700',
     언어: 'bg-blue-100 text-blue-700',
-    기타: 'bg-gray-100 text-gray-600',
+    기타: 'bg-muted text-text-secondary',
 };
 
 export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
@@ -17,7 +17,7 @@ export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
         : `/users/${supporter.id}`;
 
     return (
-        <div className="flex h-full flex-col rounded-xl border border-gray-200 bg-white px-4 py-4 gap-3">
+        <div className="flex h-full flex-col rounded-xl border border-border-soft bg-card px-4 py-4 gap-3">
             {/* 프로필 상단 */}
             <div className="flex items-center gap-3">
                 {/* 아바타 */}
@@ -27,7 +27,7 @@ export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
 
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-gray-900 text-sm">
+                        <span className="font-semibold text-foreground text-sm">
                             {supporter.nickname}
                         </span>
                         <span
@@ -36,7 +36,7 @@ export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
                             {supporter.category}
                         </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-gray-400">
+                    <p className="mt-0.5 text-xs text-muted-foreground">
                         {supporter.location}
                     </p>
                 </div>
@@ -47,14 +47,14 @@ export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
                         size={11}
                         className="fill-amber-400 text-amber-400"
                     />
-                    <span className="text-xs font-bold text-gray-700">
+                    <span className="text-xs font-bold text-text-secondary">
                         {supporter.rating}
                     </span>
                 </div>
             </div>
 
             {/* 한 줄 소개 */}
-            <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+            <p className="text-xs text-text-secondary leading-relaxed line-clamp-2">
                 {supporter.tagline}
             </p>
 
@@ -63,7 +63,7 @@ export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
                 {supporter.tags.map((tag) => (
                     <span
                         key={tag}
-                        className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] text-gray-600"
+                        className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] text-text-secondary"
                     >
                         {tag}
                     </span>
@@ -71,9 +71,9 @@ export function SupporterCard({ supporter }: { supporter: SupporterItem }) {
             </div>
 
             {/* 활동 통계 */}
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-muted-foreground">
                 활동 완료{' '}
-                <span className="font-bold text-gray-700">
+                <span className="font-bold text-text-secondary">
                     {supporter.completedCount}회
                 </span>
             </p>

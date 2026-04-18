@@ -12,8 +12,8 @@ export function PollCard({ poll }: { poll: PollItem }) {
     const total = voted ? poll.totalVotes + 1 : poll.totalVotes;
 
     return (
-        <div className="rounded-xl border border-gray-200 bg-white px-4 py-4 h-full">
-            <p className="text-sm font-semibold text-gray-900">
+        <div className="rounded-xl border border-border-soft bg-card px-4 py-4 h-full">
+            <p className="text-sm font-semibold text-foreground">
                 {poll.question}
             </p>
 
@@ -30,22 +30,22 @@ export function PollCard({ poll }: { poll: PollItem }) {
                                         'text-xs font-medium',
                                         i === selected
                                             ? 'text-brand-800 font-bold'
-                                            : 'text-gray-600',
+                                            : 'text-text-secondary',
                                     )}
                                 >
                                     {opt.label}
                                 </span>
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-muted-foreground">
                                     {pct}%
                                 </span>
                             </div>
-                            <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+                            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                                 <div
                                     className={cn(
                                         'h-full rounded-full transition-all duration-500',
                                         i === selected
                                             ? 'bg-brand-800'
-                                            : 'bg-gray-300',
+                                            : 'bg-border-strong',
                                     )}
                                     style={{ width: `${pct}%` }}
                                 />
@@ -56,7 +56,7 @@ export function PollCard({ poll }: { poll: PollItem }) {
                             key={i}
                             type="button"
                             onClick={() => setSelected(i)}
-                            className="rounded-lg border border-gray-200 py-2 text-sm text-gray-700 transition-colors hover:border-brand-800 hover:text-brand-800"
+                            className="rounded-lg border border-border-soft py-2 text-sm text-text-secondary transition-colors hover:border-brand-800 hover:text-brand-800"
                         >
                             {opt.label}
                         </button>
@@ -65,7 +65,7 @@ export function PollCard({ poll }: { poll: PollItem }) {
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-                <span className="text-[11px] text-gray-400">
+                <span className="text-[11px] text-muted-foreground">
                     총 {total.toLocaleString()}명 참여
                 </span>
                 {poll.relatedOfferId && (

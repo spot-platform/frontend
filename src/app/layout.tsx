@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { QueryProvider } from '@/app/providers/query-provider';
+import { ThemeProvider } from '@/app/providers/theme-provider';
 import { PwaUpdatePrompt } from '@/shared/ui/pwa-update-prompt';
 import './globals.css';
 
@@ -25,7 +26,9 @@ export default function RootLayout({
     return (
         <html lang="ko" suppressHydrationWarning>
             <body className="min-h-screen bg-background font-sans antialiased">
-                <QueryProvider>{children}</QueryProvider>
+                <ThemeProvider>
+                    <QueryProvider>{children}</QueryProvider>
+                </ThemeProvider>
                 <PwaUpdatePrompt />
             </body>
         </html>

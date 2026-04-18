@@ -80,11 +80,11 @@ export function SupporterDashboardClient() {
                 bottomInset="lg"
                 className="bg-surface"
             >
-                <section className="border-b border-neutral-200 pb-4">
-                    <h1 className="text-lg font-semibold text-neutral-900">
+                <section className="border-b border-border-soft pb-4">
+                    <h1 className="text-lg font-semibold text-foreground">
                         내 피드 매력도 리포트
                     </h1>
-                    <p className="mt-2 text-sm leading-6 text-neutral-600">
+                    <p className="mt-2 text-sm leading-6 text-text-secondary">
                         contextBuilder 시뮬레이션이 생성한 매력도 점수와 개선
                         힌트입니다. 가상 스팟은 전환 가이드도 함께 제공돼요.
                     </p>

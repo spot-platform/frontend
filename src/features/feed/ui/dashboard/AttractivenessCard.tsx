@@ -56,8 +56,8 @@ function scoreTone(score: number): {
         };
     }
     return {
-        ring: 'stroke-neutral-300',
-        text: 'text-neutral-500',
+        ring: 'stroke-border-strong',
+        text: 'text-muted-foreground',
         label: '보강 필요',
     };
 }
@@ -80,7 +80,7 @@ function CompositeGauge({ score }: { score: number }) {
                     cx="60"
                     cy="60"
                     r={radius}
-                    className="fill-none stroke-neutral-200"
+                    className="fill-none stroke-border-soft"
                     strokeWidth={10}
                 />
                 <motion.circle
@@ -105,7 +105,7 @@ function CompositeGauge({ score }: { score: number }) {
                 >
                     {clamped.toFixed(2)}
                 </span>
-                <span className="text-[10px] font-semibold tracking-wide text-neutral-500">
+                <span className="text-[10px] font-semibold tracking-wide text-muted-foreground">
                     {tone.label}
                 </span>
             </div>
@@ -196,7 +196,7 @@ function RadarChart({
                     <path
                         key={level}
                         d={path}
-                        className="fill-none stroke-neutral-200"
+                        className="fill-none stroke-border-soft"
                         strokeWidth={1}
                     />
                 );
@@ -209,7 +209,7 @@ function RadarChart({
                     y1={size / 2}
                     x2={axis.x}
                     y2={axis.y}
-                    className="stroke-neutral-200"
+                    className="stroke-border-soft"
                     strokeWidth={1}
                 />
             ))}
@@ -251,7 +251,7 @@ function RadarChart({
                         y={axis.labelY}
                         textAnchor={anchor}
                         dominantBaseline="middle"
-                        className="fill-neutral-600 text-[10px] font-semibold"
+                        className="fill-text-secondary text-[10px] font-semibold"
                     >
                         {label}
                     </text>
@@ -268,12 +268,12 @@ function PriceBenchmark({
 }) {
     const format = (n: number) => `${n.toLocaleString('ko-KR')}원`;
     return (
-        <div className="rounded-xl border border-neutral-200 bg-white p-4">
+        <div className="rounded-xl border border-border-soft bg-card p-4">
             <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold tracking-[0.16em] text-neutral-400 uppercase">
+                <span className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                     가격 벤치마크
                 </span>
-                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-neutral-600">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-text-secondary">
                     {benchmark.verdict}
                 </span>
             </div>
@@ -286,12 +286,12 @@ function PriceBenchmark({
                 ].map((item) => (
                     <div
                         key={item.label}
-                        className="rounded-lg bg-neutral-50 px-2 py-2"
+                        className="rounded-lg bg-muted px-2 py-2"
                     >
-                        <p className="text-[10px] font-semibold text-neutral-400">
+                        <p className="text-[10px] font-semibold text-muted-foreground">
                             {item.label}
                         </p>
-                        <p className="mt-1 text-xs font-bold tabular-nums text-neutral-800">
+                        <p className="mt-1 text-xs font-bold tabular-nums text-text-secondary">
                             {format(item.value)}
                         </p>
                     </div>
@@ -303,10 +303,10 @@ function PriceBenchmark({
 
 export function AttractivenessCard({ report, title }: AttractivenessCardProps) {
     return (
-        <section className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-5">
+        <section className="flex flex-col gap-4 rounded-2xl border border-border-soft bg-card p-5">
             {title && (
                 <header className="flex items-center justify-between">
-                    <h2 className="text-base font-bold text-neutral-900">
+                    <h2 className="text-base font-bold text-foreground">
                         {title}
                     </h2>
                 </header>
@@ -315,30 +315,30 @@ export function AttractivenessCard({ report, title }: AttractivenessCardProps) {
             <div className="flex items-center gap-4">
                 <CompositeGauge score={report.composite_score} />
                 <div className="flex-1">
-                    <p className="text-[11px] font-semibold tracking-[0.16em] text-neutral-400 uppercase">
+                    <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                         composite score
                     </p>
-                    <p className="mt-1 text-sm leading-6 text-neutral-600">
+                    <p className="mt-1 text-sm leading-6 text-text-secondary">
                         8개 시그널을 종합한 피드 매력도입니다. 0.7 이상이면 매칭
                         성사 확률이 높아요.
                     </p>
                 </div>
             </div>
 
-            <div className="rounded-xl border border-neutral-100 bg-surface p-3">
+            <div className="rounded-xl border border-border-soft bg-surface p-3">
                 <RadarChart signals={report.signals} />
             </div>
 
             {report.improvement_hints.length > 0 && (
-                <div className="flex flex-col gap-2 rounded-xl border border-neutral-100 bg-neutral-50 p-4">
-                    <span className="text-[11px] font-semibold tracking-[0.16em] text-neutral-500 uppercase">
+                <div className="flex flex-col gap-2 rounded-xl border border-border-soft bg-muted p-4">
+                    <span className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                         개선 힌트
                     </span>
                     <ul className="flex flex-col gap-1.5">
                         {report.improvement_hints.map((hint, index) => (
                             <li
                                 key={index}
-                                className="flex gap-2 text-sm leading-6 text-neutral-700"
+                                className="flex gap-2 text-sm leading-6 text-text-secondary"
                             >
                                 <span
                                     aria-hidden

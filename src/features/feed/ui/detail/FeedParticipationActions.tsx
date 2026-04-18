@@ -308,7 +308,7 @@ export function FeedParticipationActions({
 
     return (
         <>
-            <div className="fixed right-0 bottom-0 left-0 z-30 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur-sm">
+            <div className="fixed right-0 bottom-0 left-0 z-30 border-t border-border-soft bg-card/95 px-4 py-3 backdrop-blur-sm">
                 {isApplied ? (
                     <Button
                         fullWidth
@@ -377,16 +377,16 @@ export function FeedParticipationActions({
                 }
             >
                 {cancelOutcome && (
-                    <dl className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm">
+                    <dl className="space-y-2 rounded-xl border border-border-soft bg-muted px-4 py-3 text-sm">
                         <div className="flex items-center justify-between">
-                            <dt className="text-gray-500">환불 예정</dt>
-                            <dd className="font-semibold text-gray-900">
+                            <dt className="text-muted-foreground">환불 예정</dt>
+                            <dd className="font-semibold text-foreground">
                                 {cancelOutcome.refund.toLocaleString('ko-KR')}P
                             </dd>
                         </div>
                         <div className="flex items-center justify-between">
-                            <dt className="text-gray-500">몰수</dt>
-                            <dd className="font-semibold text-gray-900">
+                            <dt className="text-muted-foreground">몰수</dt>
+                            <dd className="font-semibold text-foreground">
                                 {(
                                     cancelOutcome.forfeit.toPool +
                                     cancelOutcome.forfeit.toPlatformFee
@@ -409,12 +409,12 @@ export function FeedParticipationActions({
                 snapPoint="full"
             >
                 <div className="pb-3">
-                    <div className="divide-y divide-gray-200 border-y border-gray-200">
+                    <div className="divide-y divide-border-soft border-y border-border-soft">
                         <section className="py-4">
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-sm font-semibold text-foreground">
                                 참여 전에 꼭 확인해 주세요.
                             </p>
-                            <p className="mt-2 text-sm leading-6 text-gray-600">
+                            <p className="mt-2 text-sm leading-6 text-text-secondary">
                                 보증금은 참여 의사를 확인한 뒤 팀 채팅으로
                                 이동하기 위한 임시 예치 금액이에요. 확정 후 진행
                                 안내와 역할 조율은 팀 채팅에서 이어집니다.
@@ -446,12 +446,12 @@ export function FeedParticipationActions({
                                 ) : null}
 
                                 {categoryAverageGuide ? (
-                                    <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                                        <p className="text-sm font-semibold text-gray-900">
+                                    <div className="rounded-2xl border border-border-soft bg-muted px-4 py-3">
+                                        <p className="text-sm font-semibold text-foreground">
                                             {categoryAverageGuide.category}{' '}
                                             카테고리 평균 목표 금액
                                         </p>
-                                        <p className="mt-1 text-sm text-gray-600">
+                                        <p className="mt-1 text-sm text-text-secondary">
                                             {formatCurrency(
                                                 categoryAverageGuide.averageFundingGoal,
                                             )}{' '}
@@ -460,12 +460,12 @@ export function FeedParticipationActions({
                                                 categoryAverageGuide.benchmarkLabel
                                             }
                                         </p>
-                                        <p className="mt-2 text-xs leading-5 text-gray-500">
+                                        <p className="mt-2 text-xs leading-5 text-muted-foreground">
                                             {categoryAverageGuide.note}
                                         </p>
                                         {pricing.categoryAverageDelta !=
                                         null ? (
-                                            <p className="mt-2 text-xs font-medium text-gray-600">
+                                            <p className="mt-2 text-xs font-medium text-text-secondary">
                                                 {getCategoryAverageDeltaCopy(
                                                     pricing.categoryAverageDelta,
                                                 )}
@@ -477,14 +477,14 @@ export function FeedParticipationActions({
                         </section>
 
                         <section className="py-4">
-                            <dl className="space-y-3 text-sm text-gray-600">
+                            <dl className="space-y-3 text-sm text-text-secondary">
                                 <div className="flex items-center justify-between gap-4">
                                     <dt>
                                         {selectedRole === 'SUPPORTER'
                                             ? '입력한 목표 기준 보증금'
                                             : '보증금'}
                                     </dt>
-                                    <dd className="font-semibold text-gray-900">
+                                    <dd className="font-semibold text-foreground">
                                         {formatCurrency(deposit)}
                                     </dd>
                                 </div>
@@ -494,13 +494,13 @@ export function FeedParticipationActions({
                                             ? '이번에 입력한 희망 목표'
                                             : '현재 공고 목표 금액'}
                                     </dt>
-                                    <dd className="font-semibold text-gray-900">
+                                    <dd className="font-semibold text-foreground">
                                         {formatCurrency(pricing.targetAmount)}
                                     </dd>
                                 </div>
                                 <div className="flex items-center justify-between gap-4">
                                     <dt>내 포인트</dt>
-                                    <dd className="font-semibold text-gray-900">
+                                    <dd className="font-semibold text-foreground">
                                         {currentBalance != null
                                             ? formatCurrency(currentBalance)
                                             : balanceQuery.isLoading
@@ -514,8 +514,8 @@ export function FeedParticipationActions({
                                         className={`font-semibold ${
                                             projectedBalance != null &&
                                             projectedBalance < 0
-                                                ? 'text-red-500'
-                                                : 'text-gray-900'
+                                                ? 'text-destructive'
+                                                : 'text-foreground'
                                         }`}
                                     >
                                         {projectedBalance != null
@@ -525,8 +525,8 @@ export function FeedParticipationActions({
                                 </div>
                             </dl>
 
-                            <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-                                <p className="font-semibold text-gray-900">
+                            <div className="mt-4 rounded-2xl border border-border-soft bg-muted px-4 py-3 text-sm text-text-secondary">
+                                <p className="font-semibold text-foreground">
                                     {selectedRole === 'PARTNER'
                                         ? '보증금 계산 방식'
                                         : '입력 목표 기준 계산 방식'}
@@ -552,7 +552,7 @@ export function FeedParticipationActions({
                                     % = {formatCurrency(pricing.deposit)}
                                 </p>
                                 {pricing.categoryAverageDeposit != null ? (
-                                    <p className="mt-2 text-xs leading-5 text-gray-500">
+                                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
                                         같은 인원 기준 카테고리 평균 보증금은{' '}
                                         {formatCurrency(
                                             pricing.categoryAverageDeposit,
@@ -564,11 +564,11 @@ export function FeedParticipationActions({
                         </section>
 
                         <section className="py-4">
-                            <p className="text-sm leading-6 text-gray-600">
+                            <p className="text-sm leading-6 text-text-secondary">
                                 {helperCopy}
                             </p>
                             {availability.remainingPartnerSlots > 0 && (
-                                <p className="mt-2 text-xs text-gray-400">
+                                <p className="mt-2 text-xs text-muted-foreground">
                                     현재 남은 파트너 슬롯{' '}
                                     {availability.remainingPartnerSlots}개
                                 </p>

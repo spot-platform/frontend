@@ -30,7 +30,7 @@ function formatPrice(price: number): string {
 
 function StatBadge({ icon, count }: { icon: React.ReactNode; count: number }) {
     return (
-        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
             {icon}
             <span>{count.toLocaleString()}</span>
         </span>
@@ -50,7 +50,7 @@ function FeedRow({
         <button
             type="button"
             onClick={() => router.push(`/feed/${item.id}`)}
-            className="w-full bg-white text-left transition-[background-color,transform] duration-150 active:bg-gray-50 active:scale-[0.997]"
+            className="w-full bg-card text-left transition-[background-color,transform] duration-150 active:bg-muted active:scale-[0.997]"
         >
             <article className="px-4 py-3.5">{children}</article>
         </button>
@@ -195,7 +195,7 @@ function ExploreSlotToken({ slot }: { slot: ExploreSlot }) {
                     avatarUrl={slot.profile.avatarUrl}
                     size="sm"
                 />
-                <span className="text-[10px] font-medium text-gray-500">
+                <span className="text-[10px] font-medium text-muted-foreground">
                     {slot.label}
                 </span>
             </div>
@@ -208,10 +208,12 @@ function ExploreSlotToken({ slot }: { slot: ExploreSlot }) {
                 className={
                     slot.state === 'filled'
                         ? 'h-8 w-8 rounded-full bg-brand-50'
-                        : 'h-8 w-8 rounded-full border border-dashed border-gray-300 bg-gray-50'
+                        : 'h-8 w-8 rounded-full border border-dashed border-border-strong bg-muted'
                 }
             />
-            <span className="text-[10px] text-gray-400">{slot.label}</span>
+            <span className="text-[10px] text-muted-foreground">
+                {slot.label}
+            </span>
         </div>
     );
 }
@@ -325,7 +327,7 @@ function ExploreCard({
         <FeedRow item={item}>
             <div className="flex gap-3">
                 <div>
-                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
                         {item.imageUrl ? (
                             <Image
                                 src={item.imageUrl}
@@ -338,14 +340,14 @@ function ExploreCard({
                             <div className="flex h-full w-full items-center justify-center">
                                 <IconPhoto
                                     size={24}
-                                    className="text-gray-300"
+                                    className="text-border-strong"
                                 />
                             </div>
                         )}
                     </div>
 
                     {item.category && (
-                        <span className="text-[10px] font-medium text-gray-400">
+                        <span className="text-[10px] font-medium text-muted-foreground">
                             #{item.category}
                         </span>
                     )}
@@ -356,7 +358,7 @@ function ExploreCard({
                             <Chip size="sm" selected>
                                 {isRequest ? '알려줘!' : '해볼래?'}
                             </Chip>
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-muted-foreground">
                                 {isRequest
                                     ? '서포터 기다리는 중'
                                     : '파트너 모집 중'}
@@ -367,20 +369,20 @@ function ExploreCard({
                         )}
                     </div>
 
-                    <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-gray-900">
+                    <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug text-foreground">
                         {item.title}
                     </h3>
-                    <p className="mt-0.5 truncate text-xs text-gray-400">
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {item.location} · {item.authorNickname}
                     </p>
 
                     <div className="mt-2 flex items-center justify-between gap-3">
                         {isRequest ? (
-                            <span className="text-xs font-medium text-gray-500">
+                            <span className="text-xs font-medium text-muted-foreground">
                                 요청 금액 미정
                             </span>
                         ) : (
-                            <span className="text-sm font-bold text-gray-900">
+                            <span className="text-sm font-bold text-foreground">
                                 {formatPrice(item.price)}
                             </span>
                         )}
@@ -392,7 +394,7 @@ function ExploreCard({
                     </div>
 
                     {displayProgressPercent != null && (
-                        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-gray-100">
+                        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-muted">
                             <div
                                 className="h-full rounded-full bg-accent"
                                 style={{
@@ -403,7 +405,7 @@ function ExploreCard({
                     )}
 
                     {remaining != null && (
-                        <p className="mt-1 text-[11px] text-gray-500">
+                        <p className="mt-1 text-[11px] text-muted-foreground">
                             {remaining > 0
                                 ? `${remaining}명만 더 모이면 시작`
                                 : '정원이 꽉 찼어요'}
@@ -460,7 +462,7 @@ function FilledAvatar({
 }) {
     return (
         <div className={overlap ? '-ml-2' : ''} style={{ zIndex }}>
-            <div className="rounded-full ring-2 ring-white">
+            <div className="rounded-full ring-2 ring-card">
                 <UserAvatarStatic
                     userId={profile.id}
                     nickname={profile.nickname}
@@ -477,8 +479,8 @@ function GhostAvatar({ overlap }: { overlap: boolean }) {
         <div
             className={
                 overlap
-                    ? '-ml-2 h-8 w-8 rounded-full bg-brand-100 ring-2 ring-white'
-                    : 'h-8 w-8 rounded-full bg-brand-100 ring-2 ring-white'
+                    ? '-ml-2 h-8 w-8 rounded-full bg-brand-100 ring-2 ring-card'
+                    : 'h-8 w-8 rounded-full bg-brand-100 ring-2 ring-card'
             }
         />
     );
@@ -489,8 +491,8 @@ function EmptySlot({ overlap }: { overlap: boolean }) {
         <div
             className={
                 overlap
-                    ? '-ml-2 h-8 w-8 rounded-full border-2 border-dashed border-gray-300 bg-white/70'
-                    : 'h-8 w-8 rounded-full border-2 border-dashed border-gray-300 bg-white/70'
+                    ? '-ml-2 h-8 w-8 rounded-full border-2 border-dashed border-border-strong bg-card/70'
+                    : 'h-8 w-8 rounded-full border-2 border-dashed border-border-strong bg-card/70'
             }
         />
     );
@@ -524,7 +526,7 @@ function HomeSlotRow({ item }: { item: FeedItem }) {
         <div className="flex items-center gap-3">
             <div className="flex flex-col items-center gap-1">
                 {supporterFilled && supporterProfile ? (
-                    <div className="rounded-full ring-2 ring-white">
+                    <div className="rounded-full ring-2 ring-card">
                         <UserAvatarStatic
                             userId={supporterProfile.id}
                             nickname={supporterProfile.nickname}
@@ -535,12 +537,12 @@ function HomeSlotRow({ item }: { item: FeedItem }) {
                 ) : (
                     <EmptySlot overlap={false} />
                 )}
-                <span className="text-[10px] font-medium text-gray-500">
+                <span className="text-[10px] font-medium text-muted-foreground">
                     서포터
                 </span>
             </div>
 
-            <div className="h-8 w-px bg-gray-200/80" />
+            <div className="h-8 w-px bg-border-soft/80" />
 
             <div className="flex flex-col items-start gap-1">
                 <div className="flex items-center">
@@ -571,7 +573,7 @@ function HomeSlotRow({ item }: { item: FeedItem }) {
                         );
                     })}
                 </div>
-                <span className="text-[10px] font-medium text-gray-500">
+                <span className="text-[10px] font-medium text-muted-foreground">
                     파트너 {partnerFilled}/{partnerTotal}
                 </span>
             </div>
@@ -592,7 +594,7 @@ export function HomeFeedCard({ item, fitnessScore }: FeedCardProps) {
         <button
             type="button"
             onClick={() => router.push(`/feed/${item.id}`)}
-            className="group relative flex h-64 w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left transition-[transform,box-shadow] duration-200 active:scale-[0.99]"
+            className="group relative flex h-64 w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-border-soft bg-card text-left transition-[transform,box-shadow] duration-200 active:scale-[0.99]"
         >
             <div className="absolute inset-0">
                 {item.imageUrl ? (
@@ -604,9 +606,9 @@ export function HomeFeedCard({ item, fitnessScore }: FeedCardProps) {
                         className="scale-110 object-cover blur-xl"
                     />
                 ) : (
-                    <div className="h-full w-full bg-linear-to-br from-brand-50 via-white to-accent/10" />
+                    <div className="h-full w-full bg-linear-to-br from-brand-50 via-card to-accent/10" />
                 )}
-                <div className="absolute inset-0 bg-linear-to-t from-white via-white/92 to-white/55" />
+                <div className="absolute inset-0 bg-linear-to-t from-card via-card/92 to-card/55" />
             </div>
 
             <div className="relative flex flex-1 flex-col p-5">
@@ -615,7 +617,7 @@ export function HomeFeedCard({ item, fitnessScore }: FeedCardProps) {
                         {isRequest ? '알려줘!' : '해볼래?'}
                     </Chip>
                     {item.category && (
-                        <span className="text-[11px] font-medium text-gray-500">
+                        <span className="text-[11px] font-medium text-muted-foreground">
                             #{item.category}
                         </span>
                     )}
@@ -626,10 +628,10 @@ export function HomeFeedCard({ item, fitnessScore }: FeedCardProps) {
                     )}
                 </div>
 
-                <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-snug tracking-tight text-gray-900">
+                <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-snug tracking-tight text-foreground">
                     {item.title}
                 </h3>
-                <p className="mt-1 truncate text-[11px] text-gray-500">
+                <p className="mt-1 truncate text-[11px] text-muted-foreground">
                     {item.location} · {item.authorNickname}
                 </p>
 
@@ -638,11 +640,11 @@ export function HomeFeedCard({ item, fitnessScore }: FeedCardProps) {
 
                     <div className="flex items-end justify-between gap-3">
                         {isRequest ? (
-                            <span className="text-[13px] font-medium text-gray-500">
+                            <span className="text-[13px] font-medium text-muted-foreground">
                                 요청 금액 미정
                             </span>
                         ) : (
-                            <span className="text-[17px] font-bold text-gray-900">
+                            <span className="text-[17px] font-bold text-foreground">
                                 {formatPrice(item.price)}
                             </span>
                         )}
@@ -659,7 +661,7 @@ export function HomeFeedCard({ item, fitnessScore }: FeedCardProps) {
                     </div>
 
                     {displayProgressPercent != null && (
-                        <div className="h-0.5 w-full overflow-hidden rounded-full bg-gray-200/60">
+                        <div className="h-0.5 w-full overflow-hidden rounded-full bg-border-soft/60">
                             <div
                                 className="h-full rounded-full bg-accent transition-[width] duration-300"
                                 style={{

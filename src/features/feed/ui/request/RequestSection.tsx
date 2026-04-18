@@ -108,7 +108,7 @@ export function RequestSection() {
                             className={`shrink-0 ${
                                 isActive
                                     ? 'border-brand-800 bg-brand-800 text-white'
-                                    : 'border-gray-200 bg-gray-100 text-gray-600'
+                                    : 'border-border-soft bg-muted text-text-secondary'
                             }`}
                         >
                             {budget}
@@ -120,14 +120,14 @@ export function RequestSection() {
             {/* 피드 목록 */}
             <div
                 id="request-list"
-                className="divide-y divide-gray-100 border-y border-gray-100 bg-white"
+                className="divide-y divide-border-soft border-y border-border-soft bg-card"
             >
                 {filtered.length > 0 ? (
                     filtered.map((item) => (
                         <FeedCard key={item.id} item={item} />
                     ))
                 ) : (
-                    <p className="px-4 py-8 text-center text-sm text-gray-400">
+                    <p className="px-4 py-8 text-center text-sm text-muted-foreground">
                         해당 카테고리의 요청이 없습니다
                     </p>
                 )}

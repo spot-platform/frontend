@@ -25,6 +25,8 @@ export type MapCanvasProps = {
 
 let loadPromise: Promise<void> | null = null;
 
+export { loadNaverMapSDK, waitForNaverMaps };
+
 function waitForNaverMaps(timeout = 10_000): Promise<void> {
     return new Promise((resolve, reject) => {
         if (window.naver?.maps?.Map) {
@@ -51,7 +53,9 @@ function loadNaverMapSDK(): Promise<void> {
     }
     loadPromise = new Promise<void>((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_CLIENT_ID}`;
+        // submodules=gl: Naver v3 의 customStyleId 가 GL(WebGL) 렌더러 전용이라 필수.
+        // 기존 /map (gl: false) 에는 영향 없음 — 서브모듈만 로드되고 사용 안 함.
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_CLIENT_ID}&submodules=gl`;
         script.async = true;
         script.onload = () => waitForNaverMaps().then(resolve, reject);
         script.onerror = () => {
@@ -219,7 +223,7 @@ function NaverMapCanvas({
     );
 }
 
-function NaverOverlay({
+export function NaverOverlay({
     map,
     position,
     children,

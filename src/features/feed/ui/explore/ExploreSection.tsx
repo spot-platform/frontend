@@ -107,7 +107,7 @@ export function ExploreSection() {
                                 className={`min-h-0 border-0 bg-transparent px-0 text-xs ${
                                     isActive
                                         ? 'font-bold text-brand-800'
-                                        : 'font-normal text-gray-400'
+                                        : 'font-normal text-muted-foreground'
                                 }`}
                             >
                                 {option}
@@ -117,13 +117,13 @@ export function ExploreSection() {
                 </div>
             </div>
 
-            <div className="divide-y divide-gray-100 border-y border-gray-100 bg-white">
+            <div className="divide-y divide-border-soft border-y border-border-soft bg-card">
                 {sortedItems.length > 0 ? (
                     sortedItems.map((item) => (
                         <FeedCard key={item.id} item={item} />
                     ))
                 ) : (
-                    <p className="px-4 py-8 text-center text-sm text-gray-400">
+                    <p className="px-4 py-8 text-center text-sm text-muted-foreground">
                         해당 조건의 피드가 없습니다
                     </p>
                 )}

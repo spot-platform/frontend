@@ -85,7 +85,7 @@ export function FeedBottomSheet({
                     <p className="mb-3 text-xs font-medium text-muted-foreground">
                         주변 모임 {filtered.length}개
                     </p>
-                    <div className="flex flex-col divide-y divide-neutral-100">
+                    <div className="flex flex-col divide-y divide-border-soft">
                         {filtered.map((item) => {
                             const scores = getSimulationScore(
                                 item,

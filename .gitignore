@@ -54,3 +54,6 @@ AGENTS.md
 .sisyphus
 CLAUDE.md
 .package/design-system/node_modules
+
+docs
+_workspace

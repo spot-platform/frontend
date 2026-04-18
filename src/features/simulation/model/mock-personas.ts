@@ -7,6 +7,8 @@ export const MOCK_PERSONAS: Persona[] = [
         name: '민지',
         archetype: 'explorer',
         initialCoord: { lat: 37.268, lng: 127.025 },
+        category: '운동',
+        intent: 'offer',
     },
     {
         id: 'A_11504',
@@ -14,6 +16,8 @@ export const MOCK_PERSONAS: Persona[] = [
         name: '지훈',
         archetype: 'helper',
         initialCoord: { lat: 37.295, lng: 127.01 },
+        category: '코딩',
+        intent: 'offer',
     },
     {
         id: 'A_83000',
@@ -21,6 +25,8 @@ export const MOCK_PERSONAS: Persona[] = [
         name: '서연',
         archetype: 'creator',
         initialCoord: { lat: 37.278, lng: 127.04 },
+        category: '공예',
+        intent: 'request',
     },
     {
         id: 'A_97841',
@@ -28,6 +34,8 @@ export const MOCK_PERSONAS: Persona[] = [
         name: '현우',
         archetype: 'connector',
         initialCoord: { lat: 37.305, lng: 127.02 },
+        category: '음악',
+        intent: 'offer',
     },
     {
         id: 'A_44522',
@@ -35,5 +43,7 @@ export const MOCK_PERSONAS: Persona[] = [
         name: '수빈',
         archetype: 'learner',
         initialCoord: { lat: 37.26, lng: 127.035 },
+        category: '요리',
+        intent: 'request',
     },
 ];

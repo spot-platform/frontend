@@ -14,7 +14,7 @@ const STATUS_LABEL: Record<'LEADING' | 'REVIEWING' | 'WAITING', string> = {
 const STATUS_COLOR: Record<'LEADING' | 'REVIEWING' | 'WAITING', string> = {
     LEADING: 'bg-accent text-white',
     REVIEWING: 'bg-brand-800 text-white',
-    WAITING: 'bg-gray-100 text-gray-500',
+    WAITING: 'bg-muted text-muted-foreground',
 };
 
 // 내 분야(요리, 음악) 신규 REQUEST 목록 — TODO: API 연동 시 서포터 분야 기반으로 교체
@@ -46,7 +46,7 @@ export function SupporterHomeSection() {
             {/* 지원 현황 */}
             {myApplications.length > 0 && (
                 <section className="flex flex-col gap-2">
-                    <h2 className="px-4 text-sm font-bold text-gray-700">
+                    <h2 className="px-4 text-sm font-bold text-text-secondary">
                         내 지원 현황
                     </h2>
                     <div className="flex flex-col gap-2 px-4">
@@ -54,13 +54,13 @@ export function SupporterHomeSection() {
                             <Link
                                 key={app.id + app.feedId}
                                 href={`/feed/${app.feedId}`}
-                                className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3"
+                                className="flex items-center justify-between rounded-xl border border-border-soft bg-card px-4 py-3"
                             >
                                 <div className="flex min-w-0 flex-col gap-0.5">
-                                    <p className="line-clamp-1 text-sm font-semibold text-gray-900">
+                                    <p className="line-clamp-1 text-sm font-semibold text-foreground">
                                         {app.feedTitle}
                                     </p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-muted-foreground">
                                         {app.category} · {app.location}
                                     </p>
                                 </div>
@@ -78,7 +78,7 @@ export function SupporterHomeSection() {
             {/* 내 분야 신규 REQUEST */}
             <section className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 px-4">
-                    <h2 className="text-sm font-bold text-gray-700">
+                    <h2 className="text-sm font-bold text-text-secondary">
                         내 분야 새 요청
                     </h2>
                     <div className="flex gap-1">
@@ -101,7 +101,7 @@ export function SupporterHomeSection() {
 
             {/* 인기 카테고리 트렌드 */}
             <section className="px-4">
-                <h2 className="mb-2 text-sm font-bold text-gray-700">
+                <h2 className="mb-2 text-sm font-bold text-text-secondary">
                     이번 주 인기 카테고리
                 </h2>
                 <div className="flex flex-wrap gap-2">
@@ -114,7 +114,7 @@ export function SupporterHomeSection() {
                     ].map((cat) => (
                         <span
                             key={cat.label}
-                            className="flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600"
+                            className="flex items-center gap-1 rounded-full border border-border-soft px-3 py-1.5 text-xs font-medium text-text-secondary"
                         >
                             {cat.label}
                             <span className="text-[10px] font-bold text-accent">

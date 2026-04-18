@@ -15,7 +15,7 @@ import type {
 const STATUS_STYLES: Record<SupporterApplication['status'], string> = {
     LEADING: 'border-emerald-100 bg-emerald-50 text-emerald-700',
     REVIEWING: 'border-brand-800/10 bg-brand-800/5 text-brand-800',
-    WAITING: 'border-gray-200 bg-gray-100 text-gray-500',
+    WAITING: 'border-border-soft bg-muted text-muted-foreground',
 };
 
 const STATUS_LABELS: Record<SupporterApplication['status'], string> = {
@@ -65,13 +65,13 @@ export function FeedManagementPanel({
 
     return (
         <Section gap="lg" className="pt-8 pb-4 px-4">
-            <div className="space-y-5 border-b border-gray-200 pb-6">
+            <div className="space-y-5 border-b border-border-soft pb-6">
                 <div className="flex items-start justify-between gap-3">
-                    <h2 className="text-xl font-semibold tracking-tight text-gray-900">
+                    <h2 className="text-xl font-semibold tracking-tight text-foreground">
                         {flow.stageLabel}
                     </h2>
                     <Chip
-                        className="border-gray-200 bg-white text-gray-600"
+                        className="border-border-soft bg-card text-text-secondary"
                         size="sm"
                     >
                         {flow.demand.deadlineLabel}
@@ -92,19 +92,19 @@ export function FeedManagementPanel({
                         meta={`${remainingPartnersCopy} ${Math.max(flow.demand.requiredPartners - confirmedPartnerCount, 0)}명 필요`}
                     />
                     <div className="col-span-2 space-y-2 md:col-span-1">
-                        <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <span>{progressLabel}</span>
-                            <span className="font-semibold text-gray-900">
+                            <span className="font-semibold text-foreground">
                                 {progressPercent}%
                             </span>
                         </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                             <div
                                 className="h-full rounded-full bg-accent"
                                 style={{ width: `${progressPercent}%` }}
                             />
                         </div>
-                        <p className="text-sm leading-relaxed text-gray-500">
+                        <p className="text-sm leading-relaxed text-muted-foreground">
                             {flow.demand.hostNote}
                         </p>
                     </div>
@@ -115,17 +115,17 @@ export function FeedManagementPanel({
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col gap-3">
                         <div className="flex justify-between gap-2 text-sm ">
-                            <p className="text-base font-semibold text-gray-900">
+                            <p className="text-base font-semibold text-foreground">
                                 {comparisonTitle}
                             </p>
                             <Chip
-                                className="border-gray-200 bg-white text-gray-600"
+                                className="border-border-soft bg-card text-text-secondary"
                                 size="sm"
                             >
                                 총 {flow.applications.length}건 도착
                             </Chip>
                         </div>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-muted-foreground">
                             {comparisonDescription}
                         </p>
                     </div>
@@ -141,17 +141,17 @@ export function FeedManagementPanel({
                 )}
             </div>
 
-            <div className="space-y-4  border-gray-200 py-6 border-t">
+            <div className="space-y-4  border-border-soft py-6 border-t">
                 <div className="flex flex-col gap-3">
-                    <div className="flex justify-between gap-2 text-sm text-gray-600">
-                        <p className="text-base font-semibold text-gray-900">
+                    <div className="flex justify-between gap-2 text-sm text-text-secondary">
+                        <p className="text-base font-semibold text-foreground">
                             현재 참여 중인 파트너
                         </p>
-                        <Chip className="border-gray-200 bg-white" size="sm">
+                        <Chip className="border-border-soft bg-card" size="sm">
                             {confirmedPartnerCount}명 참여 중
                         </Chip>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-muted-foreground">
                         진행을 함께 맡고 있는 프로필을 바로 확인할 수 있어요.
                     </p>
                 </div>
@@ -175,14 +175,14 @@ function StatBlock({
 }) {
     return (
         <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {icon}
                 {label}
             </div>
-            <p className="text-lg font-semibold tracking-tight text-gray-900">
+            <p className="text-lg font-semibold tracking-tight text-foreground">
                 {value}
             </p>
-            <p className="text-xs text-gray-500">{meta}</p>
+            <p className="text-xs text-muted-foreground">{meta}</p>
         </div>
     );
 }
@@ -225,7 +225,7 @@ function ApplicantAvatarGrid({
                             size="lg"
                         />
                         <div className="space-y-1">
-                            <p className="max-w-16 truncate text-xs font-medium text-gray-700">
+                            <p className="max-w-16 truncate text-xs font-medium text-text-secondary">
                                 {application.nickname}
                             </p>
                             <span

@@ -159,8 +159,8 @@ export function HotSpotBanner({ items = MOCK_HOT_SPOTS }: HotSpotBannerProps) {
                         aria-label={`슬라이드 ${i + 1}`}
                         className={`h-1.5 rounded-full transition-all duration-200 ${
                             i === activeIndex
-                                ? 'w-4 bg-gray-700'
-                                : 'w-1.5 bg-gray-300'
+                                ? 'w-4 bg-text-secondary'
+                                : 'w-1.5 bg-border-strong'
                         }`}
                     />
                 ))}

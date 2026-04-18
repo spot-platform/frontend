@@ -8,7 +8,7 @@ interface UpdateNoticeProps {
 
 export function Notice({ id, title }: UpdateNoticeProps) {
     return (
-        <div className=" bg-gray-200 px-4 py-3">
+        <div className=" bg-border-soft px-4 py-3">
             <div className="flex items-center justify-between gap-4">
                 <Link
                     href={getAdminPostDetailHref(id)}

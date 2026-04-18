@@ -81,7 +81,7 @@ export function OfferSection() {
                             className={`min-h-0 border-0 bg-transparent px-0 text-xs ${
                                 isActive
                                     ? 'font-bold text-brand-800'
-                                    : 'font-normal text-gray-400'
+                                    : 'font-normal text-muted-foreground'
                             }`}
                         >
                             {option}
@@ -91,11 +91,11 @@ export function OfferSection() {
             </div>
 
             {/* 피드 목록 */}
-            <div className="border-y border-gray-100 bg-white divide-y divide-gray-100">
+            <div className="border-y border-border-soft bg-card divide-y divide-border-soft">
                 {sorted.length > 0 ? (
                     sorted.map((item) => <FeedCard key={item.id} item={item} />)
                 ) : (
-                    <p className="px-4 py-8 text-center text-sm text-gray-400">
+                    <p className="px-4 py-8 text-center text-sm text-muted-foreground">
                         해당 카테고리의 모임이 없습니다
                     </p>
                 )}

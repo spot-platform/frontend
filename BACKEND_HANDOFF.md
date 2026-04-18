@@ -1,5 +1,7 @@
 # UI Backend Spec
 
+> **2026-04 map-v3 리디자인 (UI-only):** `Persona` 타입에 UI 파생 필드(`category`, `intent`, `interestItemIds`) 추가. BE 계약 변경 없음. 클러스터링은 FE 파생 연산.
+
 ## Shared
 
 ### Entities

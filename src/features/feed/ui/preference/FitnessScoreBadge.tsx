@@ -39,9 +39,9 @@ function scoreTone(score: number): Tone {
         };
     }
     return {
-        background: 'bg-neutral-100',
-        foreground: 'text-neutral-700',
-        ringClass: 'ring-neutral-400/20',
+        background: 'bg-muted',
+        foreground: 'text-text-secondary',
+        ringClass: 'ring-nav-inactive/20',
         label: '가볍게 확인',
     };
 }

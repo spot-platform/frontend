@@ -14,14 +14,14 @@ export function AttractivenessMiniGauge({
             ? 'bg-accent-dark'
             : clamped >= 0.4
               ? 'bg-brand-500'
-              : 'bg-neutral-400';
+              : 'bg-nav-inactive';
 
     return (
         <div className="flex items-center gap-2">
             <span className="text-[10px] font-medium text-muted-foreground">
                 피드 매력도
             </span>
-            <div className="h-1 w-16 overflow-hidden rounded-full bg-neutral-200">
+            <div className="h-1 w-16 overflow-hidden rounded-full bg-border-soft">
                 <div
                     className={`h-full rounded-full ${bar}`}
                     style={{ width: `${percent}%` }}

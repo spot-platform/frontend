@@ -70,6 +70,18 @@
     --color-danger: #dc2626;
     --color-overlay: rgb(0 0 0 / 0.5);
 
+    /* ── map-v3 persona (violet) ── */
+    --color-persona: #a78bfa;
+    --color-persona-strong: #7c3aed;
+    --color-persona-soft: rgba(167, 139, 250, 0.12);
+    --color-persona-glow: rgba(167, 139, 250, 0.4);
+
+    /* ── map-v3 primary glow (selected cluster ring) ── */
+    --color-primary-glow: rgba(13, 148, 136, 0.27);
+
+    /* ── map-v3 surface (warm paper) ── */
+    --color-map-bg: #f4f3ef;
+
     /* ── Typography ── */
     --font-sans:
         var(--font-a2z), ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -116,4 +128,81 @@
     /* ── Breakpoints (Tailwind v4 custom) ──
        xs: 360px — 세로 모드 저해상도 단말기(예: iPhone SE) 대응 */
     --breakpoint-xs: 22.5rem;
+}
+
+/* ── Dark mode overrides ──
+   next-themes 는 `attribute="class"` 설정으로 <html class="dark"> 를 토글한다.
+   Tailwind v4 는 @theme 블록에서 정의한 CSS 변수를 런타임에 cascade 로
+   재정의할 수 있으므로, .dark 셀렉터로 같은 변수명을 오버라이드한다.
+
+   주의: 토큰 시맨틱 이름은 라이트/다크가 정확히 일치해야 하며,
+   본 Phase(Phase 2)는 인프라만 제공한다. 하드코드 컬러 전면 치환은
+   Phase 10 에서 feature scope 단위로 진행. */
+.dark {
+    /* Semantic aliases (shadcn compat) */
+    --color-background: #0f0f0f;
+    --color-foreground: #f4f4f4;
+    --color-card: rgba(30, 30, 30, 0.85);
+    --color-card-foreground: #f4f4f4;
+    --color-popover: #1a1a1a;
+    --color-popover-foreground: #f4f4f4;
+    --color-primary: #2dd4bf;
+    --color-primary-foreground: #0a0a0a;
+    --color-secondary: #262626;
+    --color-secondary-foreground: #f4f4f4;
+    --color-muted: #1a1a1a;
+    --color-muted-foreground: #a1a1aa;
+    --color-accent: #2dd4bf;
+    --color-accent-dark: #5eead4;
+    --color-accent-muted: #042f2e;
+    --color-accent-border: #0f766e;
+    --color-destructive: #ef4444;
+    --color-destructive-foreground: #ffffff;
+    --color-ring: #0f766e;
+    --color-input: #27272a;
+
+    /* Surface / Panel */
+    --color-surface: #141414;
+    --color-canvas: #0f0f0f;
+    --color-panel: rgba(30, 30, 30, 0.85);
+    --color-panel-muted: #1a1a1a;
+    --color-panel-strong: #042f2e;
+
+    /* Borders */
+    --color-border-soft: #27272a;
+    --color-border-strong: #3f3f46;
+
+    /* Text */
+    --color-text-primary: #f4f4f4;
+    --color-text-secondary: #a1a1aa;
+    --color-text-muted: #71717a;
+    --color-nav-inactive: #52525b;
+
+    /* Status */
+    --color-success: #34d399;
+    --color-warning: #fbbf24;
+    --color-danger: #ef4444;
+    --color-overlay: rgb(0 0 0 / 0.7);
+
+    /* map-v3 persona (violet) */
+    --color-persona: #c4b5fd;
+    --color-persona-strong: #a78bfa;
+    --color-persona-soft: rgba(167, 139, 250, 0.18);
+    --color-persona-glow: rgba(167, 139, 250, 0.55);
+
+    /* map-v3 primary glow (selected cluster ring) */
+    --color-primary-glow: rgba(45, 212, 191, 0.44);
+
+    /* map-v3 surface — 통일을 위해 다크는 background 와 동일 */
+    --color-map-bg: #0f0f0f;
+
+    /* Shadows (다크에서는 그림자 대신 border + 더 깊은 검정 사용) */
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.5), 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-md:
+        0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg:
+        0 10px 15px -3px rgb(0 0 0 / 0.55), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-xl:
+        0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.4);
 }

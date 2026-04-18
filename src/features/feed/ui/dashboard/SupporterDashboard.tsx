@@ -21,11 +21,11 @@ type SupporterDashboardProps = {
 export function SupporterDashboard({ reports }: SupporterDashboardProps) {
     if (reports.length === 0) {
         return (
-            <section className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-neutral-200 bg-white px-6 py-12 text-center">
-                <h2 className="text-base font-semibold text-neutral-800">
+            <section className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border-soft bg-card px-6 py-12 text-center">
+                <h2 className="text-base font-semibold text-text-secondary">
                     분석할 피드가 아직 없어요
                 </h2>
-                <p className="text-sm leading-6 text-neutral-500">
+                <p className="text-sm leading-6 text-muted-foreground">
                     피드를 하나라도 등록하면 매력도 리포트가 생성됩니다.
                 </p>
             </section>
