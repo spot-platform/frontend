@@ -7,6 +7,7 @@ import { usePostFormPrefill } from '../model/use-post-form-prefill';
 import { readSimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
 import { SimulationInsightCard } from '@/features/simulation/ui/SimulationInsightCard';
 import type { SimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
+import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
 import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
 import { PostSubmitBar } from '../ui/post-form/PostSubmitBar';
 import { PostStepIndicator } from '../ui/PostStepIndicator';
@@ -67,13 +68,29 @@ export function RequestFormClient() {
     const canNext =
         step === 0 ? isStep0Valid : step === 1 ? isStep1Valid : isStep2Valid;
 
+    const addMySpot = useMySpotsStore((s) => s.addSpot);
+
     const handleNext = () => {
         if (step < STEPS.length - 1) {
             setStep((s) => s + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
+            const fallbackLocation = {
+                lat: 37.2636,
+                lng: 127.0286,
+            };
+            const created = addMySpot({
+                title: title || spotName,
+                category: simContext?.category ?? '운동',
+                intent: 'request',
+                location: simContext?.spotLocation ?? fallbackLocation,
+                participants: [
+                    { id: 'me', emoji: '👤', name: '나' },
+                    { id: 'demo-a', emoji: '🎨', name: '서연' },
+                ],
+            });
             clearDraft();
-            router.push('/post/complete');
+            router.push(`/post/complete?mySpot=${created.id}`);
         }
     };
 

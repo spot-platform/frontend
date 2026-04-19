@@ -6,9 +6,9 @@ export const metadata: Metadata = { title: '스팟 생성 완료' };
 export default async function CompletePage({
     searchParams,
 }: {
-    searchParams: Promise<{ spotId?: string }>;
+    searchParams: Promise<{ mySpot?: string }>;
 }) {
-    const { spotId } = await searchParams;
+    const { mySpot } = await searchParams;
 
-    return <CompletePageClient spotId={spotId} />;
+    return <CompletePageClient mySpotId={mySpot} />;
 }

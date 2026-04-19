@@ -19,6 +19,10 @@ export type ActivityCluster = {
     isDying?: boolean;
     /** 물리적으로 spot 에 도착한 참여자 수. 증가 시 ClusterBlob 가 join burst 재생. */
     arrivedCount?: number;
+    /** 클러스터 시각 변형. 'mine' = 유저 본인이 만든 모임 (primary 톤 + 뱃지). */
+    variant?: 'mine';
+    /** 변형에 따른 추가 라벨(예: "내 모임"). */
+    variantLabel?: string;
 };
 
 export type ClusterInput = {

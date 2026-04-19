@@ -7,6 +7,7 @@ import { usePostFormPrefill } from '../model/use-post-form-prefill';
 import { readSimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
 import { SimulationInsightCard } from '@/features/simulation/ui/SimulationInsightCard';
 import type { SimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
+import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
 import { OfferDetailsSection } from '../ui/post-form/OfferDetailsSection';
 import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
 import { PostSubmitBar } from '../ui/post-form/PostSubmitBar';
@@ -68,13 +69,32 @@ export function OfferFormClient() {
     const canNext =
         step === 0 ? isStep0Valid : step === 1 ? isStep1Valid : isStep2Valid;
 
+    const addMySpot = useMySpotsStore((s) => s.addSpot);
+
     const handleNext = () => {
         if (step < STEPS.length - 1) {
             setStep((s) => s + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
+            // 시뮬 context 가 있으면 그 좌표/카테고리를 우선 사용, 없으면 기본 수원 중심.
+            const fallbackLocation = {
+                lat: 37.2636,
+                lng: 127.0286,
+            };
+            const created = addMySpot({
+                title: title || spotName,
+                category: simContext?.category ?? '운동',
+                intent: 'offer',
+                location: simContext?.spotLocation ?? fallbackLocation,
+                participants: [
+                    { id: 'me', emoji: '👤', name: '나' },
+                    { id: 'demo-a', emoji: '🧘', name: '민지' },
+                    { id: 'demo-b', emoji: '💻', name: '지훈' },
+                ],
+            });
             clearDraft();
-            router.push('/post/complete');
+            // 완료 페이지는 생성된 spot id 를 URL 에 실어, 완료 후 맵에서 강조 표시.
+            router.push(`/post/complete?mySpot=${created.id}`);
         }
     };
 

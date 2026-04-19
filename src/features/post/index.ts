@@ -5,7 +5,6 @@ export { FormField } from './ui/FormField';
 export { ImageUploadGrid } from './ui/ImageUploadGrid';
 export { ImageUploadSlot } from './ui/ImageUploadSlot';
 export { OfferFormClient } from './client/OfferFormClient';
-export { PostCompleteNav } from './ui/PostCompleteNav';
 export { ReceiptCard } from './ui/ReceiptCard';
 export { RequestFormClient } from './client/RequestFormClient';
 

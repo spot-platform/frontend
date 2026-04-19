@@ -22,53 +22,35 @@ import { FeedBottomSheet } from '@/features/feed/ui/FeedBottomSheet';
 import { SpotPreviewSheet } from '@/features/feed/ui/SpotPreviewSheet';
 import { LayerToggle } from '@/features/layer/ui/LayerToggle';
 import { useLayerStore } from '@/features/layer/model/use-layer-store';
-import { MOCK_PERSONAS } from '@/features/simulation/model/mock-personas';
-import { MOCK_WAYPOINTS } from '@/features/simulation/model/mock-waypoints';
-import { MOCK_EVENT_SEQUENCE } from '@/features/simulation/model/mock-event-sequence';
-import { MOCK_TIMELINE_FRAMES } from '@/features/simulation/model/mock-api-responses';
-import { usePersonaMovement } from '@/features/simulation/model/use-persona-movement';
-import { useEventPlayer } from '@/features/simulation/model/use-event-player';
-import { useTimelineSimulation } from '@/features/simulation/model/use-timeline-simulation';
-import { useAnimatedCoords } from '@/features/simulation/model/use-animated-coords';
 import { useMockPersonaSwarm } from '@/features/simulation/model/use-mock-persona-swarm';
 import { useMockSpotLifecycles } from '@/features/simulation/model/use-mock-spot-lifecycles';
+import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
 import {
     saveSimulationConversionContext,
     getSuggestedPriceKrw,
 } from '@/features/simulation/model/simulation-conversion-context';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import { useMapUrlState } from '@/features/map/model/use-map-url-state';
-import { useActivityClusters } from '@/features/map/model/use-activity-clusters';
 import { ClusterBlob } from '@/features/map/ui/ClusterBlob';
 import { PersonaDotMarkerBlob } from '@/features/map/ui/PersonaDotMarkerBlob';
 import { MapBottomStack } from '@/features/map/ui/MapBottomStack';
 import { PersonaInfoCard } from '@/features/map/ui/PersonaInfoCard';
 import { SpotInfoCard } from '@/features/map/ui/SpotInfoCard';
+import { MySpotInfoCard } from '@/features/map/ui/MySpotInfoCard';
 import { ARCHETYPE_LABEL } from '@/entities/persona/labels';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
 import { ThemeSegment } from '@/features/map/ui/ThemeSegment';
-import {
-    createTickerAdapter,
-    type TickerEvent,
-} from '@/features/map/model/ticker-adapter';
+import type { TickerEvent } from '@/features/map/model/ticker-adapter';
 import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
 import { useTheme } from '@/shared/model/use-theme';
 import type { BottomSheetSnapPoint } from '@frontend/design-system';
 import type { GeoCoord } from '@/entities/spot/types';
 import type { Persona } from '@/entities/persona/types';
+import type { ActivityCluster } from '@/features/map/model/types';
 import type { MapOverlayItem } from '@/features/map/ui/MapCanvas';
 import type { ViewportBbox } from '@/features/map/ui/MapV3Canvas';
 
-type SimulationMode = 'sse' | 'legacy' | 'off' | 'swarm';
-
-function resolveSimulationMode(raw: string | null): SimulationMode {
-    if (raw === 'off') return 'off';
-    if (raw === 'legacy') return 'legacy';
-    if (raw === 'swarm') return 'swarm';
-    return 'sse';
-}
-
-// ?sim=swarm 용 고정 bbox. 수원시 전역 ~약 10km × 10km.
+// Swarm 시뮬레이션 고정 bbox (수원시 전역 ~10km×10km). 모드 분기 없이 항상 swarm.
 const SWARM_BBOX = {
     swLat: 37.22,
     swLng: 126.97,
@@ -118,14 +100,11 @@ export function MapClient() {
             : initialDomTheme;
 
     const searchParams = useSearchParams();
-    const simulationMode = resolveSimulationMode(searchParams.get('sim'));
     const swarmN = (() => {
         const raw = Number(searchParams.get('n') ?? '');
         if (!Number.isFinite(raw) || raw <= 0) return 80;
         return Math.min(SWARM_MAX_N, Math.floor(raw));
     })();
-
-    const { positions } = usePersonaMovement(MOCK_PERSONAS, MOCK_WAYPOINTS);
 
     const {
         personas: swarmPersonas,
@@ -134,31 +113,11 @@ export function MapClient() {
         setSpotTargets: swarmSetSpotTargets,
     } = useMockPersonaSwarm({
         n: swarmN,
-        enabled: simulationMode === 'swarm',
+        enabled: true,
         bbox: SWARM_BBOX,
     });
 
-    const sseSimulation = useTimelineSimulation({
-        runId: 'demo',
-        enabled: simulationMode === 'sse',
-        mockFrames: MOCK_TIMELINE_FRAMES,
-        mockIntervalMs: 1500,
-    });
-
-    const legacyPlayer = useEventPlayer(
-        simulationMode === 'legacy' ? MOCK_EVENT_SEQUENCE : [],
-    );
-
-    const nonSwarmTargets =
-        simulationMode === 'sse'
-            ? sseSimulation.personaTargets
-            : legacyPlayer.personaTargets;
-    const nonSwarmAnimatedCoords = useAnimatedCoords(nonSwarmTargets, {
-        durationMs: simulationMode === 'sse' ? 1300 : 1800,
-    });
-
-    const basePersonas =
-        simulationMode === 'swarm' ? swarmPersonas : MOCK_PERSONAS;
+    const basePersonas = swarmPersonas;
 
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
@@ -194,16 +153,12 @@ export function MapClient() {
         [basePersonas],
     );
 
-    // 비 swarm 모드에서만 쓰임. swarm 은 ref 기반이라 render 중 접근 대신 subscribe 로 우회.
+    // 페르소나 overlay 초기 position 용 (좌표의 첫 값). 이후 live 위치는 subscribe 경유.
     const getPersonaCoord = useCallback(
         (personaId: string): GeoCoord => {
-            return (
-                nonSwarmAnimatedCoords.get(personaId) ??
-                positions.get(personaId) ??
-                basePersonaCoordMap.get(personaId) ?? { lat: 0, lng: 0 }
-            );
+            return basePersonaCoordMap.get(personaId) ?? { lat: 0, lng: 0 };
         },
-        [nonSwarmAnimatedCoords, positions, basePersonaCoordMap],
+        [basePersonaCoordMap],
     );
 
     const handleFollow = useCallback(
@@ -216,32 +171,14 @@ export function MapClient() {
         [getPersonaCoord, updateUrl],
     );
 
-    // 비 swarm 모드 follow: 상태 기반 coord 를 파생해 setCenter.
-    const nonSwarmFollowedCoord =
-        followingPersonaId && simulationMode !== 'swarm'
-            ? (nonSwarmAnimatedCoords.get(followingPersonaId) ??
-              positions.get(followingPersonaId))
-            : null;
-    const followedLat = nonSwarmFollowedCoord?.lat;
-    const followedLng = nonSwarmFollowedCoord?.lng;
-
-    useEffect(() => {
-        if (followedLat != null && followedLng != null) {
-            startTransition(() =>
-                setCenter({ lat: followedLat, lng: followedLng }),
-            );
-        }
-    }, [followedLat, followedLng]);
-
     // swarm follow: subscribe 경유로 ref 에서 실시간 위치 읽어 center 업데이트.
     useEffect(() => {
-        if (simulationMode !== 'swarm') return;
         if (!followingPersonaId) return;
         return swarmSubscribe(() => {
             const coord = swarmPositionsRef.current.get(followingPersonaId);
             if (coord) startTransition(() => setCenter(coord));
         });
-    }, [simulationMode, followingPersonaId, swarmSubscribe, swarmPositionsRef]);
+    }, [followingPersonaId, swarmSubscribe, swarmPositionsRef]);
 
     const handleToggleListView = useCallback(() => {
         updateUrl({ sheet: sheetSnap === 'peek' ? 'half' : 'peek' });
@@ -267,26 +204,35 @@ export function MapClient() {
         });
     }, [basePersonas, feedType, categories, searchQuery]);
 
-    // swarm 모드에선 useActivityClusters 를 끔 (lifecycle 기반으로 갈아탐).
-    const geometricClusters = useActivityClusters(
-        simulationMode === 'swarm' ? [] : filteredPersonas,
-        positions,
-        { radiusMeters: 80 },
-    );
-
-    // swarm 모드 전용: SpotLifecycle 객체 기반 클러스터. 위치는 ref 에서 직접 읽음.
+    // SpotLifecycle 객체 기반 클러스터. 위치는 swarm ref 에서 직접 읽음.
     // 참여자→스팟 assignments 를 swarm.setSpotTargets 로 흘려, 참여자들이 실제로 스팟 좌표로 이동.
     const lifecycleResult = useMockSpotLifecycles({
-        enabled: simulationMode === 'swarm',
+        enabled: true,
         personas: filteredPersonas,
         positionsRef: swarmPositionsRef,
         onAssignmentsChangeAction: swarmSetSpotTargets,
     });
 
-    const rawClusters =
-        simulationMode === 'swarm'
-            ? lifecycleResult.clusters
-            : geometricClusters;
+    // 사용자 본인이 생성한 spot → 시각적으로 primary 톤 클러스터로 병합.
+    const mySpots = useMySpotsStore((s) => s.spots);
+    const mySpotClusters = useMemo<ActivityCluster[]>(
+        () =>
+            mySpots.map((spot) => ({
+                id: `mine-${spot.id}`,
+                centerCoord: spot.location,
+                category: spot.category,
+                intent: spot.intent,
+                personas: spot.participants,
+                variant: 'mine',
+                variantLabel: '내 모임',
+            })),
+        [mySpots],
+    );
+
+    const rawClusters = useMemo<ActivityCluster[]>(
+        () => [...mySpotClusters, ...lifecycleResult.clusters],
+        [mySpotClusters, lifecycleResult.clusters],
+    );
 
     // FilterChipBar 토글 시 이미 활성화된 클러스터도 즉시 반영되도록 display-side filter 적용.
     // swarm 모드에선 `filteredPersonas` 가 신규 스팟 풀만 제한하므로, 여기서 카테고리/intent 로 한 번 더 거름.
@@ -367,19 +313,9 @@ export function MapClient() {
         inViewport,
     ]);
 
-    // 클러스터에 속한 페르소나 id 집합.
-    // swarm 모드에선 "물리적으로 spot 에 도착한" 참여자만 hide (이동 중인 dot 은 보여야 함).
-    // 비 swarm 모드에선 기존 로직 유지 (모든 클러스터 멤버 hide).
-    const clusteredPersonaIds = useMemo(() => {
-        if (simulationMode === 'swarm') {
-            return lifecycleResult.arrivedParticipantIds;
-        }
-        const ids = new Set<string>();
-        for (const c of clusters) {
-            for (const p of c.personas) ids.add(p.id);
-        }
-        return ids;
-    }, [simulationMode, lifecycleResult.arrivedParticipantIds, clusters]);
+    // 클러스터에 속한 페르소나 id 집합 — "물리적으로 spot 에 도착한" 참여자만 hide.
+    // 이동 중인 참여자 dot 은 맵에 보이게 두어 "이동 중" 감각 유지.
+    const clusteredPersonaIds = lifecycleResult.arrivedParticipantIds;
 
     // 단독 페르소나만 dot 으로 렌더
     const personaOverlays: MapOverlayItem[] = useMemo(() => {
@@ -406,14 +342,12 @@ export function MapClient() {
                     />
                 ),
             };
-            if (simulationMode === 'swarm') {
-                // rAF 기반 imperative 위치 업데이트. React 리렌더 우회.
-                item.positionSubscribe = (cb) =>
-                    swarmSubscribe(() => {
-                        const c = swarmPositionsRef.current.get(persona.id);
-                        if (c) cb(c);
-                    });
-            }
+            // rAF 기반 imperative 위치 업데이트. React 리렌더 우회.
+            item.positionSubscribe = (cb) =>
+                swarmSubscribe(() => {
+                    const c = swarmPositionsRef.current.get(persona.id);
+                    if (c) cb(c);
+                });
             result.push(item);
         }
         return result;
@@ -421,7 +355,6 @@ export function MapClient() {
         filteredPersonas,
         clusteredPersonaIds,
         getPersonaCoord,
-        simulationMode,
         swarmSubscribe,
         swarmPositionsRef,
         showPersonas,
@@ -435,30 +368,10 @@ export function MapClient() {
         [clusterOverlays, personaOverlays],
     );
 
-    // Live ticker: SSE mode 일 때 currentFrame 을 어댑터로 흘려 보냄.
-    const tickerAdapterRef = useRef(
-        createTickerAdapter({
-            personaLookup: new Map(
-                MOCK_PERSONAS.map((p) => [
-                    p.id,
-                    { emoji: p.emoji, name: p.name },
-                ]),
-            ),
-        }),
-    );
     const [tickerEvent, setTickerEvent] = useState<TickerEvent | null>(null);
-    const currentFrame = sseSimulation.currentFrame;
-    useEffect(() => {
-        if (simulationMode !== 'sse') return;
-        if (!currentFrame) return;
-        const ev = tickerAdapterRef.current.push(currentFrame);
-        if (ev) setTickerEvent(ev);
-    }, [currentFrame, simulationMode]);
-
     const swarmTickerAdapterRef = useRef(createSwarmTickerAdapter());
     const swarmLifecycles = lifecycleResult.lifecycles;
     useEffect(() => {
-        if (simulationMode !== 'swarm') return;
         if (swarmLifecycles.length === 0) return;
         const ev = swarmTickerAdapterRef.current.push(
             swarmLifecycles,
@@ -466,7 +379,7 @@ export function MapClient() {
             basePersonaLookup,
         );
         if (ev) setTickerEvent(ev);
-    }, [swarmLifecycles, simulationMode, basePersonaLookup]);
+    }, [swarmLifecycles, basePersonaLookup]);
 
     return (
         <>
@@ -511,10 +424,7 @@ export function MapClient() {
                     <LiveTicker
                         key="live-ticker"
                         event={tickerEvent}
-                        sseActive={
-                            simulationMode === 'sse' ||
-                            simulationMode === 'swarm'
-                        }
+                        sseActive
                     />
                 )}
                 {(() => {
@@ -541,8 +451,28 @@ export function MapClient() {
                     );
                 })()}
                 {(() => {
-                    if (simulationMode !== 'swarm') return null;
                     if (!selectedClusterId) return null;
+
+                    // 내 모임 클러스터 — 전용 카드 분기.
+                    if (selectedClusterId.startsWith('mine-')) {
+                        const mySpotId = selectedClusterId.slice(
+                            'mine-'.length,
+                        );
+                        const mySpot = mySpots.find((s) => s.id === mySpotId);
+                        if (!mySpot) return null;
+                        return (
+                            <MySpotInfoCard
+                                key={`myspot-${mySpot.id}`}
+                                spot={mySpot}
+                                personaLookup={basePersonaLookup}
+                                onCloseAction={() =>
+                                    updateUrl({ cluster: null })
+                                }
+                            />
+                        );
+                    }
+
+                    // 시뮬 lifecycle 기반 클러스터.
                     const selectedLifecycle = lifecycleResult.lifecycles.find(
                         (lc) => lc.spotId === selectedClusterId,
                     );

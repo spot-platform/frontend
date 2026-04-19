@@ -210,10 +210,17 @@ function ClusterBlobImpl({
                 <g
                     filter={`url(#${filterId})`}
                     style={{
-                        fill: selected
-                            ? 'var(--color-primary)'
-                            : 'var(--color-persona)',
-                        opacity: selected ? 0.85 : 0.72,
+                        // variant='mine' 이면 항상 primary 톤 (본인 모임 강조).
+                        fill:
+                            cluster.variant === 'mine' || selected
+                                ? 'var(--color-primary)'
+                                : 'var(--color-persona)',
+                        opacity:
+                            cluster.variant === 'mine'
+                                ? 0.9
+                                : selected
+                                  ? 0.85
+                                  : 0.72,
                     }}
                 >
                     <motion.circle
@@ -281,7 +288,7 @@ function ClusterBlobImpl({
                 className={cn(
                     'absolute flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-[6px] font-mono text-[11px] font-bold shadow-md',
                     'border-2 border-map-bg',
-                    selected
+                    cluster.variant === 'mine' || selected
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-foreground text-background',
                 )}
@@ -289,6 +296,15 @@ function ClusterBlobImpl({
             >
                 {count}
             </div>
+
+            {cluster.variant === 'mine' && (
+                <div
+                    className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-2 py-[3px] text-[10px] font-bold leading-none tracking-tight text-primary-foreground shadow-md"
+                    style={{ top: CY - core - 26 }}
+                >
+                    {cluster.variantLabel ?? '내 모임'}
+                </div>
+            )}
 
             <div
                 className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold tracking-tight text-foreground/75 drop-shadow-sm dark:text-foreground/80"
@@ -330,6 +346,7 @@ export const ClusterBlob = memo(ClusterBlobImpl, (prev, next) => {
         a.centerCoord.lng === b.centerCoord.lng &&
         a.category === b.category &&
         a.intent === b.intent &&
-        (a.arrivedCount ?? 0) === (b.arrivedCount ?? 0)
+        (a.arrivedCount ?? 0) === (b.arrivedCount ?? 0) &&
+        a.variant === b.variant
     );
 });
