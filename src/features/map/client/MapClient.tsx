@@ -16,7 +16,6 @@ import { FilterChipBar } from '@/features/map/ui/FilterChipBar';
 import { MapFooter } from '@/features/map/ui/MapFooter';
 import { LayerTransition } from '@/features/map/ui/LayerTransition';
 import { PostTypeSheet } from '@/features/map/ui/PostTypeSheet';
-import { PersonaProfileCard } from '@/features/simulation/ui/PersonaProfileCard';
 import { ChatLever } from '@/features/chat/ui/ChatLever';
 import { ChatDrawer } from '@/features/chat/ui/ChatDrawer';
 import { FeedBottomSheet } from '@/features/feed/ui/FeedBottomSheet';
@@ -31,31 +30,47 @@ import { usePersonaMovement } from '@/features/simulation/model/use-persona-move
 import { useEventPlayer } from '@/features/simulation/model/use-event-player';
 import { useTimelineSimulation } from '@/features/simulation/model/use-timeline-simulation';
 import { useAnimatedCoords } from '@/features/simulation/model/use-animated-coords';
+import { useMockPersonaSwarm } from '@/features/simulation/model/use-mock-persona-swarm';
+import { useMockSpotLifecycles } from '@/features/simulation/model/use-mock-spot-lifecycles';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import { useMapUrlState } from '@/features/map/model/use-map-url-state';
 import { useActivityClusters } from '@/features/map/model/use-activity-clusters';
-import { ClusterMarker } from '@/features/map/ui/ClusterMarker';
-import { PersonaDotMarker } from '@/features/map/ui/PersonaDotMarker';
-import { ClusterBottomSheetHeader } from '@/features/map/ui/ClusterBottomSheetHeader';
+import { ClusterBlob } from '@/features/map/ui/ClusterBlob';
+import { PersonaDotMarkerBlob } from '@/features/map/ui/PersonaDotMarkerBlob';
+import { MapBottomStack } from '@/features/map/ui/MapBottomStack';
+import { PersonaInfoCard } from '@/features/map/ui/PersonaInfoCard';
+import { SpotInfoCard } from '@/features/map/ui/SpotInfoCard';
+import { ARCHETYPE_LABEL } from '@/entities/persona/labels';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
 import { ThemeSegment } from '@/features/map/ui/ThemeSegment';
 import {
     createTickerAdapter,
     type TickerEvent,
 } from '@/features/map/model/ticker-adapter';
+import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
 import { useTheme } from '@/shared/model/use-theme';
 import type { BottomSheetSnapPoint } from '@frontend/design-system';
 import type { GeoCoord } from '@/entities/spot/types';
 import type { Persona } from '@/entities/persona/types';
 import type { MapOverlayItem } from '@/features/map/ui/MapCanvas';
 
-type SimulationMode = 'sse' | 'legacy' | 'off';
+type SimulationMode = 'sse' | 'legacy' | 'off' | 'swarm';
 
 function resolveSimulationMode(raw: string | null): SimulationMode {
     if (raw === 'off') return 'off';
     if (raw === 'legacy') return 'legacy';
+    if (raw === 'swarm') return 'swarm';
     return 'sse';
 }
+
+// ?sim=swarm 용 고정 bbox. 서원동 일대 약 ±0.01° (~1km) 박스.
+const SWARM_BBOX = {
+    swLat: 37.2536,
+    swLng: 127.0186,
+    neLat: 37.2736,
+    neLng: 127.0386,
+};
+const SWARM_MAX_N = 500;
 
 const MapV3Canvas = dynamic(
     () => import('@/features/map/ui/MapV3Canvas').then((m) => m.MapV3Canvas),
@@ -97,8 +112,19 @@ export function MapClient() {
 
     const searchParams = useSearchParams();
     const simulationMode = resolveSimulationMode(searchParams.get('sim'));
+    const swarmN = (() => {
+        const raw = Number(searchParams.get('n') ?? '');
+        if (!Number.isFinite(raw) || raw <= 0) return 80;
+        return Math.min(SWARM_MAX_N, Math.floor(raw));
+    })();
 
     const { positions } = usePersonaMovement(MOCK_PERSONAS, MOCK_WAYPOINTS);
+
+    const swarm = useMockPersonaSwarm({
+        n: swarmN,
+        enabled: simulationMode === 'swarm',
+        bbox: SWARM_BBOX,
+    });
 
     const sseSimulation = useTimelineSimulation({
         runId: 'demo',
@@ -111,13 +137,21 @@ export function MapClient() {
         simulationMode === 'legacy' ? MOCK_EVENT_SEQUENCE : [],
     );
 
-    const personaTargets =
+    const nonSwarmTargets =
         simulationMode === 'sse'
             ? sseSimulation.personaTargets
             : legacyPlayer.personaTargets;
-    const animatedPersonaCoords = useAnimatedCoords(personaTargets, {
+    const nonSwarmAnimatedCoords = useAnimatedCoords(nonSwarmTargets, {
         durationMs: simulationMode === 'sse' ? 1300 : 1800,
     });
+    // swarm 모드는 훅 내부에서 rAF 로 실시간 보간한 위치를 직접 반환 — useAnimatedCoords 우회.
+    const animatedPersonaCoords =
+        simulationMode === 'swarm'
+            ? swarm.personaPositions
+            : nonSwarmAnimatedCoords;
+
+    const basePersonas =
+        simulationMode === 'swarm' ? swarm.personas : MOCK_PERSONAS;
 
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
@@ -142,15 +176,26 @@ export function MapClient() {
         [updateUrl],
     );
 
+    const basePersonaCoordMap = useMemo(() => {
+        const map = new Map<string, GeoCoord>();
+        for (const p of basePersonas) map.set(p.id, p.initialCoord);
+        return map;
+    }, [basePersonas]);
+
+    const basePersonaLookup = useMemo(
+        () => new Map(basePersonas.map((p) => [p.id, p])),
+        [basePersonas],
+    );
+
     const getPersonaCoord = useCallback(
         (personaId: string): GeoCoord => {
             return (
                 animatedPersonaCoords.get(personaId) ??
                 positions.get(personaId) ??
-                MOCK_PERSONAS.find((p) => p.id === personaId)!.initialCoord
+                basePersonaCoordMap.get(personaId) ?? { lat: 0, lng: 0 }
             );
         },
-        [animatedPersonaCoords, positions],
+        [animatedPersonaCoords, positions, basePersonaCoordMap],
     );
 
     const handleFollow = useCallback(
@@ -186,7 +231,7 @@ export function MapClient() {
     // 필터 통과한 페르소나만 클러스터링 입력으로 사용.
     const filteredPersonas = useMemo<Persona[]>(() => {
         const q = searchQuery.trim().toLowerCase();
-        return MOCK_PERSONAS.filter((p) => {
+        return basePersonas.filter((p) => {
             if (feedType === 'offer' && p.intent !== 'offer') return false;
             if (feedType === 'request' && p.intent !== 'request') return false;
             if (
@@ -201,11 +246,53 @@ export function MapClient() {
             }
             return true;
         });
-    }, [feedType, categories, searchQuery]);
+    }, [basePersonas, feedType, categories, searchQuery]);
 
-    const clusters = useActivityClusters(filteredPersonas, positions, {
-        radiusMeters: 80,
+    // swarm 모드에선 positions 가 아닌 animatedPersonaCoords 가 유일한 진실. 빈 positions fallback 사용.
+    const clusterPositionSource =
+        simulationMode === 'swarm' ? animatedPersonaCoords : positions;
+
+    // swarm 모드에서 geometric clustering 은 무의미(랜덤 겹침) — 빈 입력으로 끈다.
+    const geometricClusters = useActivityClusters(
+        simulationMode === 'swarm' ? [] : filteredPersonas,
+        clusterPositionSource,
+        { radiusMeters: 80 },
+    );
+
+    // swarm 모드 전용: SpotLifecycle 객체 기반 클러스터.
+    const lifecycleResult = useMockSpotLifecycles({
+        enabled: simulationMode === 'swarm',
+        personas: filteredPersonas,
+        positions: animatedPersonaCoords,
     });
+
+    const rawClusters =
+        simulationMode === 'swarm'
+            ? lifecycleResult.clusters
+            : geometricClusters;
+
+    // FilterChipBar 토글 시 이미 활성화된 클러스터도 즉시 반영되도록 display-side filter 적용.
+    // swarm 모드에선 `filteredPersonas` 가 신규 스팟 풀만 제한하므로, 여기서 카테고리/intent 로 한 번 더 거름.
+    const clusters = useMemo(() => {
+        const q = searchQuery.trim().toLowerCase();
+        if (feedType === 'all' && categories.length === 0 && q.length === 0) {
+            return rawClusters;
+        }
+        return rawClusters.filter((c) => {
+            if (feedType === 'offer' && c.intent !== 'offer') return false;
+            if (feedType === 'request' && c.intent !== 'request') return false;
+            if (
+                categories.length > 0 &&
+                !(categories as readonly string[]).includes(c.category)
+            ) {
+                return false;
+            }
+            if (q.length > 0) {
+                if (!c.category.toLowerCase().includes(q)) return false;
+            }
+            return true;
+        });
+    }, [rawClusters, feedType, categories, searchQuery]);
 
     const handleClusterSelect = useCallback(
         (clusterId: string) => {
@@ -230,7 +317,7 @@ export function MapClient() {
             position: cluster.centerCoord,
             clickable: true,
             render: () => (
-                <ClusterMarker
+                <ClusterBlob
                     cluster={cluster}
                     selected={selectedClusterId === cluster.id}
                     onSelectAction={handleClusterSelect}
@@ -258,19 +345,29 @@ export function MapClient() {
                 return {
                     key: `persona-${persona.id}`,
                     position: coord,
+                    clickable: true,
                     render: () => (
-                        <PersonaDotMarker
-                            persona={{
-                                id: persona.id,
-                                emoji: persona.emoji,
-                                name: persona.name,
-                            }}
+                        <PersonaDotMarkerBlob
+                            name={persona.name}
+                            variant="ai"
+                            emoji={persona.emoji}
                             moving
+                            expanded={selectedPersonaId === persona.id}
+                            onSelectAction={() =>
+                                updateUrl({ persona: persona.id })
+                            }
                         />
                     ),
                 };
             });
-    }, [filteredPersonas, clusteredPersonaIds, getPersonaCoord, showPersonas]);
+    }, [
+        filteredPersonas,
+        clusteredPersonaIds,
+        getPersonaCoord,
+        showPersonas,
+        selectedPersonaId,
+        updateUrl,
+    ]);
 
     const overlays: MapOverlayItem[] = useMemo(
         () => [...clusterOverlays, ...personaOverlays],
@@ -297,14 +394,18 @@ export function MapClient() {
         if (ev) setTickerEvent(ev);
     }, [currentFrame, simulationMode]);
 
-    const clusterCounts = useMemo(
-        () => ({
-            total: clusters.length,
-            offer: clusters.filter((c) => c.intent === 'offer').length,
-            request: clusters.filter((c) => c.intent === 'request').length,
-        }),
-        [clusters],
-    );
+    const swarmTickerAdapterRef = useRef(createSwarmTickerAdapter());
+    const swarmLifecycles = lifecycleResult.lifecycles;
+    useEffect(() => {
+        if (simulationMode !== 'swarm') return;
+        if (swarmLifecycles.length === 0) return;
+        const ev = swarmTickerAdapterRef.current.push(
+            swarmLifecycles,
+            performance.now(),
+            basePersonaLookup,
+        );
+        if (ev) setTickerEvent(ev);
+    }, [swarmLifecycles, simulationMode, basePersonaLookup]);
 
     return (
         <>
@@ -325,21 +426,12 @@ export function MapClient() {
                 onLayerToggle={() => setLayerToggleOpen(true)}
             />
 
-            <LiveTicker
-                event={tickerEvent}
-                sseActive={simulationMode === 'sse'}
-            />
-
             <FeedBottomSheet
                 snapPoint={sheetSnap}
                 onSnapChange={handleSheetChange}
                 feedType={feedType}
                 categories={categories}
             />
-
-            {sheetSnap === 'peek' && (
-                <ClusterBottomSheetHeader counts={clusterCounts} radiusKm={1} />
-            )}
 
             <SpotPreviewSheet
                 selectedSpot={selectedSpot}
@@ -352,14 +444,57 @@ export function MapClient() {
                 onClose={() => updateUrl({ chat: false })}
             />
 
-            <PersonaProfileCard
-                persona={
-                    MOCK_PERSONAS.find((p) => p.id === selectedPersonaId) ??
-                    null
-                }
-                onClose={() => updateUrl({ persona: null })}
-                onFollow={handleFollow}
-            />
+            <MapBottomStack className="bottom-[20dvh]">
+                {tickerEvent && (
+                    <LiveTicker
+                        key="live-ticker"
+                        event={tickerEvent}
+                        sseActive={
+                            simulationMode === 'sse' ||
+                            simulationMode === 'swarm'
+                        }
+                    />
+                )}
+                {(() => {
+                    const selectedPersona =
+                        basePersonas.find((p) => p.id === selectedPersonaId) ??
+                        null;
+                    if (!selectedPersona) return null;
+                    return (
+                        <PersonaInfoCard
+                            key={`persona-${selectedPersona.id}`}
+                            name={selectedPersona.name}
+                            variant="ai"
+                            emoji={selectedPersona.emoji}
+                            role={
+                                ARCHETYPE_LABEL[selectedPersona.archetype] ??
+                                selectedPersona.archetype
+                            }
+                            tags={[selectedPersona.category]}
+                            onCloseAction={() => updateUrl({ persona: null })}
+                            onFollowAction={() =>
+                                handleFollow(selectedPersona.id)
+                            }
+                        />
+                    );
+                })()}
+                {(() => {
+                    if (simulationMode !== 'swarm') return null;
+                    if (!selectedClusterId) return null;
+                    const selectedLifecycle = lifecycleResult.lifecycles.find(
+                        (lc) => lc.spotId === selectedClusterId,
+                    );
+                    if (!selectedLifecycle) return null;
+                    return (
+                        <SpotInfoCard
+                            key={`spot-${selectedLifecycle.spotId}`}
+                            lifecycle={selectedLifecycle}
+                            personaLookup={basePersonaLookup}
+                            onCloseAction={() => updateUrl({ cluster: null })}
+                        />
+                    );
+                })()}
+            </MapBottomStack>
 
             <LayerToggle
                 open={layerToggleOpen}

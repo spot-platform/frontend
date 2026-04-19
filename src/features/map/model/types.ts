@@ -13,7 +13,10 @@ export type ActivityCluster = {
     category: SpotCategory;
     intent: 'offer' | 'request';
     personas: PersonaRef[];
+    /** 새로 생성된 클러스터 — birth pulse 1회. */
     isPulse?: boolean;
+    /** 이번 프레임에 사라진 클러스터 — exit 애니메이션 재생 후 제거. */
+    isDying?: boolean;
 };
 
 export type ClusterInput = {

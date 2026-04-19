@@ -96,7 +96,8 @@ export function clusterPersonas(
                 name: m.name,
             }));
 
-            const id = `${seed.category}-${seed.intent}-${centerCoord.lat.toFixed(4)}-${centerCoord.lng.toFixed(4)}`;
+            // 100m grid quantization: 센트로이드가 소폭 이동해도 id 유지 → 깜빡임 방지.
+            const id = `${seed.category}-${seed.intent}-${centerCoord.lat.toFixed(3)}-${centerCoord.lng.toFixed(3)}`;
 
             result.push({
                 id,

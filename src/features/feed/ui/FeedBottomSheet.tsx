@@ -79,6 +79,7 @@ export function FeedBottomSheet({
             open
             snapPoint={snapPoint}
             onSnapChange={onSnapChange}
+            className="inset-x-3 rounded-t-2xl"
         >
             {snapPoint !== 'peek' && (
                 <>
@@ -128,10 +129,14 @@ export function FeedBottomSheet({
             )}
 
             {snapPoint === 'peek' && (
-                <div className="flex items-center justify-center">
-                    <p className="text-xs text-muted-foreground">
-                        위로 올려서 모임 목록 보기
-                    </p>
+                <div className="flex items-baseline justify-between px-1">
+                    <span className="text-sm font-bold tracking-tight text-foreground">
+                        이 동네 피드{' '}
+                        <span className="text-primary">{filtered.length}</span>
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                        위로 올려서 목록 ↑
+                    </span>
                 </div>
             )}
         </PersistentDrawer>

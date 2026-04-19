@@ -23,10 +23,22 @@ export function useMapUrlState() {
     const update = useCallback(
         (patch: Partial<MapUrlState>) => {
             const next: MapUrlState = { ...state, ...patch };
-            const nextQuery = serializeMapUrlState(next);
-            const currentQuery = searchParams.toString();
-            if (nextQuery === currentQuery) return;
-            router.replace(`${pathname}${nextQuery ? `?${nextQuery}` : ''}`, {
+            const nextMapQuery = serializeMapUrlState(next);
+
+            // MapUrlState 외 외부 쿼리 (sim, n 등) 는 보존.
+            const merged = new URLSearchParams(searchParams.toString());
+            merged.delete('spot');
+            merged.delete('persona');
+            merged.delete('cluster');
+            merged.delete('sheet');
+            merged.delete('chat');
+            for (const [key, value] of new URLSearchParams(nextMapQuery)) {
+                merged.set(key, value);
+            }
+
+            const finalQuery = merged.toString();
+            if (finalQuery === searchParams.toString()) return;
+            router.replace(`${pathname}${finalQuery ? `?${finalQuery}` : ''}`, {
                 scroll: false,
             });
         },

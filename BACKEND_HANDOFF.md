@@ -577,3 +577,85 @@
 | GetFeedConversionHints   | GET    | /api/v1/feed/{feed_id}/conversion-hints          | -                   | ConversionHintsResponse      |
 
 > `StreamSimulationTimeline`은 `text/event-stream`으로 `TimelineFrame` JSON을 프레임 단위 송출. 연결 유지 ping은 주석 라인(`: keepalive`)으로만 보내고 데이터 프레임에는 포함하지 않는다.
+
+## Map Personas (live stream)
+
+> **2026-04 신규:** 맵의 AI 페르소나를 실시간으로 표시하고 위치 이동 시 클러스터 생성/소멸을 시각화하기 위한 엔드포인트. FE 는 viewport bbox 기반 스냅샷 1회 + SSE 델타 스트림 구독을 조합해 `Map<personaId, coord>` 를 유지한다. 클러스터링은 FE 파생 연산(`useActivityClusters`, 100m radius + category/intent 그룹핑).
+
+### Entities
+
+| Entity                | Fields                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MapPersona            | id, name, emoji, archetype (explorer\|helper\|creator\|connector\|learner), category (SpotCategory), intent (offer\|request), location (GeoCoord), interestItemIds? |
+| MapPersonaBbox        | swLat, swLng, neLat, neLng                                                                                                                                          |
+| MapPersonaStreamEvent | discriminated union: `persona.join` \| `persona.leave` \| `persona.move`                                                                                            |
+| MapPersonaJoinEvent   | type='persona.join', persona (MapPersona)                                                                                                                           |
+| MapPersonaLeaveEvent  | type='persona.leave', personaId                                                                                                                                     |
+| MapPersonaMoveEvent   | type='persona.move', personaId, location (GeoCoord)                                                                                                                 |
+
+### Request DTO
+
+| DTO                      | Fields                     |
+| ------------------------ | -------------------------- |
+| MapPersonasSnapshotQuery | swLat, swLng, neLat, neLng |
+| MapPersonasStreamQuery   | swLat, swLng, neLat, neLng |
+
+### Response DTO
+
+| DTO                         | Fields              |
+| --------------------------- | ------------------- |
+| MapPersonasSnapshotResponse | data (MapPersona[]) |
+
+### Queries
+
+| Name                   | Method | Route                       | Request DTO              | Response DTO                |
+| ---------------------- | ------ | --------------------------- | ------------------------ | --------------------------- |
+| GetMapPersonasSnapshot | GET    | /api/v1/map/personas        | MapPersonasSnapshotQuery | MapPersonasSnapshotResponse |
+| StreamMapPersonas      | GET    | /api/v1/map/personas/stream | MapPersonasStreamQuery   | SSE: MapPersonaStreamEvent  |
+
+### 동작 요구사항 (BE 구현 시 반드시 준수)
+
+1. **Bbox 서버 필터링** — 요청한 bbox 밖 페르소나는 스냅샷/스트림 어디에서도 송출하지 않는다. FE 에서 필터링하지 않음을 전제로 한다 (오프스크린 페르소나가 많을수록 클러스터링 비용이 선형 증가).
+2. **Delta-only 스트림** — `StreamMapPersonas` 는 전체 스냅샷을 주기적으로 재전송하지 말 것. 변경된 개체만 `persona.join`/`persona.leave`/`persona.move` 이벤트로 송출한다. 초기 상태는 `GetMapPersonasSnapshot` 으로만 받는다.
+3. **Move 이벤트 throttle** — 개별 페르소나당 최대 1 Hz (초당 1 이벤트) 를 권장. FE 는 `useAnimatedCoords` 로 2.4초 보간하여 부드럽게 렌더링한다. 초당 10+ 이벤트는 대역폭 낭비 + 클러스터 재계산 과다.
+4. **Id 안정성** — `MapPersona.id` 는 동일 페르소나의 leave→join 사이클 내에서 동일해야 한다 (FE 캐시·팔로우 상태와 연결됨). 매 session 마다 id 재생성 금지.
+5. **Bbox 변경 계약** — 클라이언트가 pan/zoom 으로 bbox 를 바꾸면 기존 stream 을 끊고 새 snapshot + 새 stream 을 재구독한다. BE 는 단일 연결에서 bbox 가 바뀌는 경우는 가정하지 않아도 된다.
+6. **연결 유지** — SSE ping 은 주석 라인(`: keepalive`) 으로만 보낸다. 15~30초 간격 권장.
+7. **Leave 이벤트 필수** — 페르소나가 bbox 를 떠났거나 세션 종료된 경우, 반드시 `persona.leave` 를 송출한다. FE 는 누락 시 마커가 영구히 남아 pulse 애니가 계속 돌게 됨.
+
+### 이벤트 페이로드 예시
+
+```json
+// GET /api/v1/map/personas?swLat=37.25&swLng=127.01&neLat=37.28&neLng=127.04
+{
+    "status": 200,
+    "data": [
+        {
+            "id": "persona-001",
+            "name": "민지",
+            "emoji": "🧘",
+            "archetype": "helper",
+            "category": "요가",
+            "intent": "offer",
+            "location": { "lat": 37.2636, "lng": 127.0286 }
+        }
+    ]
+}
+```
+
+```
+// SSE: /api/v1/map/personas/stream?swLat=...
+
+event: persona.join
+data: {"type":"persona.join","persona":{"id":"persona-042",...}}
+
+event: persona.move
+data: {"type":"persona.move","personaId":"persona-001","location":{"lat":37.2640,"lng":127.0291}}
+
+event: persona.leave
+data: {"type":"persona.leave","personaId":"persona-042"}
+
+: keepalive
+```
+
+> FE 참고: `src/features/simulation/model/use-mock-persona-swarm.ts` 가 위 계약을 그대로 mock 으로 구현한다 (join/leave/move 를 setInterval 로 생성). BE 연동 시 이 훅을 `useMapPersonaStream` 으로 교체하면 나머지 로직은 그대로 재사용.

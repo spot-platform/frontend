@@ -1583,3 +1583,107 @@ All message variants share:
     }
 }
 ```
+
+## Map Personas schemas (2026-04 추가)
+
+> 맵 실시간 페르소나 스트림. 스냅샷은 `ApiResponse<MapPersona[]>` 봉투, 스트림은 `text/event-stream` 으로 봉투 없이 이벤트 JSON 만 전송.
+
+### MapPersonasSnapshotQuery (query string)
+
+| Field | Type   | Required | Notes |
+| ----- | ------ | -------- | ----- |
+| swLat | number | required |       |
+| swLng | number | required |       |
+| neLat | number | required |       |
+| neLng | number | required |       |
+
+### MapPersonasSnapshotResponse
+
+```typescript
+ApiResponse<MapPersona[]>;
+```
+
+### MapPersonasStreamQuery (query string)
+
+| Field | Type   | Required | Notes |
+| ----- | ------ | -------- | ----- |
+| swLat | number | required |       |
+| swLng | number | required |       |
+| neLat | number | required |       |
+| neLng | number | required |       |
+
+### Stream 출력 포맷 (`text/event-stream`)
+
+각 이벤트는 SSE `event:` 헤더 + `data:` JSON 으로 송출. 연결 유지는 주석 라인 `: keepalive` 만 허용.
+
+```
+event: persona.join
+data: {"type":"persona.join","persona":{...MapPersona}}
+
+event: persona.leave
+data: {"type":"persona.leave","personaId":"persona-042"}
+
+event: persona.move
+data: {"type":"persona.move","personaId":"persona-001","location":{"lat":37.2640,"lng":127.0291}}
+```
+
+### 예시 — MapPersonasSnapshotResponse
+
+```json
+{
+    "status": 200,
+    "data": [
+        {
+            "id": "persona-001",
+            "name": "민지",
+            "emoji": "🧘",
+            "archetype": "helper",
+            "category": "요가",
+            "intent": "offer",
+            "location": { "lat": 37.2636, "lng": 127.0286 }
+        },
+        {
+            "id": "persona-002",
+            "name": "지훈",
+            "emoji": "💻",
+            "archetype": "creator",
+            "category": "코딩",
+            "intent": "request",
+            "location": { "lat": 37.2641, "lng": 127.0291 },
+            "interestItemIds": ["item-abc", "item-def"]
+        }
+    ]
+}
+```
+
+### 예시 — stream event payloads (각 이벤트의 `data:` JSON)
+
+```json
+// persona.join
+{
+    "type": "persona.join",
+    "persona": {
+        "id": "persona-042",
+        "name": "서연",
+        "emoji": "🎨",
+        "archetype": "creator",
+        "category": "미술",
+        "intent": "offer",
+        "location": { "lat": 37.27, "lng": 127.03 }
+    }
+}
+```
+
+```json
+// persona.leave
+{ "type": "persona.leave", "personaId": "persona-042" }
+```
+
+```json
+// persona.move
+{
+    "type": "persona.move",
+    "personaId": "persona-001",
+    "location": { "lat": 37.264, "lng": 127.0291 }
+}
+```

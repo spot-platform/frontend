@@ -38,8 +38,9 @@ export function LiveTicker({ event, sseActive, className }: LiveTickerProps) {
         <div
             role="status"
             aria-live="polite"
+            onClick={(e) => e.stopPropagation()}
             className={cn(
-                'absolute bottom-[102px] left-3 right-3 flex h-[34px] items-center gap-2 rounded-[17px] border border-border-soft bg-card/95 px-3 text-[11px] shadow-sm backdrop-blur-md dark:shadow-none',
+                'relative flex h-[34px] items-center gap-2 rounded-[17px] border border-border-soft bg-card/95 px-3 text-[11px] shadow-sm backdrop-blur-md dark:shadow-none',
                 className,
             )}
         >

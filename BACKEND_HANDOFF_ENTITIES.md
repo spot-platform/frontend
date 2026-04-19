@@ -1605,3 +1605,80 @@ No body returned (204).
 | pricing_suggestion     | ConversionHintsPricing     | required |                               |
 | plan_help              | ConversionHintsPlan        | required |                               |
 | expected_demand        | ConversionHintsDemand      | required |                               |
+
+## Map Personas (2026-04 추가)
+
+> 맵 실시간 페르소나 스트림. FE 는 `useActivityClusters` 로 클러스터를 파생 계산한다.
+
+### PersonaArchetype (enum)
+
+| Value     | Notes |
+| --------- | ----- |
+| explorer  |       |
+| helper    |       |
+| creator   |       |
+| connector |       |
+| learner   |       |
+
+### PersonaIntent (enum)
+
+| Value   | Notes       |
+| ------- | ----------- |
+| offer   | 호스트 모집 |
+| request | 사용자 영청 |
+
+### MapPersona
+
+| Field           | Type             | Required | Notes                                    |
+| --------------- | ---------------- | -------- | ---------------------------------------- |
+| id              | string           | required | leave→join 사이클 내에서 안정적이어야 함 |
+| name            | string           | required |                                          |
+| emoji           | string           | required | 단일 이모지, 페르소나 시각 대표          |
+| archetype       | PersonaArchetype | required |                                          |
+| category        | SpotCategory     | required | 클러스터 그룹핑 키                       |
+| intent          | PersonaIntent    | required | 클러스터 그룹핑 키                       |
+| location        | GeoCoord         | required | {lat, lng}                               |
+| interestItemIds | string[]         | optional | 관심 아이템 id — 없어도 됨               |
+
+### MapPersonaBbox
+
+| Field | Type   | Required | Notes                |
+| ----- | ------ | -------- | -------------------- |
+| swLat | number | required | south-west latitude  |
+| swLng | number | required | south-west longitude |
+| neLat | number | required | north-east latitude  |
+| neLng | number | required | north-east longitude |
+
+### MapPersonaStreamEventType (enum)
+
+| Value         | Notes                                 |
+| ------------- | ------------------------------------- |
+| persona.join  | 새 페르소나가 bbox 안에 등장          |
+| persona.leave | 기존 페르소나가 bbox 를 떠나거나 종료 |
+| persona.move  | 기존 페르소나 위치 갱신               |
+
+### MapPersonaJoinEvent
+
+| Field   | Type           | Required | Notes |
+| ------- | -------------- | -------- | ----- |
+| type    | 'persona.join' | required |       |
+| persona | MapPersona     | required |       |
+
+### MapPersonaLeaveEvent
+
+| Field     | Type            | Required | Notes |
+| --------- | --------------- | -------- | ----- |
+| type      | 'persona.leave' | required |       |
+| personaId | string          | required |       |
+
+### MapPersonaMoveEvent
+
+| Field     | Type           | Required | Notes                  |
+| --------- | -------------- | -------- | ---------------------- |
+| type      | 'persona.move' | required |                        |
+| personaId | string         | required |                        |
+| location  | GeoCoord       | required | 페르소나 당 ≤ 1Hz 권장 |
+
+### MapPersonaStreamEvent
+
+MapPersonaJoinEvent | MapPersonaLeaveEvent | MapPersonaMoveEvent (discriminated union on `type`)

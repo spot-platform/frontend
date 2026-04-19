@@ -36,7 +36,10 @@ export const LightWithEvent: Story = {
     args: { event: null },
     render: () => (
         <Stage>
-            <LiveTicker event={sampleEvent} />
+            <LiveTicker
+                event={sampleEvent}
+                className="absolute bottom-[102px] left-3 right-3"
+            />
         </Stage>
     ),
 };
@@ -45,7 +48,11 @@ export const LightLiveBadge: Story = {
     args: { event: null },
     render: () => (
         <Stage>
-            <LiveTicker event={sampleEvent} sseActive />
+            <LiveTicker
+                event={sampleEvent}
+                sseActive
+                className="absolute bottom-[102px] left-3 right-3"
+            />
         </Stage>
     ),
 };
@@ -54,7 +61,10 @@ export const LightNullEvent: Story = {
     args: { event: null },
     render: () => (
         <Stage>
-            <LiveTicker event={null} />
+            <LiveTicker
+                event={null}
+                className="absolute bottom-[102px] left-3 right-3"
+            />
             <div className="absolute bottom-[110px] left-3 right-3 text-center text-[11px] text-muted-foreground">
                 (event=null — 렌더 없음)
             </div>
@@ -66,7 +76,10 @@ export const DarkWithEvent: Story = {
     args: { event: null },
     render: () => (
         <Stage dark>
-            <LiveTicker event={sampleEvent} />
+            <LiveTicker
+                event={sampleEvent}
+                className="absolute bottom-[102px] left-3 right-3"
+            />
         </Stage>
     ),
 };
@@ -75,7 +88,11 @@ export const DarkLiveBadge: Story = {
     args: { event: null },
     render: () => (
         <Stage dark>
-            <LiveTicker event={sampleEvent} sseActive />
+            <LiveTicker
+                event={sampleEvent}
+                sseActive
+                className="absolute bottom-[102px] left-3 right-3"
+            />
         </Stage>
     ),
 };
