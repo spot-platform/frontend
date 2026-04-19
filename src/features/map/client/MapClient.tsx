@@ -79,8 +79,21 @@ export function MapClient() {
         null,
     );
 
+    // next-themes 의 resolvedTheme 은 초기 렌더에서 undefined — 이 상태로 MapV3Canvas 가 mount 되면
+    // customStyleId 가 잘못 지정되어 기본 스타일로 뜬 뒤 live swap 되며 깜빡인다.
+    // <html class="dark"> 는 next-themes inline 스크립트가 React 수화 전에 동기적으로 세팅하므로,
+    // DOM 에서 바로 읽어 map 생성 전에 theme 을 확정한다.
     const { resolvedTheme } = useTheme();
-    const theme: 'light' | 'dark' = resolvedTheme === 'dark' ? 'dark' : 'light';
+    const [initialDomTheme] = useState<'light' | 'dark'>(() =>
+        typeof document !== 'undefined' &&
+        document.documentElement.classList.contains('dark')
+            ? 'dark'
+            : 'light',
+    );
+    const theme: 'light' | 'dark' =
+        resolvedTheme === 'dark' || resolvedTheme === 'light'
+            ? resolvedTheme
+            : initialDomTheme;
 
     const searchParams = useSearchParams();
     const simulationMode = resolveSimulationMode(searchParams.get('sim'));

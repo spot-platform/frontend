@@ -52,13 +52,22 @@ function loadNaverMapSDK(): Promise<void> {
         return Promise.resolve();
     }
     loadPromise = new Promise<void>((resolve, reject) => {
+        // Naver v3 는 메인 스크립트 onload 시점에 Map 생성자가 준비돼 있지만 submodules=gl 은
+        // 그 이후 비동기로 로드된다. Map 존재만 기준으로 mount 하면 GL 서브모듈이 덜 로드된 채
+        // `new Map({ gl: true, customStyleId })` 가 throw 없이 기본 타일로 fallback 된다
+        // (콜드 로드에서 기본 스타일만 뜨다가 새로고침하면 브라우저 캐시로 정상 동작하는 증상).
+        // 공식 callback 파라미터는 모든 서브모듈 로드 완료 후에만 실행되므로 동기화 지점으로 사용.
+        const callbackName = `__naverMapsReady_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+        const win = window as unknown as Record<string, unknown>;
+        win[callbackName] = () => {
+            delete win[callbackName];
+            resolve();
+        };
         const script = document.createElement('script');
-        // submodules=gl: Naver v3 의 customStyleId 가 GL(WebGL) 렌더러 전용이라 필수.
-        // 기존 /map (gl: false) 에는 영향 없음 — 서브모듈만 로드되고 사용 안 함.
-        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_CLIENT_ID}&submodules=gl`;
+        script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${NAVER_CLIENT_ID}&submodules=gl&callback=${callbackName}`;
         script.async = true;
-        script.onload = () => waitForNaverMaps().then(resolve, reject);
         script.onerror = () => {
+            delete win[callbackName];
             loadPromise = null;
             reject(new Error('Failed to load Naver Maps SDK'));
         };
