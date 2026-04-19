@@ -53,6 +53,7 @@ import type { BottomSheetSnapPoint } from '@frontend/design-system';
 import type { GeoCoord } from '@/entities/spot/types';
 import type { Persona } from '@/entities/persona/types';
 import type { MapOverlayItem } from '@/features/map/ui/MapCanvas';
+import type { ViewportBbox } from '@/features/map/ui/MapV3Canvas';
 
 type SimulationMode = 'sse' | 'legacy' | 'off' | 'swarm';
 
@@ -63,14 +64,14 @@ function resolveSimulationMode(raw: string | null): SimulationMode {
     return 'sse';
 }
 
-// ?sim=swarm 용 고정 bbox. 서원동 일대 약 ±0.01° (~1km) 박스.
+// ?sim=swarm 용 고정 bbox. 수원시 전역 ~약 10km × 10km.
 const SWARM_BBOX = {
-    swLat: 37.2536,
-    swLng: 127.0186,
-    neLat: 37.2736,
-    neLng: 127.0386,
+    swLat: 37.22,
+    swLng: 126.97,
+    neLat: 37.31,
+    neLng: 127.08,
 };
-const SWARM_MAX_N = 500;
+const SWARM_MAX_N = 1000;
 
 const MapV3Canvas = dynamic(
     () => import('@/features/map/ui/MapV3Canvas').then((m) => m.MapV3Canvas),
@@ -90,6 +91,7 @@ export function MapClient() {
     const [center, setCenter] = useState({ lat: 37.2636, lng: 127.0286 });
     const [layerToggleOpen, setLayerToggleOpen] = useState(false);
     const [postTypeSheetOpen, setPostTypeSheetOpen] = useState(false);
+    const [viewportBbox, setViewportBbox] = useState<ViewportBbox | null>(null);
     const [followingPersonaId, setFollowingPersonaId] = useState<string | null>(
         null,
     );
@@ -120,7 +122,12 @@ export function MapClient() {
 
     const { positions } = usePersonaMovement(MOCK_PERSONAS, MOCK_WAYPOINTS);
 
-    const swarm = useMockPersonaSwarm({
+    const {
+        personas: swarmPersonas,
+        positionsRef: swarmPositionsRef,
+        subscribe: swarmSubscribe,
+        setSpotTargets: swarmSetSpotTargets,
+    } = useMockPersonaSwarm({
         n: swarmN,
         enabled: simulationMode === 'swarm',
         bbox: SWARM_BBOX,
@@ -144,14 +151,9 @@ export function MapClient() {
     const nonSwarmAnimatedCoords = useAnimatedCoords(nonSwarmTargets, {
         durationMs: simulationMode === 'sse' ? 1300 : 1800,
     });
-    // swarm 모드는 훅 내부에서 rAF 로 실시간 보간한 위치를 직접 반환 — useAnimatedCoords 우회.
-    const animatedPersonaCoords =
-        simulationMode === 'swarm'
-            ? swarm.personaPositions
-            : nonSwarmAnimatedCoords;
 
     const basePersonas =
-        simulationMode === 'swarm' ? swarm.personas : MOCK_PERSONAS;
+        simulationMode === 'swarm' ? swarmPersonas : MOCK_PERSONAS;
 
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
@@ -187,15 +189,16 @@ export function MapClient() {
         [basePersonas],
     );
 
+    // 비 swarm 모드에서만 쓰임. swarm 은 ref 기반이라 render 중 접근 대신 subscribe 로 우회.
     const getPersonaCoord = useCallback(
         (personaId: string): GeoCoord => {
             return (
-                animatedPersonaCoords.get(personaId) ??
+                nonSwarmAnimatedCoords.get(personaId) ??
                 positions.get(personaId) ??
                 basePersonaCoordMap.get(personaId) ?? { lat: 0, lng: 0 }
             );
         },
-        [animatedPersonaCoords, positions, basePersonaCoordMap],
+        [nonSwarmAnimatedCoords, positions, basePersonaCoordMap],
     );
 
     const handleFollow = useCallback(
@@ -208,13 +211,14 @@ export function MapClient() {
         [getPersonaCoord, updateUrl],
     );
 
-    const followedCoord = followingPersonaId
-        ? (animatedPersonaCoords.get(followingPersonaId) ??
-          positions.get(followingPersonaId))
-        : null;
-
-    const followedLat = followedCoord?.lat;
-    const followedLng = followedCoord?.lng;
+    // 비 swarm 모드 follow: 상태 기반 coord 를 파생해 setCenter.
+    const nonSwarmFollowedCoord =
+        followingPersonaId && simulationMode !== 'swarm'
+            ? (nonSwarmAnimatedCoords.get(followingPersonaId) ??
+              positions.get(followingPersonaId))
+            : null;
+    const followedLat = nonSwarmFollowedCoord?.lat;
+    const followedLng = nonSwarmFollowedCoord?.lng;
 
     useEffect(() => {
         if (followedLat != null && followedLng != null) {
@@ -223,6 +227,16 @@ export function MapClient() {
             );
         }
     }, [followedLat, followedLng]);
+
+    // swarm follow: subscribe 경유로 ref 에서 실시간 위치 읽어 center 업데이트.
+    useEffect(() => {
+        if (simulationMode !== 'swarm') return;
+        if (!followingPersonaId) return;
+        return swarmSubscribe(() => {
+            const coord = swarmPositionsRef.current.get(followingPersonaId);
+            if (coord) startTransition(() => setCenter(coord));
+        });
+    }, [simulationMode, followingPersonaId, swarmSubscribe, swarmPositionsRef]);
 
     const handleToggleListView = useCallback(() => {
         updateUrl({ sheet: sheetSnap === 'peek' ? 'half' : 'peek' });
@@ -248,22 +262,20 @@ export function MapClient() {
         });
     }, [basePersonas, feedType, categories, searchQuery]);
 
-    // swarm 모드에선 positions 가 아닌 animatedPersonaCoords 가 유일한 진실. 빈 positions fallback 사용.
-    const clusterPositionSource =
-        simulationMode === 'swarm' ? animatedPersonaCoords : positions;
-
-    // swarm 모드에서 geometric clustering 은 무의미(랜덤 겹침) — 빈 입력으로 끈다.
+    // swarm 모드에선 useActivityClusters 를 끔 (lifecycle 기반으로 갈아탐).
     const geometricClusters = useActivityClusters(
         simulationMode === 'swarm' ? [] : filteredPersonas,
-        clusterPositionSource,
+        positions,
         { radiusMeters: 80 },
     );
 
-    // swarm 모드 전용: SpotLifecycle 객체 기반 클러스터.
+    // swarm 모드 전용: SpotLifecycle 객체 기반 클러스터. 위치는 ref 에서 직접 읽음.
+    // 참여자→스팟 assignments 를 swarm.setSpotTargets 로 흘려, 참여자들이 실제로 스팟 좌표로 이동.
     const lifecycleResult = useMockSpotLifecycles({
         enabled: simulationMode === 'swarm',
         personas: filteredPersonas,
-        positions: animatedPersonaCoords,
+        positionsRef: swarmPositionsRef,
+        onAssignmentsChangeAction: swarmSetSpotTargets,
     });
 
     const rawClusters =
@@ -309,64 +321,108 @@ export function MapClient() {
     const showSpots = activeLayer === 'mixed' || activeLayer === 'real';
     const showPersonas = activeLayer === 'mixed' || activeLayer === 'virtual';
 
+    // 뷰포트 컬링: bbox 밖은 렌더 스킵. pad 는 panning 중 깜빡임 방지용 여유.
+    const inViewport = useCallback(
+        (coord: GeoCoord): boolean => {
+            if (!viewportBbox) return true;
+            const padLat = (viewportBbox.neLat - viewportBbox.swLat) * 0.1;
+            const padLng = (viewportBbox.neLng - viewportBbox.swLng) * 0.1;
+            return (
+                coord.lat >= viewportBbox.swLat - padLat &&
+                coord.lat <= viewportBbox.neLat + padLat &&
+                coord.lng >= viewportBbox.swLng - padLng &&
+                coord.lng <= viewportBbox.neLng + padLng
+            );
+        },
+        [viewportBbox],
+    );
+
     // cluster overlays (layer=mixed|real)
     const clusterOverlays: MapOverlayItem[] = useMemo(() => {
         if (!showSpots) return [];
-        return clusters.map((cluster) => ({
-            key: `cluster-${cluster.id}`,
-            position: cluster.centerCoord,
-            clickable: true,
-            render: () => (
-                <ClusterBlob
-                    cluster={cluster}
-                    selected={selectedClusterId === cluster.id}
-                    onSelectAction={handleClusterSelect}
-                />
-            ),
-        }));
-    }, [clusters, selectedClusterId, handleClusterSelect, showSpots]);
+        return clusters
+            .filter((cluster) => inViewport(cluster.centerCoord))
+            .map((cluster) => ({
+                key: `cluster-${cluster.id}`,
+                position: cluster.centerCoord,
+                clickable: true,
+                render: () => (
+                    <ClusterBlob
+                        cluster={cluster}
+                        selected={selectedClusterId === cluster.id}
+                        onSelectAction={handleClusterSelect}
+                    />
+                ),
+            }));
+    }, [
+        clusters,
+        selectedClusterId,
+        handleClusterSelect,
+        showSpots,
+        inViewport,
+    ]);
 
-    // 클러스터에 속한 페르소나 id 집합
+    // 클러스터에 속한 페르소나 id 집합.
+    // swarm 모드에선 "물리적으로 spot 에 도착한" 참여자만 hide (이동 중인 dot 은 보여야 함).
+    // 비 swarm 모드에선 기존 로직 유지 (모든 클러스터 멤버 hide).
     const clusteredPersonaIds = useMemo(() => {
+        if (simulationMode === 'swarm') {
+            return lifecycleResult.arrivedParticipantIds;
+        }
         const ids = new Set<string>();
         for (const c of clusters) {
             for (const p of c.personas) ids.add(p.id);
         }
         return ids;
-    }, [clusters]);
+    }, [simulationMode, lifecycleResult.arrivedParticipantIds, clusters]);
 
     // 단독 페르소나만 dot 으로 렌더
     const personaOverlays: MapOverlayItem[] = useMemo(() => {
         if (!showPersonas) return [];
-        return filteredPersonas
-            .filter((p) => !clusteredPersonaIds.has(p.id))
-            .map((persona) => {
-                const coord = getPersonaCoord(persona.id);
-                return {
-                    key: `persona-${persona.id}`,
-                    position: coord,
-                    clickable: true,
-                    render: () => (
-                        <PersonaDotMarkerBlob
-                            name={persona.name}
-                            variant="ai"
-                            emoji={persona.emoji}
-                            moving
-                            expanded={selectedPersonaId === persona.id}
-                            onSelectAction={() =>
-                                updateUrl({ persona: persona.id })
-                            }
-                        />
-                    ),
-                };
-            });
+        const result: MapOverlayItem[] = [];
+        for (const persona of filteredPersonas) {
+            if (clusteredPersonaIds.has(persona.id)) continue;
+            const coord = getPersonaCoord(persona.id);
+            if (!inViewport(coord)) continue;
+            const item: MapOverlayItem = {
+                key: `persona-${persona.id}`,
+                position: coord,
+                clickable: true,
+                render: () => (
+                    <PersonaDotMarkerBlob
+                        name={persona.name}
+                        variant="ai"
+                        emoji={persona.emoji}
+                        moving
+                        expanded={selectedPersonaId === persona.id}
+                        onSelectAction={() =>
+                            updateUrl({ persona: persona.id })
+                        }
+                    />
+                ),
+            };
+            if (simulationMode === 'swarm') {
+                // rAF 기반 imperative 위치 업데이트. React 리렌더 우회.
+                item.positionSubscribe = (cb) =>
+                    swarmSubscribe(() => {
+                        const c = swarmPositionsRef.current.get(persona.id);
+                        if (c) cb(c);
+                    });
+            }
+            result.push(item);
+        }
+        return result;
     }, [
         filteredPersonas,
         clusteredPersonaIds,
         getPersonaCoord,
+        simulationMode,
+        swarmSubscribe,
+        swarmPositionsRef,
         showPersonas,
         selectedPersonaId,
         updateUrl,
+        inViewport,
     ]);
 
     const overlays: MapOverlayItem[] = useMemo(
@@ -413,6 +469,7 @@ export function MapClient() {
                 center={center}
                 theme={theme}
                 onMapClickAction={handleMapClick}
+                onViewportChangeAction={setViewportBbox}
                 overlays={overlays}
             />
 

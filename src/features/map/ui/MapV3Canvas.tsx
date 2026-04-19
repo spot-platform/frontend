@@ -25,11 +25,20 @@ function getStyleId(theme: Theme): string | undefined {
     return id || undefined;
 }
 
+export type ViewportBbox = {
+    swLat: number;
+    swLng: number;
+    neLat: number;
+    neLng: number;
+};
+
 export type MapV3CanvasProps = {
     center?: { lat: number; lng: number };
     level?: number;
     overlays?: MapOverlayItem[];
     onMapClickAction?: (lat: number, lng: number) => void;
+    /** pan/zoom 종료 시 현재 뷰포트 bbox 를 전달. 뷰포트 컬링에 사용. */
+    onViewportChangeAction?: (bbox: ViewportBbox) => void;
     className?: string;
     theme: Theme;
 };
@@ -84,6 +93,7 @@ function NaverMapV3({
     level,
     overlays = [],
     onMapClickAction,
+    onViewportChangeAction,
     className,
     theme,
 }: MapV3CanvasProps) {
@@ -199,6 +209,28 @@ function NaverMapV3({
         };
     }, [map, onMapClickAction]);
 
+    // viewport bbox 변경 리스너. pan/zoom 중엔 bounds_changed 가 연속 발화되므로
+    // idle (제스처 종료) + 초기 1회 emit 으로 업데이트.
+    useEffect(() => {
+        if (!map || !onViewportChangeAction) return;
+        const emit = () => {
+            const bounds = map.getBounds() as naver.maps.LatLngBounds;
+            const sw = bounds.getSW() as naver.maps.LatLng;
+            const ne = bounds.getNE() as naver.maps.LatLng;
+            onViewportChangeAction({
+                swLat: sw.lat(),
+                swLng: sw.lng(),
+                neLat: ne.lat(),
+                neLng: ne.lng(),
+            });
+        };
+        emit();
+        const listener = naver.maps.Event.addListener(map, 'idle', emit);
+        return () => {
+            naver.maps.Event.removeListener(listener);
+        };
+    }, [map, onViewportChangeAction]);
+
     if (sdkState === 'error') {
         return (
             <MockMapCanvas
@@ -233,7 +265,12 @@ function NaverMapV3({
             {sdkState === 'ready' &&
                 map &&
                 overlays.map((o) => (
-                    <NaverOverlay key={o.key} map={map} position={o.position}>
+                    <NaverOverlay
+                        key={o.key}
+                        map={map}
+                        position={o.position}
+                        positionSubscribe={o.positionSubscribe}
+                    >
                         {o.render()}
                     </NaverOverlay>
                 ))}

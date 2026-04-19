@@ -3,7 +3,15 @@
 'use client';
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useId, type KeyboardEvent, type MouseEvent } from 'react';
+import {
+    memo,
+    useEffect,
+    useId,
+    useReducer,
+    useRef,
+    type KeyboardEvent,
+    type MouseEvent,
+} from 'react';
 import { cn } from '@frontend/design-system';
 import type { ActivityCluster } from '../model/types';
 
@@ -30,7 +38,7 @@ const CORE_SELECTED = 26;
 const CORE_IDLE = 22;
 const SAT_COUNT = 5;
 
-export function ClusterBlob({
+function ClusterBlobImpl({
     cluster,
     selected,
     onSelectAction,
@@ -41,6 +49,18 @@ export function ClusterBlob({
     const count = cluster.personas.length;
     const core = selected ? CORE_SELECTED : CORE_IDLE;
     const dying = !!cluster.isDying;
+
+    // 물리적 도착자 수 증가 감지 → join burst 트리거.
+    // (assigned 수 아님 — 이동 완료 후 "딱 도착한 순간" 이 사용자에게 의미 있는 이벤트)
+    const arrivedCount = cluster.arrivedCount ?? 0;
+    const [joinBurstKey, bumpJoinBurst] = useReducer((n: number) => n + 1, 0);
+    const prevArrivedRef = useRef(arrivedCount);
+    useEffect(() => {
+        if (arrivedCount > prevArrivedRef.current && !dying) {
+            bumpJoinBurst();
+        }
+        prevArrivedRef.current = arrivedCount;
+    }, [arrivedCount, dying]);
 
     const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
         if (dying) return;
@@ -82,11 +102,16 @@ export function ClusterBlob({
                           opacity: { duration: 0.35, ease: 'easeOut' },
                       }
             }
+            // framer-motion 의 scale 과 맵 줌 기반 --overlay-scale 을 함께 적용.
+            // translate 로 geographic point 에 센터링 + birth scale * zoom scale.
+            transformTemplate={({ scale: birthScale }) =>
+                `translate(-50%, -50%) scale(${birthScale ?? 1}) scale(var(--overlay-scale, 1))`
+            }
             style={{
                 width: VIEW,
                 height: VIEW,
                 zIndex: selected ? 30 : 10,
-                transform: 'translate(-50%, -50%)',
+                transformOrigin: 'center',
                 pointerEvents: dying ? 'none' : undefined,
             }}
         >
@@ -112,6 +137,57 @@ export function ClusterBlob({
                     />
                 )}
             </AnimatePresence>
+
+            {/* 참여자 join burst — 새 참여자가 도착할 때마다 ring 이 퍼져나감 + 잔향 링 */}
+            {!reduceMotion && joinBurstKey > 0 && (
+                <>
+                    <motion.div
+                        key={`burst-ring-${joinBurstKey}`}
+                        className="pointer-events-none absolute rounded-full border-[2px] border-persona-strong"
+                        style={{
+                            top: CY - core,
+                            left: CX - core,
+                            width: core * 2,
+                            height: core * 2,
+                        }}
+                        initial={{ scale: 0.6, opacity: 0.9 }}
+                        animate={{ scale: 3, opacity: 0 }}
+                        transition={{ duration: 0.9, ease: 'easeOut' }}
+                    />
+                    <motion.div
+                        key={`burst-echo-${joinBurstKey}`}
+                        className="pointer-events-none absolute rounded-full border border-persona"
+                        style={{
+                            top: CY - core,
+                            left: CX - core,
+                            width: core * 2,
+                            height: core * 2,
+                        }}
+                        initial={{ scale: 0.8, opacity: 0.6 }}
+                        animate={{ scale: 4, opacity: 0 }}
+                        transition={{
+                            duration: 1.3,
+                            ease: 'easeOut',
+                            delay: 0.12,
+                        }}
+                    />
+                    {/* 중앙 플래시 — 짧고 밝게 */}
+                    <motion.div
+                        key={`burst-flash-${joinBurstKey}`}
+                        className="pointer-events-none absolute rounded-full bg-persona-strong"
+                        style={{
+                            top: CY - core / 2,
+                            left: CX - core / 2,
+                            width: core,
+                            height: core,
+                            filter: 'blur(6px)',
+                        }}
+                        initial={{ scale: 0.6, opacity: 0.8 }}
+                        animate={{ scale: 1.6, opacity: 0 }}
+                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                    />
+                </>
+            )}
 
             <svg
                 width={VIEW}
@@ -239,3 +315,21 @@ export function ClusterBlob({
         </motion.div>
     );
 }
+
+export const ClusterBlob = memo(ClusterBlobImpl, (prev, next) => {
+    if (prev.selected !== next.selected) return false;
+    if (prev.absorbing !== next.absorbing) return false;
+    const a = prev.cluster;
+    const b = next.cluster;
+    return (
+        a.id === b.id &&
+        a.isPulse === b.isPulse &&
+        a.isDying === b.isDying &&
+        a.personas.length === b.personas.length &&
+        a.centerCoord.lat === b.centerCoord.lat &&
+        a.centerCoord.lng === b.centerCoord.lng &&
+        a.category === b.category &&
+        a.intent === b.intent &&
+        (a.arrivedCount ?? 0) === (b.arrivedCount ?? 0)
+    );
+});

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 import type { Persona, PersonaArchetype } from '@/entities/persona/types';
 import { SPOT_CATEGORIES, type SpotCategory } from '@/entities/spot/categories';
 import type { GeoCoord } from '@/entities/spot/types';
@@ -45,7 +45,16 @@ export type UseMockPersonaSwarmOptions = {
 
 type UseMockPersonaSwarmReturn = {
     personas: Persona[];
-    personaPositions: Map<string, GeoCoord>;
+    /** 매 rAF 마다 업데이트되는 현재 위치 ref. React state 가 아니므로 리렌더 미유발. */
+    positionsRef: React.RefObject<Map<string, GeoCoord>>;
+    /** notify 간격(기본 ~100ms) 마다 호출되는 구독. unsubscribe 함수 리턴. */
+    subscribe: (cb: () => void) => () => void;
+    /**
+     * 스팟 타겟 지정. personaId → 이동해야 할 목적지(spot.location).
+     * 지정되면 home 근처 wander 를 중단하고 해당 좌표로 이동 후 그곳에서 대기.
+     * null/undefined 로 제거되면 다시 home 근처로 wander 복귀.
+     */
+    setSpotTargets: (targets: Map<string, GeoCoord>) => void;
 };
 
 type PersonaMotionState = {
@@ -58,26 +67,21 @@ type PersonaMotionState = {
     tripEndMs: number;
     dwellEndMs: number;
     currentCoord: GeoCoord;
+    /** 'spot' 이면 외부 타겟(스팟)으로 이동 중/대기 중. 'wander' 면 홈 주변 방황. */
+    mode: 'wander' | 'spot';
 };
 
 type SwarmState = {
     personas: Persona[];
-    positions: Map<string, GeoCoord>;
 };
 
 type SwarmAction =
     | { type: 'reset' }
-    | {
-          type: 'seed';
-          personas: Persona[];
-          positions: Map<string, GeoCoord>;
-      }
-    | { type: 'churn'; removedIds: string[]; added: Persona[] }
-    | { type: 'emitPositions'; positions: Map<string, GeoCoord> };
+    | { type: 'seed'; personas: Persona[] }
+    | { type: 'churn'; removedIds: string[]; added: Persona[] };
 
 const EMPTY_STATE: SwarmState = {
     personas: [],
-    positions: new Map(),
 };
 
 function swarmReducer(state: SwarmState, action: SwarmAction): SwarmState {
@@ -85,20 +89,12 @@ function swarmReducer(state: SwarmState, action: SwarmAction): SwarmState {
         case 'reset':
             return EMPTY_STATE;
         case 'seed':
-            return {
-                personas: action.personas,
-                positions: action.positions,
-            };
+            return { personas: action.personas };
         case 'churn': {
             const removed = new Set(action.removedIds);
             const survivors = state.personas.filter((p) => !removed.has(p.id));
-            return {
-                personas: [...survivors, ...action.added],
-                positions: state.positions,
-            };
+            return { personas: [...survivors, ...action.added] };
         }
-        case 'emitPositions':
-            return { ...state, positions: action.positions };
     }
 }
 
@@ -216,14 +212,48 @@ function newMotionState(
         tripEndMs: tripStartMs + tripDuration,
         dwellEndMs: tripStartMs + tripDuration + dwellDuration,
         currentCoord: persona.initialCoord,
+        mode: 'wander',
     };
+}
+
+const SPOT_DWELL_SENTINEL = Number.MAX_SAFE_INTEGER;
+
+function coordClose(a: GeoCoord, b: GeoCoord, thresholdDeg: number): boolean {
+    return (
+        Math.abs(a.lat - b.lat) < thresholdDeg &&
+        Math.abs(a.lng - b.lng) < thresholdDeg
+    );
 }
 
 function advanceMotion(
     s: PersonaMotionState,
     now: number,
     opts: DurationOpts,
+    spotTarget: GeoCoord | null,
 ): void {
+    // 상태 전이 처리
+    if (spotTarget) {
+        // 스팟 타겟이 있는데 아직 그 좌표를 target 으로 잡지 않았으면 새 trip 시작.
+        if (s.mode !== 'spot' || !coordClose(s.target, spotTarget, 0.00005)) {
+            s.origin = s.currentCoord;
+            s.target = spotTarget;
+            s.tripStartMs = now;
+            // 스팟까지 이동 시간은 거리 기반으로 잡으면 좋지만, 일단 기본 trip duration 에
+            // 1.3~1.8 배 가중해서 거리 감각만 주고 균일 처리.
+            s.tripEndMs = now + rand(opts.tripMin, opts.tripMax) * 1.5;
+            s.dwellEndMs = SPOT_DWELL_SENTINEL; // 해제될 때까지 머무름
+            s.mode = 'spot';
+        }
+    } else if (s.mode === 'spot') {
+        // 스팟 타겟 해제 → 홈 근처로 귀환 wander trip.
+        s.origin = s.currentCoord;
+        s.target = randCoordInDisk(s.home, s.wanderRadiusM);
+        s.tripStartMs = now;
+        s.tripEndMs = now + rand(opts.tripMin, opts.tripMax);
+        s.dwellEndMs = s.tripEndMs + rand(opts.dwellMin, opts.dwellMax);
+        s.mode = 'wander';
+    }
+
     if (now < s.tripEndMs) {
         const total = s.tripEndMs - s.tripStartMs;
         const raw = total <= 0 ? 1 : (now - s.tripStartMs) / total;
@@ -238,7 +268,7 @@ function advanceMotion(
         s.currentCoord = s.target;
         return;
     }
-    // 새 trip 시작
+    // wander 모드에서만 새 trip 자동 선정 (spot 모드는 SPOT_DWELL_SENTINEL 이라 여기 오지 않음)
     const tripDuration = rand(opts.tripMin, opts.tripMax);
     const dwellDuration = rand(opts.dwellMin, opts.dwellMax);
     s.origin = s.target;
@@ -254,14 +284,16 @@ export function useMockPersonaSwarm({
     enabled,
     bbox,
     homeCount,
-    wanderRadiusMinM = 80,
-    wanderRadiusMaxM = 350,
-    tripDurationMinMs = 18_000,
-    tripDurationMaxMs = 55_000,
-    dwellDurationMinMs = 8_000,
-    dwellDurationMaxMs = 28_000,
+    // 넓은 wander 반경 + 짧은 trip 으로 뷰포트에서 모션이 확실히 보이도록.
+    wanderRadiusMinM = 250,
+    wanderRadiusMaxM = 800,
+    tripDurationMinMs = 8_000,
+    tripDurationMaxMs = 22_000,
+    dwellDurationMinMs = 3_000,
+    dwellDurationMaxMs = 10_000,
     churnMs = 8_000,
     churnRate = 0.06,
+    // 200ms 주기(5Hz) notify — 400ms 에선 wander 이동폭 1m 미만이라 정지처럼 보임.
     emitThrottleMs = 200,
 }: UseMockPersonaSwarmOptions): UseMockPersonaSwarmReturn {
     const [state, dispatch] = useReducer(swarmReducer, EMPTY_STATE);
@@ -269,6 +301,21 @@ export function useMockPersonaSwarm({
     const seqRef = useRef<number>(1);
     const motionStatesRef = useRef<Map<string, PersonaMotionState>>(new Map());
     const homesRef = useRef<GeoCoord[]>([]);
+    const positionsRef = useRef<Map<string, GeoCoord>>(new Map());
+    const subscribersRef = useRef<Set<() => void>>(new Set());
+    const spotTargetsRef = useRef<Map<string, GeoCoord>>(new Map());
+
+    const subscribe = useCallback((cb: () => void) => {
+        const subs = subscribersRef.current;
+        subs.add(cb);
+        return () => {
+            subs.delete(cb);
+        };
+    }, []);
+
+    const setSpotTargets = useCallback((targets: Map<string, GeoCoord>) => {
+        spotTargetsRef.current = targets;
+    }, []);
 
     const { swLat, swLng, neLat, neLng } = bbox;
 
@@ -290,6 +337,7 @@ export function useMockPersonaSwarm({
             dispatch({ type: 'reset' });
             motionStatesRef.current = new Map();
             homesRef.current = [];
+            positionsRef.current = new Map();
             return;
         }
         const currentBbox: SwarmBbox = { swLat, swLng, neLat, neLng };
@@ -317,32 +365,36 @@ export function useMockPersonaSwarm({
                 durationOptsRef.current,
                 true,
             );
+            // stagger 위치 반영을 위해 seed 직후 1회 advance. 안 하면 첫 400ms 간 모두 home 에 몰려 보임.
+            advanceMotion(motion, now, durationOptsRef.current, null);
             states.set(persona.id, motion);
             initialPositions.set(persona.id, motion.currentCoord);
         }
         motionStatesRef.current = states;
-        dispatch({
-            type: 'seed',
-            personas: seeded,
-            positions: initialPositions,
-        });
+        positionsRef.current = initialPositions;
+        dispatch({ type: 'seed', personas: seeded });
     }, [enabled, n, homeCount, swLat, swLng, neLat, neLng]);
 
     useEffect(() => {
         if (!enabled) return;
         let raf = 0;
-        let lastEmit = 0;
+        let lastStep = 0;
 
+        // advance + notify 를 emitThrottleMs 간격으로 함께 실행.
+        // 내부 advance 를 60fps 로 돌리면 N 이 클 때 그 자체로 비싸짐 (500 × 60 = 30K ops/s).
+        // 어차피 visual 은 notify 간격에만 반응하므로 step 을 묶는다.
         const tick = (now: number) => {
-            const states = motionStatesRef.current;
-            for (const s of states.values()) {
-                advanceMotion(s, now, durationOptsRef.current);
-            }
-            if (now - lastEmit >= emitThrottleMs) {
-                const next = new Map<string, GeoCoord>();
-                for (const [id, s] of states) next.set(id, s.currentCoord);
-                dispatch({ type: 'emitPositions', positions: next });
-                lastEmit = now;
+            if (now - lastStep >= emitThrottleMs) {
+                const states = motionStatesRef.current;
+                const positions = positionsRef.current;
+                const spotTargets = spotTargetsRef.current;
+                for (const s of states.values()) {
+                    const spotTarget = spotTargets.get(s.persona.id) ?? null;
+                    advanceMotion(s, now, durationOptsRef.current, spotTarget);
+                    positions.set(s.persona.id, s.currentCoord);
+                }
+                for (const cb of subscribersRef.current) cb();
+                lastStep = now;
             }
             raf = requestAnimationFrame(tick);
         };
@@ -368,6 +420,7 @@ export function useMockPersonaSwarm({
                 const [removedId] = pool.splice(idx, 1);
                 removedIds.push(removedId);
                 states.delete(removedId);
+                positionsRef.current.delete(removedId);
             }
             const added: Persona[] = [];
             const hotspots = homesRef.current;
@@ -391,6 +444,7 @@ export function useMockPersonaSwarm({
                     false,
                 );
                 states.set(persona.id, motion);
+                positionsRef.current.set(persona.id, motion.currentCoord);
             }
             dispatch({ type: 'churn', removedIds, added });
         }, churnMs);
@@ -399,6 +453,8 @@ export function useMockPersonaSwarm({
 
     return {
         personas: state.personas,
-        personaPositions: state.positions,
+        positionsRef,
+        subscribe,
+        setSpotTargets,
     };
 }

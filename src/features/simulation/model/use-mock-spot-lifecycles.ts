@@ -51,6 +51,15 @@ export type UseMockSpotLifecyclesOptions = {
     personas: Persona[];
     /** 페르소나 현재 위치. 신규 스팟 host 좌표 seed 로 사용. 없으면 initialCoord 폴백. */
     positions?: Map<string, GeoCoord>;
+    /**
+     * 위치 ref. 주면 positions 보다 우선. rAF 기반 swarm 과 함께 쓸 때 ref 경유로 최신값 사용.
+     */
+    positionsRef?: React.RefObject<Map<string, GeoCoord>>;
+    /**
+     * 현재 활성 참여자들의 스팟 좌표 매핑 (personaId → spot.location) 이 갱신될 때마다 호출.
+     * swarm 의 setSpotTargets 에 연결하면 참여자가 스팟 쪽으로 이동한다.
+     */
+    onAssignmentsChangeAction?: (assignments: Map<string, GeoCoord>) => void;
     targetActiveSpots?: number;
     /** 새 스팟 생성 체크 주기(ms). */
     spawnIntervalMs?: number;
@@ -74,17 +83,25 @@ export type UseMockSpotLifecyclesReturn = {
     snapshots: SpotLifecycleSnapshot[];
     /** 현재까지 생성된 모든 lifecycle. 상세 인스펙션용. */
     lifecycles: SpotLifecycle[];
+    /** 물리적으로 spot 좌표 근처에 도착한 참여자 id. dot 을 cluster 에 흡수된 걸로 취급. */
+    arrivedParticipantIds: Set<string>;
 };
 
 type State = {
     clusters: ActivityCluster[];
     snapshots: SpotLifecycleSnapshot[];
     lifecycles: SpotLifecycle[];
+    arrivedParticipantIds: Set<string>;
 };
 
 type Action = { type: 'reset' } | { type: 'emit'; state: State };
 
-const EMPTY_STATE: State = { clusters: [], snapshots: [], lifecycles: [] };
+const EMPTY_STATE: State = {
+    clusters: [],
+    snapshots: [],
+    lifecycles: [],
+    arrivedParticipantIds: new Set(),
+};
 
 function reducer(_: State, action: Action): State {
     switch (action.type) {
@@ -262,13 +279,15 @@ export function useMockSpotLifecycles({
     enabled,
     personas,
     positions,
+    positionsRef: externalPositionsRef,
+    onAssignmentsChangeAction,
     targetActiveSpots,
     spawnIntervalMs = 3_000,
     spotLifespanMinMs = 40_000,
     spotLifespanMaxMs = 120_000,
     participantMinCount = 2,
     participantMaxCount = 5,
-    emitIntervalMs = 400,
+    emitIntervalMs = 800,
     deathGraceMs = 800,
     birthPulseMs = 1_200,
 }: UseMockSpotLifecyclesOptions): UseMockSpotLifecyclesReturn {
@@ -285,8 +304,12 @@ export function useMockSpotLifecycles({
     }, [personas]);
 
     useEffect(() => {
-        if (positions) positionsRef.current = positions;
-    }, [positions]);
+        if (externalPositionsRef) {
+            positionsRef.current = externalPositionsRef.current;
+        } else if (positions) {
+            positionsRef.current = positions;
+        }
+    }, [positions, externalPositionsRef]);
 
     useEffect(() => {
         if (!enabled) {
@@ -343,6 +366,35 @@ export function useMockSpotLifecycles({
                 }
             }
 
+            // 참여자 assignments + arrival 계산을 먼저 수행 (cluster 빌드에서 arrivedCount 사용).
+            const assignments = new Map<string, GeoCoord>();
+            const arrivedParticipantIds = new Set<string>();
+            const arrivedCountByCluster = new Map<string, number>();
+            const ARRIVAL_THRESHOLD_DEG = 0.0005; // 약 55m
+            for (const lc of lifecycles.values()) {
+                if (now < lc.createdAtMs || now >= lc.closedAtMs) continue;
+                for (const p of lc.participants) {
+                    if (p.joinedAtMs > now) continue;
+                    if (p.leftAtMs !== null && p.leftAtMs <= now) continue;
+                    assignments.set(p.personaId, lc.location);
+                    const coord = posMap.get(p.personaId);
+                    if (coord) {
+                        const dLat = Math.abs(coord.lat - lc.location.lat);
+                        const dLng = Math.abs(coord.lng - lc.location.lng);
+                        if (
+                            dLat < ARRIVAL_THRESHOLD_DEG &&
+                            dLng < ARRIVAL_THRESHOLD_DEG
+                        ) {
+                            arrivedParticipantIds.add(p.personaId);
+                            arrivedCountByCluster.set(
+                                lc.spotId,
+                                (arrivedCountByCluster.get(lc.spotId) ?? 0) + 1,
+                            );
+                        }
+                    }
+                }
+            }
+
             // Compute snapshots + clusters.
             const snapshots: SpotLifecycleSnapshot[] = [];
             const clusters: ActivityCluster[] = [];
@@ -380,7 +432,11 @@ export function useMockSpotLifecycles({
                     personas: personaRefs,
                     isPulse,
                     isDying,
+                    arrivedCount: arrivedCountByCluster.get(lc.spotId) ?? 0,
                 });
+            }
+            if (onAssignmentsChangeAction) {
+                onAssignmentsChangeAction(assignments);
             }
 
             dispatch({
@@ -389,6 +445,7 @@ export function useMockSpotLifecycles({
                     clusters,
                     snapshots,
                     lifecycles: [...lifecycles.values()],
+                    arrivedParticipantIds,
                 },
             });
         };
@@ -407,6 +464,7 @@ export function useMockSpotLifecycles({
         emitIntervalMs,
         deathGraceMs,
         birthPulseMs,
+        onAssignmentsChangeAction,
     ]);
 
     return state;

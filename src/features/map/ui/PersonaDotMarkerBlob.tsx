@@ -3,7 +3,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { useState, type KeyboardEvent, type MouseEvent } from 'react';
+import { memo, useState, type KeyboardEvent, type MouseEvent } from 'react';
 
 type DotVariant = 'ai' | 'user';
 
@@ -20,7 +20,7 @@ type PersonaDotMarkerBlobProps = {
 const DOT_SIZE = 10;
 const EXPANDED_SIZE = 32;
 
-export function PersonaDotMarkerBlob({
+function PersonaDotMarkerBlobImpl({
     name,
     variant,
     emoji,
@@ -123,3 +123,15 @@ export function PersonaDotMarkerBlob({
         </div>
     );
 }
+
+export const PersonaDotMarkerBlob = memo(
+    PersonaDotMarkerBlobImpl,
+    (prev, next) =>
+        prev.name === next.name &&
+        prev.variant === next.variant &&
+        prev.emoji === next.emoji &&
+        prev.profileImageUrl === next.profileImageUrl &&
+        prev.moving === next.moving &&
+        prev.expanded === next.expanded,
+    // onSelectAction 참조 변화는 무시 — 부모에서 매 렌더 새 함수 생성해도 스킵.
+);

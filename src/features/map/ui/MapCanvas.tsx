@@ -13,6 +13,14 @@ export type MapOverlayItem = {
     position: { lat: number; lng: number };
     render: () => React.ReactNode;
     clickable?: boolean;
+    /**
+     * 있으면 NaverOverlay 가 이 함수로 구독해 매번 좌표를 업데이트 (imperative).
+     * React 리렌더 없이 container.style 만 갱신하므로 수백 개 애니메이션에 적합.
+     * position 은 초기 placeholder 로만 사용.
+     */
+    positionSubscribe?: (
+        cb: (coord: { lat: number; lng: number }) => void,
+    ) => () => void;
 };
 
 export type MapCanvasProps = {
@@ -224,7 +232,12 @@ function NaverMapCanvas({
             <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
             {map &&
                 overlays.map((o) => (
-                    <NaverOverlay key={o.key} map={map} position={o.position}>
+                    <NaverOverlay
+                        key={o.key}
+                        map={map}
+                        position={o.position}
+                        positionSubscribe={o.positionSubscribe}
+                    >
                         {o.render()}
                     </NaverOverlay>
                 ))}
@@ -235,10 +248,14 @@ function NaverMapCanvas({
 export function NaverOverlay({
     map,
     position,
+    positionSubscribe,
     children,
 }: {
     map: naver.maps.Map;
     position: { lat: number; lng: number };
+    positionSubscribe?: (
+        cb: (coord: { lat: number; lng: number }) => void,
+    ) => () => void;
     children: React.ReactNode;
 }) {
     const [container] = useState(() => {
@@ -249,18 +266,29 @@ export function NaverOverlay({
     });
     const overlayRef = useRef<naver.maps.OverlayView | null>(null);
     const positionRef = useRef(position);
-    positionRef.current = position;
+    // subscribe 경로가 아니면 매 렌더마다 prop 에서 ref 동기화 (기존 동작 유지).
+    // subscribe 경로일 땐 subscribe callback 이 ref 의 주인이므로 건드리면 안 됨.
+    if (!positionSubscribe) {
+        positionRef.current = position;
+    }
 
     useEffect(() => {
-        const overlay = new naver.maps.OverlayView();
-
-        overlay.onAdd = function () {
+        // Naver SDK 가 내부적으로 원본 prototype 의 draw/onAdd/onRemove 를 참조할 수 있기에
+        // 인스턴스 속성 덮어쓰기가 아닌, OverlayView 를 상속한 프로토타입 체인을 구성한다.
+        // 표준 Naver 커스텀 오버레이 패턴.
+        type OV = naver.maps.OverlayView;
+        function Overlay(this: OV) {
+            // super constructor
+        }
+        Overlay.prototype = new naver.maps.OverlayView();
+        Overlay.prototype.constructor = Overlay;
+        (Overlay.prototype as OV).onAdd = function () {
             const panes = this.getPanes();
             panes.overlayLayer.appendChild(container);
         };
-
-        overlay.draw = function () {
+        (Overlay.prototype as OV).draw = function () {
             const proj = this.getProjection();
+            if (!proj) return;
             const point = proj.fromCoordToOffset(
                 new naver.maps.LatLng(
                     positionRef.current.lat,
@@ -269,12 +297,27 @@ export function NaverOverlay({
             );
             container.style.left = `${point.x}px`;
             container.style.top = `${point.y}px`;
+            // 줌 레벨에 따라 overlay 를 확대/축소할 CSS 변수 주입.
+            // 지도가 줌 아웃될 때 cluster 도 함께 축소되어 점이 되는 감각 재현.
+            const mapInst = this.getMap() as naver.maps.Map | null;
+            if (mapInst) {
+                const zoom = mapInst.getZoom();
+                // zoom 15 를 기준으로 매 1 단계당 1.3 배. 최소 0.3, 최대 1.5 로 clamp.
+                const scale = Math.min(
+                    1.5,
+                    Math.max(0.3, Math.pow(1.3, zoom - 15)),
+                );
+                container.style.setProperty(
+                    '--overlay-scale',
+                    scale.toString(),
+                );
+            }
         };
-
-        overlay.onRemove = function () {
+        (Overlay.prototype as OV).onRemove = function () {
             container.parentNode?.removeChild(container);
         };
 
+        const overlay = new (Overlay as unknown as { new (): OV })();
         overlay.setMap(map);
         overlayRef.current = overlay;
 
@@ -284,12 +327,36 @@ export function NaverOverlay({
         };
     }, [map, container]);
 
+    // positionSubscribe 가 있으면 ref 만 업데이트하고 draw() 직접 호출 — React 우회.
     useEffect(() => {
+        if (!positionSubscribe) return;
+        return positionSubscribe((coord) => {
+            positionRef.current = coord;
+            const ov = overlayRef.current;
+            if (ov && ov.getMap()) ov.draw();
+        });
+    }, [positionSubscribe]);
+
+    // position prop 변경 시 명시적 redraw (subscribe 경로가 아닐 때만).
+    useEffect(() => {
+        if (positionSubscribe) return;
         const ov = overlayRef.current;
-        if (ov && ov.getMap()) {
-            ov.draw();
-        }
-    }, [position.lat, position.lng]);
+        if (ov && ov.getMap()) ov.draw();
+    }, [position.lat, position.lng, positionSubscribe]);
+
+    // 줌 애니메이션 중·후 모두 redraw 를 강제해 overlay 가 stale pixel 에 남지 않도록.
+    // GL 렌더링에선 zoom_changed 가 한 번만 발화될 수 있어 bounds_changed + idle 을 함께 구독.
+    // Heartbeat redraw — Naver GL 모드에서 auto-draw 가 누락되는 경우가 있어,
+    // subscribe 가 없는 overlay 도 주기적으로 draw 를 호출해 현재 projection 과 동기 유지.
+    // positionSubscribe 가 있는 overlay 는 subscribe 자체가 heartbeat 역할이므로 스킵.
+    useEffect(() => {
+        if (!map || positionSubscribe) return;
+        const id = setInterval(() => {
+            const ov = overlayRef.current;
+            if (ov && ov.getMap()) ov.draw();
+        }, 200);
+        return () => clearInterval(id);
+    }, [map, positionSubscribe]);
 
     return createPortal(children, container);
 }
