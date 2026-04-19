@@ -14,6 +14,8 @@ type SpotInfoCardProps = {
     lifecycle: SpotLifecycle;
     personaLookup: Map<string, Persona>;
     onCloseAction?: () => void;
+    /** "이런 모임 열기" 클릭 시 호출. 시뮬→포스트 생성 플로우로 연결. */
+    onCreateSimilarAction?: () => void;
 };
 
 function formatRemaining(ms: number): string {
@@ -57,6 +59,7 @@ export function SpotInfoCard({
     lifecycle,
     personaLookup,
     onCloseAction,
+    onCreateSimilarAction,
 }: SpotInfoCardProps) {
     const [now, setNow] = useState(() => performance.now());
     useEffect(() => {
@@ -166,6 +169,17 @@ export function SpotInfoCard({
                         </span>
                     )}
                 </div>
+            )}
+
+            {onCreateSimilarAction && status !== 'CLOSED' && (
+                <button
+                    type="button"
+                    onClick={onCreateSimilarAction}
+                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-[12px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
+                >
+                    <span aria-hidden>✨</span>
+                    <span>나도 이런 모임 열기</span>
+                </button>
             )}
         </motion.div>
     );

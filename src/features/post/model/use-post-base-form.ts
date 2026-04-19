@@ -22,6 +22,24 @@ interface BaseFormDraft {
     deadline: string;
 }
 
+export type PostBaseFormPrefill = Partial<
+    Pick<BaseFormDraft, 'title' | 'categories' | 'location' | 'content'>
+>;
+
+function applyPrefill(
+    base: BaseFormDraft,
+    prefill?: PostBaseFormPrefill,
+): BaseFormDraft {
+    if (!prefill) return base;
+    return {
+        ...base,
+        title: prefill.title ?? base.title,
+        categories: prefill.categories ?? base.categories,
+        location: prefill.location ?? base.location,
+        content: prefill.content ?? base.content,
+    };
+}
+
 function getInitialDraft(): BaseFormDraft {
     try {
         const raw = localStorage.getItem(DRAFT_KEY);
@@ -49,19 +67,31 @@ function subscribeToHydration() {
     return () => {};
 }
 
-export function usePostBaseForm() {
+export function usePostBaseForm(prefill?: PostBaseFormPrefill) {
     const isHydrated = useSyncExternalStore(
         subscribeToHydration,
         () => true,
         () => false,
     );
-    const initialDraft = isHydrated ? getInitialDraft() : EMPTY_DRAFT;
+    const initialDraft = isHydrated
+        ? applyPrefill(getInitialDraft(), prefill)
+        : EMPTY_DRAFT;
     const [draftOverride, setDraftOverride] = useState<BaseFormDraft | null>(
         null,
     );
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
     const draft = draftOverride ?? initialDraft;
     const { spotName, title, content, categories, location, deadline } = draft;
+
+    // prefill 이 시뮬→포스트 전환에서 변경되면 draft 를 한번 덮어씀 (localStorage 는 그대로).
+    // prefill 의 내용 변화를 단순 JSON 직렬화로 감지.
+    const prefillKey = JSON.stringify(prefill ?? null);
+    useEffect(() => {
+        if (!isHydrated) return;
+        if (!prefill) return;
+        setDraftOverride((cur) => applyPrefill(cur ?? initialDraft, prefill));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [prefillKey, isHydrated]);
 
     // 자동 임시저장 (각 필드 변경 시)
     useEffect(() => {

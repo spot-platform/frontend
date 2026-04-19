@@ -1,8 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { usePostBaseForm } from '../model/use-post-base-form';
+import { usePostFormPrefill } from '../model/use-post-form-prefill';
+import { readSimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
+import { SimulationInsightCard } from '@/features/simulation/ui/SimulationInsightCard';
+import type { SimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
 import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
 import { PostSubmitBar } from '../ui/post-form/PostSubmitBar';
 import { PostStepIndicator } from '../ui/PostStepIndicator';
@@ -15,7 +19,15 @@ const STEPS = ['기본 정보', 'Request 상세', '가격 설정'];
 
 export function RequestFormClient() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [step, setStep] = useState(0);
+    const [simContext, setSimContext] =
+        useState<SimulationConversionContext | null>(null);
+    useEffect(() => {
+        setSimContext(
+            readSimulationConversionContext(searchParams.get('fromSpot')),
+        );
+    }, [searchParams]);
 
     const {
         spotName,
@@ -34,7 +46,7 @@ export function RequestFormClient() {
         handleAddPhoto,
         handleRemovePhoto,
         clearDraft,
-    } = usePostBaseForm();
+    } = usePostBaseForm(usePostFormPrefill());
 
     const [detailDescription, setDetailDescription] = useState('');
     const [stylePhotoPreview, setStylePhotoPreview] = useState<string | null>(
@@ -84,6 +96,20 @@ export function RequestFormClient() {
             <PostStepIndicator steps={STEPS} currentStep={step} />
 
             <div className="flex flex-col gap-4">
+                {simContext && (
+                    <SimulationInsightCard
+                        context={simContext}
+                        onApplyPriceAction={(priceKrw) =>
+                            setPriceCapPerPerson(String(priceKrw))
+                        }
+                        onApplyParticipantsAction={(count) =>
+                            setMaxPartnerCount(String(count))
+                        }
+                        onApplyDeadlineAction={(isoDate) =>
+                            setDeadline(isoDate)
+                        }
+                    />
+                )}
                 <p className="text-sm text-gray-500">
                     함께할 파트너들이 한눈에 이해할 수 있게 작성해주세요.
                 </p>

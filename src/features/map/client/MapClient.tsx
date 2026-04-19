@@ -10,7 +10,7 @@ import {
     useState,
 } from 'react';
 import dynamic from 'next/dynamic';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { MapHeader } from '@/features/map/ui/MapHeader';
 import { FilterChipBar } from '@/features/map/ui/FilterChipBar';
 import { MapFooter } from '@/features/map/ui/MapFooter';
@@ -32,6 +32,10 @@ import { useTimelineSimulation } from '@/features/simulation/model/use-timeline-
 import { useAnimatedCoords } from '@/features/simulation/model/use-animated-coords';
 import { useMockPersonaSwarm } from '@/features/simulation/model/use-mock-persona-swarm';
 import { useMockSpotLifecycles } from '@/features/simulation/model/use-mock-spot-lifecycles';
+import {
+    saveSimulationConversionContext,
+    getSuggestedPriceKrw,
+} from '@/features/simulation/model/simulation-conversion-context';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import { useMapUrlState } from '@/features/map/model/use-map-url-state';
 import { useActivityClusters } from '@/features/map/model/use-activity-clusters';
@@ -79,6 +83,7 @@ const MapV3Canvas = dynamic(
 );
 
 export function MapClient() {
+    const router = useRouter();
     const [urlState, updateUrl] = useMapUrlState();
     const {
         spot: selectedSpotId,
@@ -548,6 +553,61 @@ export function MapClient() {
                             lifecycle={selectedLifecycle}
                             personaLookup={basePersonaLookup}
                             onCloseAction={() => updateUrl({ cluster: null })}
+                            onCreateSimilarAction={() => {
+                                // 시뮬 → post 전환: prefill + insight 컨텍스트 둘 다 전달.
+                                // 단순 prefill(URL 쿼리) 로는 담기 힘든 분석 지표(평균 참여자,
+                                // 가격 벤치마크 등) 는 sessionStorage 에 JSON 으로 저장해
+                                // post 폼 쪽 SimulationInsightCard 가 읽어 '적용' 제안으로 노출.
+                                const sameCategory =
+                                    lifecycleResult.lifecycles.filter(
+                                        (l) =>
+                                            l.category ===
+                                            selectedLifecycle.category,
+                                    );
+                                const nowMs = performance.now();
+                                const similarActive = sameCategory.filter(
+                                    (l) => nowMs < l.closedAtMs,
+                                ).length;
+                                const avgParticipants =
+                                    sameCategory.length > 0
+                                        ? Math.max(
+                                              2,
+                                              Math.round(
+                                                  sameCategory.reduce(
+                                                      (s, l) =>
+                                                          s +
+                                                          l.participants.length,
+                                                      0,
+                                                  ) / sameCategory.length,
+                                              ),
+                                          )
+                                        : selectedLifecycle.participants.length;
+                                saveSimulationConversionContext({
+                                    sourceSpotId: selectedLifecycle.spotId,
+                                    category: selectedLifecycle.category,
+                                    intent: selectedLifecycle.intent,
+                                    title: selectedLifecycle.title,
+                                    similarActiveCount: similarActive,
+                                    avgParticipants,
+                                    suggestedPriceKrw: getSuggestedPriceKrw(
+                                        selectedLifecycle.category,
+                                    ),
+                                    typicalLifespanMs:
+                                        selectedLifecycle.closedAtMs -
+                                        selectedLifecycle.createdAtMs,
+                                    spotLocation: selectedLifecycle.location,
+                                });
+
+                                const qs = new URLSearchParams();
+                                qs.set('title', selectedLifecycle.title);
+                                qs.set('category', selectedLifecycle.category);
+                                qs.set('fromSpot', selectedLifecycle.spotId);
+                                const path =
+                                    selectedLifecycle.intent === 'offer'
+                                        ? '/post/offer'
+                                        : '/post/request';
+                                router.push(`${path}?${qs.toString()}`);
+                            }}
                         />
                     );
                 })()}
