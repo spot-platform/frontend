@@ -17,7 +17,8 @@
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "storybook:design-system": "pnpm --filter @frontend/design-system storybook",
-        "build-storybook:design-system": "pnpm --filter @frontend/design-system build-storybook"
+        "build-storybook:design-system": "pnpm --filter @frontend/design-system build-storybook",
+        "gen:sim-fixtures": "esbuild src/features/simulation/mock/generate-fixtures.ts --bundle --platform=node --format=esm --target=node20 --outfile=.next/cache/gen-fixtures.mjs --external:node:* >/dev/null && FIXTURES_OUT_DIR=src/features/simulation/mock/run-fixtures node .next/cache/gen-fixtures.mjs"
     },
     "config": {
         "commitizen": {
