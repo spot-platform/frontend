@@ -1,0 +1,2875 @@
+{
+  "dataset_version": "mock_v1",
+  "target_city": "suwon",
+  "density_max": {
+    "food": 399,
+    "cafe": 247,
+    "activity": 47,
+    "park": 83,
+    "culture": 34,
+    "nightlife": 113,
+    "lesson": 125
+  },
+  "regions": [
+    {
+      "region_id": "jangan_1",
+      "name": "파장동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.31,
+        "lng": 127.012
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.30209179982858,
+          "lng": 127.0020571771603
+        },
+        "ne": {
+          "lat": 37.31790820017142,
+          "lng": 127.0219428228397
+        }
+      },
+      "area_km2": 3.1,
+      "density": {
+        "food": 93,
+        "cafe": 52,
+        "activity": 22,
+        "park": 17,
+        "culture": 7,
+        "nightlife": 11,
+        "lesson": 33
+      },
+      "suitability": {
+        "casual_meetup_score": 0.456,
+        "lesson_spot_score": 0.407,
+        "solo_activity_score": 0.413,
+        "group_activity_score": 0.328,
+        "night_liveliness_score": 0.267
+      },
+      "raw_place_count": 729,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.0020571771603,
+              37.30209179982858
+            ],
+            [
+              127.0219428228397,
+              37.30209179982858
+            ],
+            [
+              127.0219428228397,
+              37.31790820017142
+            ],
+            [
+              127.0020571771603,
+              37.31790820017142
+            ],
+            [
+              127.0020571771603,
+              37.30209179982858
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_2",
+      "name": "율천동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.296,
+        "lng": 126.985
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.28636668586528,
+          "lng": 126.97289048021709
+        },
+        "ne": {
+          "lat": 37.30563331413472,
+          "lng": 126.99710951978291
+        }
+      },
+      "area_km2": 4.6,
+      "density": {
+        "food": 245,
+        "cafe": 201,
+        "activity": 28,
+        "park": 14,
+        "culture": 17,
+        "nightlife": 66,
+        "lesson": 125
+      },
+      "suitability": {
+        "casual_meetup_score": 0.848,
+        "lesson_spot_score": 0.795,
+        "solo_activity_score": 0.592,
+        "group_activity_score": 0.867,
+        "night_liveliness_score": 0.641
+      },
+      "raw_place_count": 3202,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.97289048021709,
+              37.28636668586528
+            ],
+            [
+              126.99710951978291,
+              37.28636668586528
+            ],
+            [
+              126.99710951978291,
+              37.30563331413472
+            ],
+            [
+              126.97289048021709,
+              37.30563331413472
+            ],
+            [
+              126.97289048021709,
+              37.28636668586528
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_3",
+      "name": "정자1동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.29,
+        "lng": 127.005
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.28431858127889,
+          "lng": 126.99785876443138
+        },
+        "ne": {
+          "lat": 37.29568141872111,
+          "lng": 127.0121412355686
+        }
+      },
+      "area_km2": 1.6,
+      "density": {
+        "food": 72,
+        "cafe": 70,
+        "activity": 20,
+        "park": 13,
+        "culture": 6,
+        "nightlife": 10,
+        "lesson": 41
+      },
+      "suitability": {
+        "casual_meetup_score": 0.44,
+        "lesson_spot_score": 0.393,
+        "solo_activity_score": 0.433,
+        "group_activity_score": 0.429,
+        "night_liveliness_score": 0.32
+      },
+      "raw_place_count": 371,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.99785876443138,
+              37.28431858127889
+            ],
+            [
+              127.0121412355686,
+              37.28431858127889
+            ],
+            [
+              127.0121412355686,
+              37.29568141872111
+            ],
+            [
+              126.99785876443138,
+              37.29568141872111
+            ],
+            [
+              126.99785876443138,
+              37.28431858127889
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_4",
+      "name": "정자2동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.3,
+        "lng": 127
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.2946855194187,
+          "lng": 126.99331909773336
+        },
+        "ne": {
+          "lat": 37.305314480581295,
+          "lng": 127.00668090226664
+        }
+      },
+      "area_km2": 1.4,
+      "density": {
+        "food": 91,
+        "cafe": 75,
+        "activity": 14,
+        "park": 14,
+        "culture": 5,
+        "nightlife": 11,
+        "lesson": 31
+      },
+      "suitability": {
+        "casual_meetup_score": 0.465,
+        "lesson_spot_score": 0.376,
+        "solo_activity_score": 0.526,
+        "group_activity_score": 0.339,
+        "night_liveliness_score": 0.277
+      },
+      "raw_place_count": 337,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.99331909773336,
+              37.2946855194187
+            ],
+            [
+              127.00668090226664,
+              37.2946855194187
+            ],
+            [
+              127.00668090226664,
+              37.305314480581295
+            ],
+            [
+              126.99331909773336,
+              37.305314480581295
+            ],
+            [
+              126.99331909773336,
+              37.2946855194187
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_5",
+      "name": "정자3동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.305,
+        "lng": 127.008
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.299878838370915,
+          "lng": 127.00156169345004
+        },
+        "ne": {
+          "lat": 37.310121161629084,
+          "lng": 127.01443830654995
+        }
+      },
+      "area_km2": 1.3,
+      "density": {
+        "food": 88,
+        "cafe": 67,
+        "activity": 19,
+        "park": 14,
+        "culture": 7,
+        "nightlife": 10,
+        "lesson": 29
+      },
+      "suitability": {
+        "casual_meetup_score": 0.566,
+        "lesson_spot_score": 0.451,
+        "solo_activity_score": 0.383,
+        "group_activity_score": 0.351,
+        "night_liveliness_score": 0.259
+      },
+      "raw_place_count": 304,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.00156169345004,
+              37.299878838370915
+            ],
+            [
+              127.01443830654995,
+              37.299878838370915
+            ],
+            [
+              127.01443830654995,
+              37.310121161629084
+            ],
+            [
+              127.00156169345004,
+              37.310121161629084
+            ],
+            [
+              127.00156169345004,
+              37.299878838370915
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_6",
+      "name": "영화동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.288,
+        "lng": 127.018
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.28197394544331,
+          "lng": 127.01042577718896
+        },
+        "ne": {
+          "lat": 37.29402605455668,
+          "lng": 127.02557422281104
+        }
+      },
+      "area_km2": 1.8,
+      "density": {
+        "food": 111,
+        "cafe": 49,
+        "activity": 19,
+        "park": 17,
+        "culture": 6,
+        "nightlife": 14,
+        "lesson": 33
+      },
+      "suitability": {
+        "casual_meetup_score": 0.477,
+        "lesson_spot_score": 0.454,
+        "solo_activity_score": 0.449,
+        "group_activity_score": 0.371,
+        "night_liveliness_score": 0.242
+      },
+      "raw_place_count": 448,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01042577718896,
+              37.28197394544331
+            ],
+            [
+              127.02557422281104,
+              37.28197394544331
+            ],
+            [
+              127.02557422281104,
+              37.29402605455668
+            ],
+            [
+              127.01042577718896,
+              37.29402605455668
+            ],
+            [
+              127.01042577718896,
+              37.28197394544331
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_7",
+      "name": "송죽동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.296,
+        "lng": 127.022
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.29014372762738,
+          "lng": 127.01463839576301
+        },
+        "ne": {
+          "lat": 37.30185627237262,
+          "lng": 127.029361604237
+        }
+      },
+      "area_km2": 1.7,
+      "density": {
+        "food": 85,
+        "cafe": 46,
+        "activity": 22,
+        "park": 14,
+        "culture": 7,
+        "nightlife": 13,
+        "lesson": 26
+      },
+      "suitability": {
+        "casual_meetup_score": 0.429,
+        "lesson_spot_score": 0.444,
+        "solo_activity_score": 0.497,
+        "group_activity_score": 0.474,
+        "night_liveliness_score": 0.317
+      },
+      "raw_place_count": 362,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01463839576301,
+              37.29014372762738
+            ],
+            [
+              127.029361604237,
+              37.29014372762738
+            ],
+            [
+              127.029361604237,
+              37.30185627237262
+            ],
+            [
+              127.01463839576301,
+              37.30185627237262
+            ],
+            [
+              127.01463839576301,
+              37.29014372762738
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_8",
+      "name": "조원1동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.3,
+        "lng": 127.03
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.294498989977576,
+          "lng": 127.02308460916069
+        },
+        "ne": {
+          "lat": 37.30550101002242,
+          "lng": 127.03691539083931
+        }
+      },
+      "area_km2": 1.5,
+      "density": {
+        "food": 117,
+        "cafe": 56,
+        "activity": 16,
+        "park": 16,
+        "culture": 5,
+        "nightlife": 12,
+        "lesson": 34
+      },
+      "suitability": {
+        "casual_meetup_score": 0.498,
+        "lesson_spot_score": 0.47,
+        "solo_activity_score": 0.491,
+        "group_activity_score": 0.379,
+        "night_liveliness_score": 0.328
+      },
+      "raw_place_count": 384,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.02308460916069,
+              37.294498989977576
+            ],
+            [
+              127.03691539083931,
+              37.294498989977576
+            ],
+            [
+              127.03691539083931,
+              37.30550101002242
+            ],
+            [
+              127.02308460916069,
+              37.30550101002242
+            ],
+            [
+              127.02308460916069,
+              37.294498989977576
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_9",
+      "name": "조원2동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.305,
+        "lng": 127.025
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.29931858127889,
+          "lng": 127.01785734018678
+        },
+        "ne": {
+          "lat": 37.31068141872111,
+          "lng": 127.03214265981323
+        }
+      },
+      "area_km2": 1.6,
+      "density": {
+        "food": 88,
+        "cafe": 57,
+        "activity": 18,
+        "park": 15,
+        "culture": 6,
+        "nightlife": 10,
+        "lesson": 29
+      },
+      "suitability": {
+        "casual_meetup_score": 0.552,
+        "lesson_spot_score": 0.424,
+        "solo_activity_score": 0.415,
+        "group_activity_score": 0.414,
+        "night_liveliness_score": 0.375
+      },
+      "raw_place_count": 357,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01785734018678,
+              37.29931858127889
+            ],
+            [
+              127.03214265981323,
+              37.29931858127889
+            ],
+            [
+              127.03214265981323,
+              37.31068141872111
+            ],
+            [
+              127.01785734018678,
+              37.31068141872111
+            ],
+            [
+              127.01785734018678,
+              37.29931858127889
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "jangan_10",
+      "name": "연무동",
+      "sido": "경기도",
+      "sigungu": "수원시 장안구",
+      "centroid": {
+        "lat": 37.286,
+        "lng": 127.034
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.27918821825004,
+          "lng": 127.02543841448455
+        },
+        "ne": {
+          "lat": 37.29281178174996,
+          "lng": 127.04256158551546
+        }
+      },
+      "area_km2": 2.3,
+      "density": {
+        "food": 65,
+        "cafe": 40,
+        "activity": 47,
+        "park": 64,
+        "culture": 26,
+        "nightlife": 8,
+        "lesson": 20
+      },
+      "suitability": {
+        "casual_meetup_score": 0.721,
+        "lesson_spot_score": 0.642,
+        "solo_activity_score": 0.711,
+        "group_activity_score": 0.581,
+        "night_liveliness_score": 0.257
+      },
+      "raw_place_count": 621,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.02543841448455,
+              37.27918821825004
+            ],
+            [
+              127.04256158551546,
+              37.27918821825004
+            ],
+            [
+              127.04256158551546,
+              37.29281178174996
+            ],
+            [
+              127.02543841448455,
+              37.29281178174996
+            ],
+            [
+              127.02543841448455,
+              37.27918821825004
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_1",
+      "name": "세류1동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.27,
+        "lng": 127.02
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26449898997758,
+          "lng": 127.01308736549268
+        },
+        "ne": {
+          "lat": 37.275501010022424,
+          "lng": 127.02691263450731
+        }
+      },
+      "area_km2": 1.5,
+      "density": {
+        "food": 93,
+        "cafe": 69,
+        "activity": 19,
+        "park": 17,
+        "culture": 5,
+        "nightlife": 13,
+        "lesson": 39
+      },
+      "suitability": {
+        "casual_meetup_score": 0.569,
+        "lesson_spot_score": 0.393,
+        "solo_activity_score": 0.419,
+        "group_activity_score": 0.341,
+        "night_liveliness_score": 0.353
+      },
+      "raw_place_count": 383,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01308736549268,
+              37.26449898997758
+            ],
+            [
+              127.02691263450731,
+              37.26449898997758
+            ],
+            [
+              127.02691263450731,
+              37.275501010022424
+            ],
+            [
+              127.01308736549268,
+              37.275501010022424
+            ],
+            [
+              127.01308736549268,
+              37.26449898997758
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_2",
+      "name": "세류2동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.265,
+        "lng": 127.025
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.2596855194187,
+          "lng": 127.01832220403035
+        },
+        "ne": {
+          "lat": 37.2703144805813,
+          "lng": 127.03167779596966
+        }
+      },
+      "area_km2": 1.4,
+      "density": {
+        "food": 107,
+        "cafe": 67,
+        "activity": 17,
+        "park": 17,
+        "culture": 7,
+        "nightlife": 12,
+        "lesson": 28
+      },
+      "suitability": {
+        "casual_meetup_score": 0.46,
+        "lesson_spot_score": 0.485,
+        "solo_activity_score": 0.387,
+        "group_activity_score": 0.435,
+        "night_liveliness_score": 0.287
+      },
+      "raw_place_count": 357,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01832220403035,
+              37.2596855194187
+            ],
+            [
+              127.03167779596966,
+              37.2596855194187
+            ],
+            [
+              127.03167779596966,
+              37.2703144805813
+            ],
+            [
+              127.01832220403035,
+              37.2703144805813
+            ],
+            [
+              127.01832220403035,
+              37.2596855194187
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_3",
+      "name": "세류3동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.262,
+        "lng": 127.03
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.25631858127889,
+          "lng": 127.02286142019358
+        },
+        "ne": {
+          "lat": 37.26768141872111,
+          "lng": 127.03713857980642
+        }
+      },
+      "area_km2": 1.6,
+      "density": {
+        "food": 76,
+        "cafe": 52,
+        "activity": 19,
+        "park": 16,
+        "culture": 5,
+        "nightlife": 13,
+        "lesson": 29
+      },
+      "suitability": {
+        "casual_meetup_score": 0.541,
+        "lesson_spot_score": 0.379,
+        "solo_activity_score": 0.458,
+        "group_activity_score": 0.4,
+        "night_liveliness_score": 0.259
+      },
+      "raw_place_count": 336,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.02286142019358,
+              37.25631858127889
+            ],
+            [
+              127.03713857980642,
+              37.25631858127889
+            ],
+            [
+              127.03713857980642,
+              37.26768141872111
+            ],
+            [
+              127.02286142019358,
+              37.26768141872111
+            ],
+            [
+              127.02286142019358,
+              37.25631858127889
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_4",
+      "name": "평동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.255,
+        "lng": 127
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.24381611606361,
+          "lng": 126.98594899743527
+        },
+        "ne": {
+          "lat": 37.26618388393639,
+          "lng": 127.01405100256473
+        }
+      },
+      "area_km2": 6.2,
+      "density": {
+        "food": 154,
+        "cafe": 103,
+        "activity": 21,
+        "park": 18,
+        "culture": 10,
+        "nightlife": 26,
+        "lesson": 39
+      },
+      "suitability": {
+        "casual_meetup_score": 0.565,
+        "lesson_spot_score": 0.477,
+        "solo_activity_score": 0.531,
+        "group_activity_score": 0.511,
+        "night_liveliness_score": 0.57
+      },
+      "raw_place_count": 2300,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.98594899743527,
+              37.24381611606361
+            ],
+            [
+              127.01405100256473,
+              37.24381611606361
+            ],
+            [
+              127.01405100256473,
+              37.26618388393639
+            ],
+            [
+              126.98594899743527,
+              37.26618388393639
+            ],
+            [
+              126.98594899743527,
+              37.24381611606361
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_5",
+      "name": "서둔동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.27,
+        "lng": 126.985
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.260159494115975,
+          "lng": 126.97263430347043
+        },
+        "ne": {
+          "lat": 37.27984050588403,
+          "lng": 126.99736569652957
+        }
+      },
+      "area_km2": 4.8,
+      "density": {
+        "food": 195,
+        "cafe": 136,
+        "activity": 28,
+        "park": 13,
+        "culture": 21,
+        "nightlife": 42,
+        "lesson": 125
+      },
+      "suitability": {
+        "casual_meetup_score": 0.842,
+        "lesson_spot_score": 0.861,
+        "solo_activity_score": 0.571,
+        "group_activity_score": 0.787,
+        "night_liveliness_score": 0.681
+      },
+      "raw_place_count": 2688,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.97263430347043,
+              37.260159494115975
+            ],
+            [
+              126.99736569652957,
+              37.260159494115975
+            ],
+            [
+              126.99736569652957,
+              37.27984050588403
+            ],
+            [
+              126.97263430347043,
+              37.27984050588403
+            ],
+            [
+              126.97263430347043,
+              37.260159494115975
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_6",
+      "name": "구운동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.275,
+        "lng": 126.998
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26864798076548,
+          "lng": 126.99001744708461
+        },
+        "ne": {
+          "lat": 37.28135201923452,
+          "lng": 127.0059825529154
+        }
+      },
+      "area_km2": 2,
+      "density": {
+        "food": 77,
+        "cafe": 54,
+        "activity": 15,
+        "park": 13,
+        "culture": 6,
+        "nightlife": 15,
+        "lesson": 38
+      },
+      "suitability": {
+        "casual_meetup_score": 0.566,
+        "lesson_spot_score": 0.476,
+        "solo_activity_score": 0.444,
+        "group_activity_score": 0.372,
+        "night_liveliness_score": 0.33
+      },
+      "raw_place_count": 436,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.99001744708461,
+              37.26864798076548
+            ],
+            [
+              127.0059825529154,
+              37.26864798076548
+            ],
+            [
+              127.0059825529154,
+              37.28135201923452
+            ],
+            [
+              126.99001744708461,
+              37.28135201923452
+            ],
+            [
+              126.99001744708461,
+              37.26864798076548
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_7",
+      "name": "권선1동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.26,
+        "lng": 127.02
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.25397394544331,
+          "lng": 127.01242859377126
+        },
+        "ne": {
+          "lat": 37.26602605455668,
+          "lng": 127.02757140622873
+        }
+      },
+      "area_km2": 1.8,
+      "density": {
+        "food": 81,
+        "cafe": 46,
+        "activity": 14,
+        "park": 12,
+        "culture": 7,
+        "nightlife": 10,
+        "lesson": 30
+      },
+      "suitability": {
+        "casual_meetup_score": 0.48,
+        "lesson_spot_score": 0.459,
+        "solo_activity_score": 0.474,
+        "group_activity_score": 0.366,
+        "night_liveliness_score": 0.329
+      },
+      "raw_place_count": 360,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01242859377126,
+              37.25397394544331
+            ],
+            [
+              127.02757140622873,
+              37.25397394544331
+            ],
+            [
+              127.02757140622873,
+              37.26602605455668
+            ],
+            [
+              127.01242859377126,
+              37.26602605455668
+            ],
+            [
+              127.01242859377126,
+              37.25397394544331
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_8",
+      "name": "권선2동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.255,
+        "lng": 127.025
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.249143727627384,
+          "lng": 127.01764240414194
+        },
+        "ne": {
+          "lat": 37.26085627237262,
+          "lng": 127.03235759585807
+        }
+      },
+      "area_km2": 1.7,
+      "density": {
+        "food": 320,
+        "cafe": 194,
+        "activity": 31,
+        "park": 6,
+        "culture": 28,
+        "nightlife": 72,
+        "lesson": 64
+      },
+      "suitability": {
+        "casual_meetup_score": 0.896,
+        "lesson_spot_score": 0.578,
+        "solo_activity_score": 0.516,
+        "group_activity_score": 0.822,
+        "night_liveliness_score": 0.833
+      },
+      "raw_place_count": 1216,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01764240414194,
+              37.249143727627384
+            ],
+            [
+              127.03235759585807,
+              37.249143727627384
+            ],
+            [
+              127.03235759585807,
+              37.26085627237262
+            ],
+            [
+              127.01764240414194,
+              37.26085627237262
+            ],
+            [
+              127.01764240414194,
+              37.249143727627384
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_9",
+      "name": "곡선동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.25,
+        "lng": 127.03
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.24380881748469,
+          "lng": 127.02222215208555
+        },
+        "ne": {
+          "lat": 37.25619118251531,
+          "lng": 127.03777784791446
+        }
+      },
+      "area_km2": 1.9,
+      "density": {
+        "food": 89,
+        "cafe": 46,
+        "activity": 19,
+        "park": 12,
+        "culture": 6,
+        "nightlife": 13,
+        "lesson": 28
+      },
+      "suitability": {
+        "casual_meetup_score": 0.472,
+        "lesson_spot_score": 0.419,
+        "solo_activity_score": 0.42,
+        "group_activity_score": 0.428,
+        "night_liveliness_score": 0.315
+      },
+      "raw_place_count": 405,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.02222215208555,
+              37.24380881748469
+            ],
+            [
+              127.03777784791446,
+              37.24380881748469
+            ],
+            [
+              127.03777784791446,
+              37.25619118251531
+            ],
+            [
+              127.02222215208555,
+              37.25619118251531
+            ],
+            [
+              127.02222215208555,
+              37.24380881748469
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_10",
+      "name": "입북동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.29,
+        "lng": 126.965
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.279562567338644,
+          "lng": 126.95188071254293
+        },
+        "ne": {
+          "lat": 37.300437432661354,
+          "lng": 126.97811928745708
+        }
+      },
+      "area_km2": 5.4,
+      "density": {
+        "food": 159,
+        "cafe": 95,
+        "activity": 17,
+        "park": 22,
+        "culture": 10,
+        "nightlife": 24,
+        "lesson": 45
+      },
+      "suitability": {
+        "casual_meetup_score": 0.554,
+        "lesson_spot_score": 0.543,
+        "solo_activity_score": 0.52,
+        "group_activity_score": 0.473,
+        "night_liveliness_score": 0.519
+      },
+      "raw_place_count": 2009,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.95188071254293,
+              37.279562567338644
+            ],
+            [
+              126.97811928745708,
+              37.279562567338644
+            ],
+            [
+              126.97811928745708,
+              37.300437432661354
+            ],
+            [
+              126.95188071254293,
+              37.300437432661354
+            ],
+            [
+              126.95188071254293,
+              37.279562567338644
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "gwonseon_11",
+      "name": "금호동",
+      "sido": "경기도",
+      "sigungu": "수원시 권선구",
+      "centroid": {
+        "lat": 37.245,
+        "lng": 126.99
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.236597068391184,
+          "lng": 126.97944428023892
+        },
+        "ne": {
+          "lat": 37.25340293160881,
+          "lng": 127.00055571976107
+        }
+      },
+      "area_km2": 3.5,
+      "density": {
+        "food": 111,
+        "cafe": 72,
+        "activity": 20,
+        "park": 17,
+        "culture": 5,
+        "nightlife": 11,
+        "lesson": 28
+      },
+      "suitability": {
+        "casual_meetup_score": 0.459,
+        "lesson_spot_score": 0.527,
+        "solo_activity_score": 0.417,
+        "group_activity_score": 0.368,
+        "night_liveliness_score": 0.314
+      },
+      "raw_place_count": 924,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.97944428023892,
+              37.236597068391184
+            ],
+            [
+              127.00055571976107,
+              37.236597068391184
+            ],
+            [
+              127.00055571976107,
+              37.25340293160881
+            ],
+            [
+              126.97944428023892,
+              37.25340293160881
+            ],
+            [
+              126.97944428023892,
+              37.236597068391184
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_1",
+      "name": "인계동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.273,
+        "lng": 127.029
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26749898997758,
+          "lng": 127.02208709004364
+        },
+        "ne": {
+          "lat": 37.278501010022424,
+          "lng": 127.03591290995635
+        }
+      },
+      "area_km2": 1.5,
+      "density": {
+        "food": 399,
+        "cafe": 210,
+        "activity": 38,
+        "park": 7,
+        "culture": 34,
+        "nightlife": 107,
+        "lesson": 77
+      },
+      "suitability": {
+        "casual_meetup_score": 0.797,
+        "lesson_spot_score": 0.532,
+        "solo_activity_score": 0.469,
+        "group_activity_score": 0.749,
+        "night_liveliness_score": 0.941
+      },
+      "raw_place_count": 1308,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.02208709004364,
+              37.26749898997758
+            ],
+            [
+              127.03591290995635,
+              37.26749898997758
+            ],
+            [
+              127.03591290995635,
+              37.278501010022424
+            ],
+            [
+              127.02208709004364,
+              37.278501010022424
+            ],
+            [
+              127.02208709004364,
+              37.26749898997758
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_2",
+      "name": "매교동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.272,
+        "lng": 127.02
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26750844412504,
+          "lng": 127.01435570762781
+        },
+        "ne": {
+          "lat": 37.276491555874955,
+          "lng": 127.02564429237218
+        }
+      },
+      "area_km2": 1,
+      "density": {
+        "food": 370,
+        "cafe": 182,
+        "activity": 31,
+        "park": 6,
+        "culture": 25,
+        "nightlife": 79,
+        "lesson": 55
+      },
+      "suitability": {
+        "casual_meetup_score": 0.899,
+        "lesson_spot_score": 0.534,
+        "solo_activity_score": 0.433,
+        "group_activity_score": 0.858,
+        "night_liveliness_score": 0.83
+      },
+      "raw_place_count": 748,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01435570762781,
+              37.26750844412504
+            ],
+            [
+              127.02564429237218,
+              37.26750844412504
+            ],
+            [
+              127.02564429237218,
+              37.276491555874955
+            ],
+            [
+              127.01435570762781,
+              37.276491555874955
+            ],
+            [
+              127.01435570762781,
+              37.26750844412504
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_3",
+      "name": "매산동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.265,
+        "lng": 127.012
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.2602892164563,
+          "lng": 127.00608076652443
+        },
+        "ne": {
+          "lat": 37.2697107835437,
+          "lng": 127.01791923347557
+        }
+      },
+      "area_km2": 1.1,
+      "density": {
+        "food": 305,
+        "cafe": 173,
+        "activity": 39,
+        "park": 7,
+        "culture": 25,
+        "nightlife": 91,
+        "lesson": 56
+      },
+      "suitability": {
+        "casual_meetup_score": 0.929,
+        "lesson_spot_score": 0.483,
+        "solo_activity_score": 0.527,
+        "group_activity_score": 0.765,
+        "night_liveliness_score": 0.973
+      },
+      "raw_place_count": 766,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.00608076652443,
+              37.2602892164563
+            ],
+            [
+              127.01791923347557,
+              37.2602892164563
+            ],
+            [
+              127.01791923347557,
+              37.2697107835437
+            ],
+            [
+              127.00608076652443,
+              37.2697107835437
+            ],
+            [
+              127.00608076652443,
+              37.2602892164563
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_4",
+      "name": "고등동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.27,
+        "lng": 127.005
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26550844412505,
+          "lng": 126.99935585755956
+        },
+        "ne": {
+          "lat": 37.27449155587496,
+          "lng": 127.01064414244043
+        }
+      },
+      "area_km2": 1,
+      "density": {
+        "food": 87,
+        "cafe": 50,
+        "activity": 17,
+        "park": 17,
+        "culture": 7,
+        "nightlife": 14,
+        "lesson": 32
+      },
+      "suitability": {
+        "casual_meetup_score": 0.554,
+        "lesson_spot_score": 0.504,
+        "solo_activity_score": 0.488,
+        "group_activity_score": 0.467,
+        "night_liveliness_score": 0.347
+      },
+      "raw_place_count": 224,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.99935585755956,
+              37.26550844412505
+            ],
+            [
+              127.01064414244043,
+              37.26550844412505
+            ],
+            [
+              127.01064414244043,
+              37.27449155587496
+            ],
+            [
+              126.99935585755956,
+              37.27449155587496
+            ],
+            [
+              126.99935585755956,
+              37.26550844412505
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_5",
+      "name": "화서1동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.282,
+        "lng": 127.005
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.2766855194187,
+          "lng": 126.99832069592968
+        },
+        "ne": {
+          "lat": 37.287314480581294,
+          "lng": 127.01167930407031
+        }
+      },
+      "area_km2": 1.4,
+      "density": {
+        "food": 117,
+        "cafe": 59,
+        "activity": 14,
+        "park": 17,
+        "culture": 6,
+        "nightlife": 11,
+        "lesson": 40
+      },
+      "suitability": {
+        "casual_meetup_score": 0.524,
+        "lesson_spot_score": 0.519,
+        "solo_activity_score": 0.477,
+        "group_activity_score": 0.388,
+        "night_liveliness_score": 0.317
+      },
+      "raw_place_count": 370,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.99832069592968,
+              37.2766855194187
+            ],
+            [
+              127.01167930407031,
+              37.2766855194187
+            ],
+            [
+              127.01167930407031,
+              37.287314480581294
+            ],
+            [
+              126.99832069592968,
+              37.287314480581294
+            ],
+            [
+              126.99832069592968,
+              37.2766855194187
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_6",
+      "name": "화서2동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.288,
+        "lng": 127
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.282318581278886,
+          "lng": 126.99285895425078
+        },
+        "ne": {
+          "lat": 37.29368141872111,
+          "lng": 127.00714104574922
+        }
+      },
+      "area_km2": 1.6,
+      "density": {
+        "food": 75,
+        "cafe": 60,
+        "activity": 14,
+        "park": 17,
+        "culture": 6,
+        "nightlife": 10,
+        "lesson": 28
+      },
+      "suitability": {
+        "casual_meetup_score": 0.525,
+        "lesson_spot_score": 0.5,
+        "solo_activity_score": 0.463,
+        "group_activity_score": 0.467,
+        "night_liveliness_score": 0.324
+      },
+      "raw_place_count": 336,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.99285895425078,
+              37.282318581278886
+            ],
+            [
+              127.00714104574922,
+              37.282318581278886
+            ],
+            [
+              127.00714104574922,
+              37.29368141872111
+            ],
+            [
+              126.99285895425078,
+              37.29368141872111
+            ],
+            [
+              126.99285895425078,
+              37.282318581278886
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_7",
+      "name": "지동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.275,
+        "lng": 127.03
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.270738935959166,
+          "lng": 127.02464514071416
+        },
+        "ne": {
+          "lat": 37.27926106404083,
+          "lng": 127.03535485928585
+        }
+      },
+      "area_km2": 0.9,
+      "density": {
+        "food": 96,
+        "cafe": 55,
+        "activity": 22,
+        "park": 15,
+        "culture": 7,
+        "nightlife": 10,
+        "lesson": 42
+      },
+      "suitability": {
+        "casual_meetup_score": 0.507,
+        "lesson_spot_score": 0.497,
+        "solo_activity_score": 0.406,
+        "group_activity_score": 0.339,
+        "night_liveliness_score": 0.369
+      },
+      "raw_place_count": 222,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.02464514071416,
+              37.270738935959166
+            ],
+            [
+              127.03535485928585,
+              37.270738935959166
+            ],
+            [
+              127.03535485928585,
+              37.27926106404083
+            ],
+            [
+              127.02464514071416,
+              37.27926106404083
+            ],
+            [
+              127.02464514071416,
+              37.270738935959166
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_8",
+      "name": "우만1동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.28,
+        "lng": 127.04
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.27487883837092,
+          "lng": 127.03356383258189
+        },
+        "ne": {
+          "lat": 37.285121161629085,
+          "lng": 127.04643616741812
+        }
+      },
+      "area_km2": 1.3,
+      "density": {
+        "food": 103,
+        "cafe": 60,
+        "activity": 18,
+        "park": 16,
+        "culture": 6,
+        "nightlife": 12,
+        "lesson": 35
+      },
+      "suitability": {
+        "casual_meetup_score": 0.507,
+        "lesson_spot_score": 0.377,
+        "solo_activity_score": 0.467,
+        "group_activity_score": 0.366,
+        "night_liveliness_score": 0.246
+      },
+      "raw_place_count": 325,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.03356383258189,
+              37.27487883837092
+            ],
+            [
+              127.04643616741812,
+              37.27487883837092
+            ],
+            [
+              127.04643616741812,
+              37.285121161629085
+            ],
+            [
+              127.03356383258189,
+              37.285121161629085
+            ],
+            [
+              127.03356383258189,
+              37.27487883837092
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_9",
+      "name": "우만2동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.275,
+        "lng": 127.043
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.270079747057984,
+          "lng": 127.0368167410997
+        },
+        "ne": {
+          "lat": 37.27992025294201,
+          "lng": 127.04918325890031
+        }
+      },
+      "area_km2": 1.2,
+      "density": {
+        "food": 87,
+        "cafe": 68,
+        "activity": 14,
+        "park": 12,
+        "culture": 6,
+        "nightlife": 11,
+        "lesson": 38
+      },
+      "suitability": {
+        "casual_meetup_score": 0.468,
+        "lesson_spot_score": 0.404,
+        "solo_activity_score": 0.497,
+        "group_activity_score": 0.421,
+        "night_liveliness_score": 0.361
+      },
+      "raw_place_count": 283,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.0368167410997,
+              37.270079747057984
+            ],
+            [
+              127.04918325890031,
+              37.270079747057984
+            ],
+            [
+              127.04918325890031,
+              37.27992025294201
+            ],
+            [
+              127.0368167410997,
+              37.27992025294201
+            ],
+            [
+              127.0368167410997,
+              37.270079747057984
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "paldal_10",
+      "name": "행궁동",
+      "sido": "경기도",
+      "sigungu": "수원시 팔달구",
+      "centroid": {
+        "lat": 37.282,
+        "lng": 127.018
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.2766855194187,
+          "lng": 127.01132069592968
+        },
+        "ne": {
+          "lat": 37.287314480581294,
+          "lng": 127.02467930407032
+        }
+      },
+      "area_km2": 1.4,
+      "density": {
+        "food": 310,
+        "cafe": 218,
+        "activity": 29,
+        "park": 6,
+        "culture": 32,
+        "nightlife": 83,
+        "lesson": 83
+      },
+      "suitability": {
+        "casual_meetup_score": 0.868,
+        "lesson_spot_score": 0.527,
+        "solo_activity_score": 0.425,
+        "group_activity_score": 0.711,
+        "night_liveliness_score": 0.826
+      },
+      "raw_place_count": 1065,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.01132069592968,
+              37.2766855194187
+            ],
+            [
+              127.02467930407032,
+              37.2766855194187
+            ],
+            [
+              127.02467930407032,
+              37.287314480581294
+            ],
+            [
+              127.01132069592968,
+              37.287314480581294
+            ],
+            [
+              127.01132069592968,
+              37.2766855194187
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_1",
+      "name": "매탄1동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.269,
+        "lng": 127.045
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26450844412504,
+          "lng": 127.0393559325199
+        },
+        "ne": {
+          "lat": 37.273491555874955,
+          "lng": 127.0506440674801
+        }
+      },
+      "area_km2": 1,
+      "density": {
+        "food": 353,
+        "cafe": 199,
+        "activity": 40,
+        "park": 7,
+        "culture": 31,
+        "nightlife": 113,
+        "lesson": 84
+      },
+      "suitability": {
+        "casual_meetup_score": 0.836,
+        "lesson_spot_score": 0.607,
+        "solo_activity_score": 0.476,
+        "group_activity_score": 0.859,
+        "night_liveliness_score": 0.98
+      },
+      "raw_place_count": 827,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.0393559325199,
+              37.26450844412504
+            ],
+            [
+              127.0506440674801,
+              37.26450844412504
+            ],
+            [
+              127.0506440674801,
+              37.273491555874955
+            ],
+            [
+              127.0393559325199,
+              37.273491555874955
+            ],
+            [
+              127.0393559325199,
+              37.26450844412504
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_2",
+      "name": "매탄2동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.265,
+        "lng": 127.052
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26073893595917,
+          "lng": 127.04664585186775
+        },
+        "ne": {
+          "lat": 37.26926106404083,
+          "lng": 127.05735414813226
+        }
+      },
+      "area_km2": 0.9,
+      "density": {
+        "food": 95,
+        "cafe": 58,
+        "activity": 18,
+        "park": 14,
+        "culture": 5,
+        "nightlife": 10,
+        "lesson": 40
+      },
+      "suitability": {
+        "casual_meetup_score": 0.511,
+        "lesson_spot_score": 0.498,
+        "solo_activity_score": 0.517,
+        "group_activity_score": 0.381,
+        "night_liveliness_score": 0.276
+      },
+      "raw_place_count": 216,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.04664585186775,
+              37.26073893595917
+            ],
+            [
+              127.05735414813226,
+              37.26073893595917
+            ],
+            [
+              127.05735414813226,
+              37.26926106404083
+            ],
+            [
+              127.04664585186775,
+              37.26926106404083
+            ],
+            [
+              127.04664585186775,
+              37.26073893595917
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_3",
+      "name": "매탄3동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.258,
+        "lng": 127.055
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.25249898997758,
+          "lng": 127.04808846687993
+        },
+        "ne": {
+          "lat": 37.26350101002242,
+          "lng": 127.06191153312008
+        }
+      },
+      "area_km2": 1.5,
+      "density": {
+        "food": 104,
+        "cafe": 73,
+        "activity": 20,
+        "park": 12,
+        "culture": 6,
+        "nightlife": 12,
+        "lesson": 43
+      },
+      "suitability": {
+        "casual_meetup_score": 0.436,
+        "lesson_spot_score": 0.438,
+        "solo_activity_score": 0.53,
+        "group_activity_score": 0.341,
+        "night_liveliness_score": 0.237
+      },
+      "raw_place_count": 405,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.04808846687993,
+              37.25249898997758
+            ],
+            [
+              127.06191153312008,
+              37.25249898997758
+            ],
+            [
+              127.06191153312008,
+              37.26350101002242
+            ],
+            [
+              127.04808846687993,
+              37.26350101002242
+            ],
+            [
+              127.04808846687993,
+              37.25249898997758
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_4",
+      "name": "매탄4동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.262,
+        "lng": 127.06
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.256878838370916,
+          "lng": 127.05356537111848
+        },
+        "ne": {
+          "lat": 37.267121161629085,
+          "lng": 127.06643462888152
+        }
+      },
+      "area_km2": 1.3,
+      "density": {
+        "food": 103,
+        "cafe": 69,
+        "activity": 19,
+        "park": 14,
+        "culture": 7,
+        "nightlife": 14,
+        "lesson": 38
+      },
+      "suitability": {
+        "casual_meetup_score": 0.559,
+        "lesson_spot_score": 0.468,
+        "solo_activity_score": 0.402,
+        "group_activity_score": 0.365,
+        "night_liveliness_score": 0.319
+      },
+      "raw_place_count": 343,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.05356537111848,
+              37.256878838370916
+            ],
+            [
+              127.06643462888152,
+              37.256878838370916
+            ],
+            [
+              127.06643462888152,
+              37.267121161629085
+            ],
+            [
+              127.05356537111848,
+              37.267121161629085
+            ],
+            [
+              127.05356537111848,
+              37.256878838370916
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_5",
+      "name": "원천동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.275,
+        "lng": 127.06
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.26804171155909,
+          "lng": 127.05125555140353
+        },
+        "ne": {
+          "lat": 37.281958288440904,
+          "lng": 127.06874444859648
+        }
+      },
+      "area_km2": 2.4,
+      "density": {
+        "food": 290,
+        "cafe": 196,
+        "activity": 28,
+        "park": 15,
+        "culture": 19,
+        "nightlife": 50,
+        "lesson": 104
+      },
+      "suitability": {
+        "casual_meetup_score": 0.737,
+        "lesson_spot_score": 0.814,
+        "solo_activity_score": 0.659,
+        "group_activity_score": 0.733,
+        "night_liveliness_score": 0.622
+      },
+      "raw_place_count": 1685,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.05125555140353,
+              37.26804171155909
+            ],
+            [
+              127.06874444859648,
+              37.26804171155909
+            ],
+            [
+              127.06874444859648,
+              37.281958288440904
+            ],
+            [
+              127.05125555140353,
+              37.281958288440904
+            ],
+            [
+              127.05125555140353,
+              37.26804171155909
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_6",
+      "name": "이의동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.29,
+        "lng": 127.06
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.28090529252097,
+          "lng": 127.04856844536135
+        },
+        "ne": {
+          "lat": 37.29909470747903,
+          "lng": 127.07143155463865
+        }
+      },
+      "area_km2": 4.1,
+      "density": {
+        "food": 125,
+        "cafe": 101,
+        "activity": 24,
+        "park": 15,
+        "culture": 11,
+        "nightlife": 24,
+        "lesson": 47
+      },
+      "suitability": {
+        "casual_meetup_score": 0.603,
+        "lesson_spot_score": 0.549,
+        "solo_activity_score": 0.608,
+        "group_activity_score": 0.504,
+        "night_liveliness_score": 0.512
+      },
+      "raw_place_count": 1423,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.04856844536135,
+              37.28090529252097
+            ],
+            [
+              127.07143155463865,
+              37.28090529252097
+            ],
+            [
+              127.07143155463865,
+              37.29909470747903
+            ],
+            [
+              127.04856844536135,
+              37.29909470747903
+            ],
+            [
+              127.04856844536135,
+              37.28090529252097
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_7",
+      "name": "광교1동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.295,
+        "lng": 127.072
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.28446636776899,
+          "lng": 127.05875891490614
+        },
+        "ne": {
+          "lat": 37.30553363223101,
+          "lng": 127.08524108509387
+        }
+      },
+      "area_km2": 5.5,
+      "density": {
+        "food": 286,
+        "cafe": 247,
+        "activity": 42,
+        "park": 5,
+        "culture": 32,
+        "nightlife": 75,
+        "lesson": 86
+      },
+      "suitability": {
+        "casual_meetup_score": 0.921,
+        "lesson_spot_score": 0.585,
+        "solo_activity_score": 0.521,
+        "group_activity_score": 0.838,
+        "night_liveliness_score": 0.968
+      },
+      "raw_place_count": 4252,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.05875891490614,
+              37.28446636776899
+            ],
+            [
+              127.08524108509387,
+              37.28446636776899
+            ],
+            [
+              127.08524108509387,
+              37.30553363223101
+            ],
+            [
+              127.05875891490614,
+              37.30553363223101
+            ],
+            [
+              127.05875891490614,
+              37.28446636776899
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_8",
+      "name": "광교2동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.3,
+        "lng": 127.078
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.29015949411597,
+          "lng": 127.06562937279385
+        },
+        "ne": {
+          "lat": 37.309840505884026,
+          "lng": 127.09037062720616
+        }
+      },
+      "area_km2": 4.8,
+      "density": {
+        "food": 63,
+        "cafe": 44,
+        "activity": 45,
+        "park": 83,
+        "culture": 21,
+        "nightlife": 6,
+        "lesson": 14
+      },
+      "suitability": {
+        "casual_meetup_score": 0.725,
+        "lesson_spot_score": 0.674,
+        "solo_activity_score": 0.789,
+        "group_activity_score": 0.665,
+        "night_liveliness_score": 0.252
+      },
+      "raw_place_count": 1325,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.06562937279385,
+              37.29015949411597
+            ],
+            [
+              127.09037062720616,
+              37.29015949411597
+            ],
+            [
+              127.09037062720616,
+              37.309840505884026
+            ],
+            [
+              127.06562937279385,
+              37.309840505884026
+            ],
+            [
+              127.06562937279385,
+              37.29015949411597
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_9",
+      "name": "영통1동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.252,
+        "lng": 127.072
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.24631858127889,
+          "lng": 127.06486236778841
+        },
+        "ne": {
+          "lat": 37.25768141872111,
+          "lng": 127.0791376322116
+        }
+      },
+      "area_km2": 1.6,
+      "density": {
+        "food": 114,
+        "cafe": 55,
+        "activity": 15,
+        "park": 16,
+        "culture": 6,
+        "nightlife": 9,
+        "lesson": 39
+      },
+      "suitability": {
+        "casual_meetup_score": 0.461,
+        "lesson_spot_score": 0.417,
+        "solo_activity_score": 0.507,
+        "group_activity_score": 0.439,
+        "night_liveliness_score": 0.263
+      },
+      "raw_place_count": 406,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.06486236778841,
+              37.24631858127889
+            ],
+            [
+              127.0791376322116,
+              37.24631858127889
+            ],
+            [
+              127.0791376322116,
+              37.25768141872111
+            ],
+            [
+              127.06486236778841,
+              37.25768141872111
+            ],
+            [
+              127.06486236778841,
+              37.24631858127889
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_10",
+      "name": "영통2동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.248,
+        "lng": 127.075
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.24249898997758,
+          "lng": 127.06808938420305
+        },
+        "ne": {
+          "lat": 37.25350101002242,
+          "lng": 127.08191061579696
+        }
+      },
+      "area_km2": 1.5,
+      "density": {
+        "food": 114,
+        "cafe": 72,
+        "activity": 22,
+        "park": 13,
+        "culture": 5,
+        "nightlife": 11,
+        "lesson": 41
+      },
+      "suitability": {
+        "casual_meetup_score": 0.548,
+        "lesson_spot_score": 0.498,
+        "solo_activity_score": 0.511,
+        "group_activity_score": 0.452,
+        "night_liveliness_score": 0.369
+      },
+      "raw_place_count": 417,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.06808938420305,
+              37.24249898997758
+            ],
+            [
+              127.08191061579696,
+              37.24249898997758
+            ],
+            [
+              127.08191061579696,
+              37.25350101002242
+            ],
+            [
+              127.06808938420305,
+              37.25350101002242
+            ],
+            [
+              127.06808938420305,
+              37.24249898997758
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_11",
+      "name": "영통3동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.255,
+        "lng": 127.078
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.249685519418705,
+          "lng": 127.07132309055578
+        },
+        "ne": {
+          "lat": 37.2603144805813,
+          "lng": 127.08467690944423
+        }
+      },
+      "area_km2": 1.4,
+      "density": {
+        "food": 101,
+        "cafe": 54,
+        "activity": 16,
+        "park": 17,
+        "culture": 5,
+        "nightlife": 9,
+        "lesson": 27
+      },
+      "suitability": {
+        "casual_meetup_score": 0.42,
+        "lesson_spot_score": 0.5,
+        "solo_activity_score": 0.434,
+        "group_activity_score": 0.401,
+        "night_liveliness_score": 0.348
+      },
+      "raw_place_count": 321,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.07132309055578,
+              37.249685519418705
+            ],
+            [
+              127.08467690944423,
+              37.249685519418705
+            ],
+            [
+              127.08467690944423,
+              37.2603144805813
+            ],
+            [
+              127.07132309055578,
+              37.2603144805813
+            ],
+            [
+              127.07132309055578,
+              37.249685519418705
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_12",
+      "name": "망포1동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.245,
+        "lng": 127.06
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.23914372762738,
+          "lng": 127.05264338056197
+        },
+        "ne": {
+          "lat": 37.250856272372616,
+          "lng": 127.06735661943803
+        }
+      },
+      "area_km2": 1.7,
+      "density": {
+        "food": 80,
+        "cafe": 73,
+        "activity": 14,
+        "park": 15,
+        "culture": 5,
+        "nightlife": 15,
+        "lesson": 42
+      },
+      "suitability": {
+        "casual_meetup_score": 0.566,
+        "lesson_spot_score": 0.509,
+        "solo_activity_score": 0.441,
+        "group_activity_score": 0.324,
+        "night_liveliness_score": 0.299
+      },
+      "raw_place_count": 415,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.05264338056197,
+              37.23914372762738
+            ],
+            [
+              127.06735661943803,
+              37.23914372762738
+            ],
+            [
+              127.06735661943803,
+              37.250856272372616
+            ],
+            [
+              127.05264338056197,
+              37.250856272372616
+            ],
+            [
+              127.05264338056197,
+              37.23914372762738
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "region_id": "yeongtong_13",
+      "name": "망포2동",
+      "sido": "경기도",
+      "sigungu": "수원시 영통구",
+      "centroid": {
+        "lat": 37.24,
+        "lng": 127.065
+      },
+      "bbox": {
+        "sw": {
+          "lat": 37.23431858127889,
+          "lng": 127.05786350428326
+        },
+        "ne": {
+          "lat": 37.24568141872111,
+          "lng": 127.07213649571673
+        }
+      },
+      "area_km2": 1.6,
+      "density": {
+        "food": 73,
+        "cafe": 50,
+        "activity": 22,
+        "park": 12,
+        "culture": 7,
+        "nightlife": 11,
+        "lesson": 40
+      },
+      "suitability": {
+        "casual_meetup_score": 0.535,
+        "lesson_spot_score": 0.391,
+        "solo_activity_score": 0.484,
+        "group_activity_score": 0.39,
+        "night_liveliness_score": 0.302
+      },
+      "raw_place_count": 344,
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.05786350428326,
+              37.23431858127889
+            ],
+            [
+              127.07213649571673,
+              37.23431858127889
+            ],
+            [
+              127.07213649571673,
+              37.24568141872111
+            ],
+            [
+              127.05786350428326,
+              37.24568141872111
+            ],
+            [
+              127.05786350428326,
+              37.23431858127889
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
