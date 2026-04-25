@@ -2867,11 +2867,14 @@ Types are defined in `src/features/admin-post/model/types.ts`.
 - Purpose: 시뮬레이션 실행의 틱별 `TimelineFrame`을 SSE로 실시간 송출.
 - Auth: Optional (Bearer)
 - Path params: `run_id: string`
-- Query params: none
+- Query params:
+    - `speed?`: `"1x" | "4x" | "16x"` — FE 재생 속도 제어 (2026-04-24 추가). 서버 프리빌드 캐시라 backpressure 무관. 기본 `"1x"`.
+    - `start_tick?`: `number` — 중간부터 재생 시작.
 - Protocol: `text/event-stream` (SSE). 프론트는 `EventSource`로 구독.
 - Event format:
     - 각 틱마다 `message` 이벤트 1건. `data:` 필드에 `TimelineFrame` JSON 문자열.
     - keep-alive는 주석 라인(`: keepalive\n\n`)으로만 송출.
+    - run `failed` 시 `event: run.error\ndata: { code, message }` 송출 후 연결 종료.
 - Response body: 아래와 같은 프레임이 반복된다.
 
 ```
@@ -2881,6 +2884,9 @@ data: {"tick":1,"day_of_week":"SAT","time_slot":"09:30", ...}
 ```
 
 - Referenced schemas: `TimelineFrame`, `AgentMarker`, `SpotMarker`, `LiveEvent`
+
+> `LiveEvent.event_type`은 2026-04-24 회의에서 `LiveEventType` enum 7종으로 확정, `payload`는 discriminated union(`LiveEventPayload`)로 확정. BACKEND_HANDOFF_ENTITIES.md §LiveEventPayload 참고.
+> `TimelineFrame.time_slot`은 `"HH:MM"` 24h **KST 고정**.
 
 ### GET /api/v1/simulation/runs/{run_id}/highlights
 
@@ -2926,3 +2932,91 @@ data: {"tick":1,"day_of_week":"SAT","time_slot":"09:30", ...}
 - Query params: none
 - Response body (200): `ApiResponse<ConversionHints>`
 - Referenced schemas: `ConversionHints`
+
+> 2026-04-24 회의 반영: `ConversionHints.session_context`, `pricing_suggestion.fee_breakdown` 구조 확정. BACKEND_HANDOFF_SCHEMAS.md §ConversionHintsResponse 예시 참고.
+
+---
+
+## Simulation 신규 엔드포인트 (2026-04-24 추가)
+
+### POST /api/v1/simulation/runs
+
+- Purpose: 새 시뮬레이션 실행을 큐에 등록 (FE "시뮬 시작" 버튼).
+- Auth: Required (Bearer). anonymous 는 허용하지 않는다.
+- Rate limit: 인증 사용자당 **분당 1회**, 동시 running **1개**. 초과 시 `429`.
+- Request body (`CreateSimulationRunRequest`):
+    - `variant`: `"baseline" | "high_engagement" | "weekend_peak" | "custom"` — `custom` 일 때 `region_bbox` 필수.
+    - `region_bbox?`: `MapPersonaBbox`
+    - `duration_ticks?`: number (기본 48)
+    - `seed?`: number
+    - `user_persona_id?`: string — 관찰자 모드(미지정)가 기본. 지정 시 `user_agent_id`가 응답에 포함.
+    - `agent_count?`: number (기본 500, 50–1000 범위)
+- Response (202 Accepted): `ApiResponse<{ run_id, status: "queued", eta_seconds }>`
+
+### GET /api/v1/simulation/runs/current
+
+- Purpose: 현재 표시용(공개 데모) run 조회. BE가 매일 00:00 KST variant별 프리빌드.
+- Auth: Optional (anonymous 허용). `/map` 공개 진입점이 이 엔드포인트를 호출한다.
+- Query params:
+    - `variant?`: `"baseline" | "high_engagement" | "weekend_peak"` — 미지정 시 서버 기본값.
+- Response (200): `ApiResponse<SimulationRun>`
+
+### GET /api/v1/simulation/runs/{run_id}
+
+- Purpose: 특정 run의 상태·지역·스트림 URL 조회.
+- Auth: Optional (Bearer).
+- Path params: `run_id: string`
+- Response (200): `ApiResponse<SimulationRun>`
+    - `status`: `"queued" | "running" | "completed" | "failed"`
+    - `region.timezone`: 항상 `"Asia/Seoul"`
+    - `streams`: `{ timeline_url, spots_url, personas_url, highlights_url }` — FE 가 이 URL들을 그대로 구독.
+- `404` 조건: 존재하지 않는 run_id.
+
+### GET /api/v1/map/spots/lifecycles
+
+- Purpose: bbox 내 `SpotLifecycle` 스냅샷. `StreamMapSpots` 초기 상태로 사용.
+- Auth: Optional (Bearer).
+- Query params (`MapSpotsLifecyclesQuery`):
+    - `swLat`, `swLng`, `neLat`, `neLng`: required
+    - `run_id?`: 미지정 시 current run
+- Response (200): `ApiResponse<SpotLifecycle[]>`
+- BE 요구사항: **bbox 서버 필터링 필수** (Map Personas §동작요구사항 1번과 동일). 오프스크린 lifecycle 송출 금지.
+
+### GET /api/v1/map/spots/stream
+
+- Purpose: `SpotLifecycle`의 delta-only SSE 스트림. 맵 UI의 스팟 birth/dying/participant 애니메이션 소스.
+- Auth: Optional (Bearer).
+- Query params: `swLat`, `swLng`, `neLat`, `neLng` (required), `run_id?`
+- Protocol: `text/event-stream`. 이벤트 타입은 `event: ` 필드로 분기 (SSE named event).
+- 이벤트 6종 (discriminated union `SpotLifecycleEvent`):
+    - `spot.created` — **`expected_closed_at_ms`를 반드시 포함**. FE가 수명을 랜덤 계산하지 않는다.
+    - `spot.participant_joined`
+    - `spot.participant_left`
+    - `spot.matched` — `arrived_count`는 BE 엔진 상태머신이 판정 (FE의 좌표 임계값 제거)
+    - `spot.extended` — `new_expected_closed_at_ms` 전달. **수명 변경의 유일한 합법적 경로**.
+    - `spot.closed` — `outcome: MATCHED | CANCELED | TIMEOUT`
+- BE 요구사항:
+    1. **bbox 서버 필터링 필수**
+    2. **delta-only** (스냅샷 재송출 금지, 초기는 `GetMapSpotLifecycles`)
+    3. 시각은 **시뮬 가상시간(ms)** (wall clock 아님)
+    4. `: keepalive` 15~30s 간격
+    5. bbox 변경 시 FE가 스트림 끊고 재구독 (단일 연결 bbox 변경 없음)
+- 예시 frame payload는 BACKEND_HANDOFF_SCHEMAS.md §SpotLifecycleEvent 참고.
+
+### GET /api/v1/simulation/runs/{run_id}/spots/{spot_id}/conversion-hints
+
+- Purpose: **가상 spot_id 기반** ConversionHints 조회. 가상 스팟 → post 폼 전환 전 단계에서 사용 (feed_id 발급 전).
+- Auth: Required (Bearer).
+- Path params: `run_id: string`, `spot_id: string`
+- Response (200): `ApiResponse<ConversionHints>`
+- 내부적으로 spot_id → source_virtual_spot_id 룩업 후 `GetFeedConversionHints` 와 동일 핸들러 공유. LLM 호출 없음(캐시).
+
+### POST /api/v1/feed/{feed_id}/attractiveness/recompute
+
+- Purpose: Attractiveness 리포트를 강제 재계산. "적용 후 재측정" UX.
+- Auth: Required (Bearer) — 피드 소유 서포터만.
+- Rate limit: 인증 사용자당 **분당 3회**.
+- Path params: `feed_id: string`
+- Request body: none
+- Response (202 Accepted): `ApiResponse<{ job_id: string, status: "queued" | "running" }>`
+- 완료 후 FE 는 기존 `GET /api/v1/feed/{feed_id}/attractiveness` 를 재호출해 최신 리포트를 수신.

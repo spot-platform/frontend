@@ -535,48 +535,127 @@
 ## Simulation (contextBuilder)
 
 > contextBuilder 시뮬레이션 출력을 맵/피드/대시보드에서 소비. 모든 응답은 `ApiResponse<T>` 또는 `PagedResponse<T>` 봉투를 사용한다 (단, SSE 스트림은 봉투 없이 프레임 JSON을 직접 송출).
+>
+> **2026-04-24 회의 반영:** SpotLifecycle 스트림 신설, Run 라이프사이클 엔드포인트 3종, ConversionHints spot_id 조회 경로, 모호 필드 5개 enum 확정, `session_context` / `arrived_count` 추가.
 
 ### Entities
 
-| Entity               | Fields                                                                                                                                                                               |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| SpotCard             | spot_id, provenance, title, skill_topic, teach_mode, venue_type, fee_per_partner, location, host_preview, person_fitness_score, attractiveness_score                                 |
-| AttractivenessReport | composite_score, signals (Record<AttractivenessSignal, number>), improvement_hints[], price_benchmark                                                                                |
-| AttractivenessSignal | title_hookiness \| price_reasonableness \| venue_accessibility \| host_reputation_fit \| time_slot_demand \| skill_rarity_bonus \| narrative_authenticity \| bonded_repeat_potential |
-| AgentMarker          | agent_id, location, archetype?                                                                                                                                                       |
-| SpotMarker           | spot_id, location, provenance, status (OPEN \| MATCHED \| CLOSED)                                                                                                                    |
-| LiveEvent            | event_id, event_type, payload                                                                                                                                                        |
-| TimelineFrame        | tick, day_of_week, time_slot, active_agents[], active_spots[], events_this_tick[]                                                                                                    |
-| HighlightClip        | clip_id, title, category, start_tick, end_tick, involved_agents[], narrative                                                                                                         |
-| ConversionHints      | source_virtual_spot_id, placeholder, pricing_suggestion, plan_help, expected_demand                                                                                                  |
+| Entity                   | Fields                                                                                                                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SpotCard                 | spot_id, provenance, title, skill_topic, teach_mode, venue_type (enum), fee_per_partner, location, host_preview, person_fitness_score, attractiveness_score                                   |
+| AttractivenessReport     | composite_score, signals (Record<AttractivenessSignal, number>), improvement_hints[], price_benchmark                                                                                         |
+| AttractivenessSignal     | title_hookiness \| price_reasonableness \| venue_accessibility \| host_reputation_fit \| time_slot_demand \| skill_rarity_bonus \| narrative_authenticity \| bonded_repeat_potential          |
+| AttractivenessVerdict    | too_cheap \| competitive \| slightly_high \| too_high                                                                                                                                         |
+| AgentMarker              | agent_id, location, archetype?                                                                                                                                                                |
+| SpotMarker               | spot_id, location, provenance, status (OPEN \| MATCHED \| CLOSED)                                                                                                                             |
+| LiveEventType            | CREATE_TEACH_SPOT \| JOIN_TEACH_SPOT \| LEAVE_TEACH_SPOT \| MATCH_TEACH_SPOT \| COUNTER_OFFER \| BOND_UPGRADE \| CLOSE_TEACH_SPOT                                                             |
+| LiveEvent                | event_id, event_type (LiveEventType), payload (discriminated union, 아래 §LiveEventPayload)                                                                                                   |
+| TimelineFrame            | tick, day_of_week, time_slot (HH:MM, KST), active_agents[], active_spots[], events_this_tick[]                                                                                                |
+| HighlightClip            | clip_id, title, category, start_tick, end_tick, involved_agents[], narrative                                                                                                                  |
+| ConversionHints          | source_virtual_spot_id, placeholder, pricing_suggestion (fee_breakdown 포함), plan_help, expected_demand, session_context                                                                     |
+| FeeBreakdown             | peer_labor_fee, material_cost, venue_rental, equipment_rental, total, passthrough_total                                                                                                       |
+| ConversionSessionContext | similar_active_count, avg_participants, typical_lifespan_minutes, sample_size, scope (run \| region \| global)                                                                                |
+| SpotLifecycle            | spot_id, location, category, intent (offer \| request), title, host_persona_id, created_at_ms, expected_closed_at_ms, matched_at_ms?, closed_at_ms?, participants[]                           |
+| SpotLifecycleParticipant | persona_id, joined_at_ms, left_at_ms?, arrived_at_ms?                                                                                                                                         |
+| SpotLifecycleEventType   | spot.created \| spot.participant_joined \| spot.participant_left \| spot.matched \| spot.closed \| spot.extended                                                                              |
+| SpotLifecycleEvent       | discriminated union; payload은 아래 §SpotLifecycle 스트림 참고                                                                                                                                |
+| SimulationRun            | run_id, variant, status (queued \| running \| completed \| failed), started_at, completed_at?, total_ticks, current_tick?, region (center, bbox, timezone), agent_count, seed, user_agent_id?, streams |
+| SimulationRunVariant     | baseline \| high_engagement \| weekend_peak \| custom                                                                                                                                         |
 
 ### Request DTO
 
-| DTO                 | Fields                                 |
-| ------------------- | -------------------------------------- |
-| MapSpotsQuery       | mode? ('virtual' \| 'real' \| 'mixed') |
-| TimelineStreamQuery | -                                      |
+| DTO                        | Fields                                                                                                      |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| MapSpotsQuery              | mode? ('virtual' \| 'real' \| 'mixed')                                                                      |
+| TimelineStreamQuery        | speed? ('1x' \| '4x' \| '16x'), start_tick?                                                                 |
+| MapSpotsLifecyclesQuery    | swLat, swLng, neLat, neLng, run_id?                                                                         |
+| MapSpotsStreamQuery        | swLat, swLng, neLat, neLng, run_id?                                                                         |
+| CreateSimulationRunRequest | variant, region_bbox?, duration_ticks?, seed?, user_persona_id?, agent_count?                               |
+| CurrentSimulationRunQuery  | variant? ('baseline' \| 'high_engagement' \| 'weekend_peak')                                                |
+| RecomputeAttractivenessReq | -                                                                                                           |
 
 ### Response DTO
 
-| DTO                          | Fields                      |
-| ---------------------------- | --------------------------- |
-| MapSpotsResponse             | data (SpotCard[])           |
-| HighlightClipsResponse       | data (HighlightClip[])      |
-| AttractivenessReportResponse | data (AttractivenessReport) |
-| ConversionHintsResponse      | data (ConversionHints)      |
+| DTO                            | Fields                                |
+| ------------------------------ | ------------------------------------- |
+| MapSpotsResponse               | data (SpotCard[])                     |
+| MapSpotsLifecyclesResponse     | data (SpotLifecycle[])                |
+| HighlightClipsResponse         | data (HighlightClip[])                |
+| AttractivenessReportResponse   | data (AttractivenessReport)           |
+| ConversionHintsResponse        | data (ConversionHints)                |
+| SimulationRunResponse          | data (SimulationRun)                  |
+| CreateSimulationRunResponse    | data ({ run_id, status, eta_seconds }) |
+| RecomputeAttractivenessResponse| data ({ job_id, status })             |
 
 ### Queries
 
-| Name                     | Method | Route                                            | Request DTO         | Response DTO                 |
-| ------------------------ | ------ | ------------------------------------------------ | ------------------- | ---------------------------- |
-| GetMapSpots              | GET    | /api/v1/map/spots                                | MapSpotsQuery       | MapSpotsResponse             |
-| StreamSimulationTimeline | GET    | /api/v1/simulation/runs/{run_id}/timeline/stream | TimelineStreamQuery | SSE: TimelineFrame           |
-| GetSimulationHighlights  | GET    | /api/v1/simulation/runs/{run_id}/highlights      | -                   | HighlightClipsResponse       |
-| GetFeedAttractiveness    | GET    | /api/v1/feed/{feed_id}/attractiveness            | -                   | AttractivenessReportResponse |
-| GetFeedConversionHints   | GET    | /api/v1/feed/{feed_id}/conversion-hints          | -                   | ConversionHintsResponse      |
+| Name                           | Method | Route                                                             | Request DTO                | Response DTO                    |
+| ------------------------------ | ------ | ----------------------------------------------------------------- | -------------------------- | ------------------------------- |
+| GetMapSpots                    | GET    | /api/v1/map/spots                                                 | MapSpotsQuery              | MapSpotsResponse                |
+| GetMapSpotLifecycles           | GET    | /api/v1/map/spots/lifecycles                                      | MapSpotsLifecyclesQuery    | MapSpotsLifecyclesResponse      |
+| StreamMapSpots                 | GET    | /api/v1/map/spots/stream                                          | MapSpotsStreamQuery        | SSE: SpotLifecycleEvent         |
+| StreamSimulationTimeline       | GET    | /api/v1/simulation/runs/{run_id}/timeline/stream                  | TimelineStreamQuery        | SSE: TimelineFrame              |
+| GetSimulationHighlights        | GET    | /api/v1/simulation/runs/{run_id}/highlights                       | -                          | HighlightClipsResponse          |
+| CreateSimulationRun            | POST   | /api/v1/simulation/runs                                           | CreateSimulationRunRequest | CreateSimulationRunResponse     |
+| GetCurrentSimulationRun        | GET    | /api/v1/simulation/runs/current                                   | CurrentSimulationRunQuery  | SimulationRunResponse           |
+| GetSimulationRun               | GET    | /api/v1/simulation/runs/{run_id}                                  | -                          | SimulationRunResponse           |
+| GetRunSpotConversionHints      | GET    | /api/v1/simulation/runs/{run_id}/spots/{spot_id}/conversion-hints | -                          | ConversionHintsResponse         |
+| GetFeedAttractiveness          | GET    | /api/v1/feed/{feed_id}/attractiveness                             | -                          | AttractivenessReportResponse    |
+| RecomputeFeedAttractiveness    | POST   | /api/v1/feed/{feed_id}/attractiveness/recompute                   | RecomputeAttractivenessReq | RecomputeAttractivenessResponse |
+| GetFeedConversionHints         | GET    | /api/v1/feed/{feed_id}/conversion-hints                           | -                          | ConversionHintsResponse         |
 
-> `StreamSimulationTimeline`은 `text/event-stream`으로 `TimelineFrame` JSON을 프레임 단위 송출. 연결 유지 ping은 주석 라인(`: keepalive`)으로만 보내고 데이터 프레임에는 포함하지 않는다.
+> `StreamSimulationTimeline` / `StreamMapSpots`는 `text/event-stream`으로 프레임/이벤트 JSON을 단위 송출. 연결 유지 ping은 주석 라인(`: keepalive`)으로만 보내고 데이터 프레임에는 포함하지 않는다.
+
+### SpotLifecycle 스트림 동작 요구사항 (BE 구현 시 반드시 준수)
+
+맵 페르소나 스트림과 **형제 계약**. `Map Personas` 섹션의 동작요구사항을 그대로 따르되, 추가로:
+
+1. **초기 상태는 `GetMapSpotLifecycles` 스냅샷으로만 제공**. 스트림은 delta-only.
+2. **`spot.created` 이벤트에 `expected_closed_at_ms`를 반드시 포함**한다. FE의 birth pulse / dying 애니 타이밍이 결정론적으로 맞춰짐. FE가 수명을 랜덤 계산하지 않는다.
+3. **`spot.extended`** — counter_offer 등으로 수명이 연장되면 `{ spot_id, new_expected_closed_at_ms }`를 송출. `expected_closed_at_ms`의 유일한 합법적 변경 경로.
+4. **`spot.matched.arrived_count`** — FE가 좌표 임계값으로 도착 판정하지 않는다. BE가 엔진 상태머신으로 판정한 값을 싣는다.
+5. **시각은 시뮬 가상시간(ms)** — wall clock 아님. `GET /runs/{run_id}` 응답의 `region.timezone` + run start 기준.
+6. **Bbox 서버 필터링 필수** (Map Personas 동작요구사항 1번과 동일).
+
+### LiveEventPayload (discriminated union by `event_type`)
+
+```
+CREATE_TEACH_SPOT    → { spot_id, host_persona_id, skill_topic, teach_mode, venue_type, fee_per_partner, location }
+JOIN_TEACH_SPOT      → { spot_id, persona_id, joined_at_ms }
+LEAVE_TEACH_SPOT     → { spot_id, persona_id, left_at_ms, reason }
+MATCH_TEACH_SPOT     → { spot_id, matched_at_ms, arrived_count, participants[] }
+COUNTER_OFFER        → { spot_id, from_persona_id, new_fee_per_partner, extension_ms }
+BOND_UPGRADE         → { spot_id, persona_ids[], new_bond_level }
+CLOSE_TEACH_SPOT     → { spot_id, closed_at_ms, outcome (MATCHED | CANCELED | TIMEOUT) }
+```
+
+### 모호했던 필드 확정 (2026-04-24)
+
+| 필드 | 확정값 |
+| --- | --- |
+| `SpotCard.venue_type` | `Literal["cafe","home","studio","park","gym"]` (enum) |
+| `AttractivenessReport.price_benchmark.verdict` | `AttractivenessVerdict` enum (`too_cheap`/`competitive`/`slightly_high`/`too_high`) |
+| `ConversionHints.pricing_suggestion.fee_breakdown` | `FeeBreakdown` 구조체(peer_labor_fee/material_cost/venue_rental/equipment_rental/total/passthrough_total) |
+| `LiveEvent.event_type` | 위 `LiveEventType` enum. `payload`는 discriminated union |
+| `TimelineFrame.time_slot` | `"HH:MM"` 24h, **KST 고정**. 타임존은 `SimulationRun.region.timezone` (`"Asia/Seoul"`)에도 명시 |
+
+### Attractiveness 재계산 정책
+
+- `GetFeedAttractiveness`는 기본적으로 `attractiveness_report_cache`의 캐시값을 반환.
+- `RecomputeFeedAttractiveness`는 202 + `job_id` 반환 후 비동기 재계산. 완료 후 FE가 `GetFeedAttractiveness`를 다시 호출해 최신값을 받는다.
+- Rate limit: 인증 사용자당 **분당 3회**.
+
+### Highlight 생성 시점
+
+- run 종료 후 **일괄 생성**. 스트리밍 prepend 모델은 v1 제외.
+- 각 clip의 `narrative`는 Codex 브리지로 클립당 1회 LLM 호출(캐시됨). 나머지는 결정론적.
+
+### Run 라이프사이클 & 재생 속도
+
+- `CreateSimulationRun`은 인증 사용자당 **분당 1회, 동시 running 1개** 제한(v1). 초과 시 `429`.
+- `GetCurrentSimulationRun`은 anonymous 접근 허용. BE가 매일 00:00 KST에 variant별 데모 run을 프리빌드한다.
+- `StreamSimulationTimeline`의 `speed`는 `1x|4x|16x`. 서버가 프리빌드 캐시를 읽어 송출하므로 backpressure 없음.
+- run `failed` 시 스트림은 `event: run.error\ndata: { code, message }` 송출 후 연결 종료.
 
 ## Map Personas (live stream)
 

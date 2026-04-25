@@ -1472,6 +1472,22 @@ No body returned (204).
 
 `"explorer" | "helper" | "creator" | "connector" | "learner"` — 기존 `entities/persona/types.ts`와 동일.
 
+### SpotVenueType (enum, 2026-04-24 확정)
+
+`"cafe" | "home" | "studio" | "park" | "gym"` — `SpotCard.venue_type` 전용.
+
+### AttractivenessVerdict (enum, 2026-04-24 확정)
+
+`"too_cheap" | "competitive" | "slightly_high" | "too_high"` — FE는 4단계 칩 색상으로 매핑.
+
+### LiveEventType (enum, 2026-04-24 확정)
+
+`"CREATE_TEACH_SPOT" | "JOIN_TEACH_SPOT" | "LEAVE_TEACH_SPOT" | "MATCH_TEACH_SPOT" | "COUNTER_OFFER" | "BOND_UPGRADE" | "CLOSE_TEACH_SPOT"`.
+
+### SpotIntent (enum)
+
+`"offer" | "request"` — `SpotLifecycle.intent`에서 사용.
+
 ### SpotCard
 
 | Field                | Type           | Required | Notes                          |
@@ -1481,7 +1497,7 @@ No body returned (204).
 | title                | string         | required | LLM 생성 제목                  |
 | skill_topic          | string         | required | 카테고리/주제 라벨             |
 | teach_mode           | SpotTeachMode  | required | 1:1 \| small_group \| workshop |
-| venue_type           | string         | required | 예: `cafe`, `studio`, `gym`    |
+| venue_type           | SpotVenueType  | required | cafe \| home \| studio \| park \| gym (2026-04-24 enum 확정) |
 | fee_per_partner      | number         | required | 파트너 1인당 원화 기준 요금    |
 | location             | GeoCoord       | required |                                |
 | host_preview         | string         | required | 호스트 소개 한 문장            |
@@ -1500,7 +1516,7 @@ No body returned (204).
 | p50     | number | required |                                             |
 | p75     | number | required |                                             |
 | p90     | number | required |                                             |
-| verdict | string | required | 예: `below_p50`, `near_p50`, `above_p75` 등 |
+| verdict | AttractivenessVerdict | required | too_cheap \| competitive \| slightly_high \| too_high (2026-04-24 확정) |
 
 ### AttractivenessReport
 
@@ -1532,11 +1548,25 @@ No body returned (204).
 
 ### LiveEvent
 
-| Field      | Type                    | Required | Notes                                                         |
-| ---------- | ----------------------- | -------- | ------------------------------------------------------------- |
-| event_id   | string                  | required |                                                               |
-| event_type | string                  | required | 예: `CREATE_TEACH_SPOT`, `JOIN_TEACH_SPOT`, `SPOT_MATCHED`, … |
-| payload    | Record<string, unknown> | required | event_type에 따라 가변. 어댑터가 기존 MapEvent로 변환.        |
+| Field      | Type               | Required | Notes                                                       |
+| ---------- | ------------------ | -------- | ----------------------------------------------------------- |
+| event_id   | string             | required |                                                             |
+| event_type | LiveEventType      | required | 2026-04-24 enum 확정 (7종)                                  |
+| payload    | LiveEventPayload   | required | `event_type`에 따른 discriminated union. 아래 §LiveEventPayload 참고 |
+
+### LiveEventPayload (discriminated union, 2026-04-24 확정)
+
+`event_type` → payload 스키마 대응:
+
+| event_type          | payload 필드                                                                                              |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| CREATE_TEACH_SPOT   | spot_id, host_persona_id, skill_topic, teach_mode, venue_type, fee_per_partner, location                  |
+| JOIN_TEACH_SPOT     | spot_id, persona_id, joined_at_ms                                                                         |
+| LEAVE_TEACH_SPOT    | spot_id, persona_id, left_at_ms, reason                                                                   |
+| MATCH_TEACH_SPOT    | spot_id, matched_at_ms, arrived_count, participants[] (persona_id, arrived_at_ms)                         |
+| COUNTER_OFFER       | spot_id, from_persona_id, new_fee_per_partner, extension_ms                                               |
+| BOND_UPGRADE        | spot_id, persona_ids[], new_bond_level                                                                    |
+| CLOSE_TEACH_SPOT    | spot_id, closed_at_ms, outcome (MATCHED \| CANCELED \| TIMEOUT)                                           |
 
 ### TimelineFrame
 
@@ -1544,7 +1574,7 @@ No body returned (204).
 | ---------------- | ------------- | -------- | ------------------------------------- |
 | tick             | number        | required | 0–47 (한 day 내 half-hour 슬롯)       |
 | day_of_week      | string        | required | 예: `MON`, `TUE`, … `SUN`             |
-| time_slot        | string        | required | 예: `09:30`                           |
+| time_slot        | string        | required | `"HH:MM"` 24h, **KST 고정** (2026-04-24) |
 | active_agents    | AgentMarker[] | required | 해당 틱에 맵에 렌더할 에이전트 집합   |
 | active_spots     | SpotMarker[]  | required | 해당 틱에 활성인 스팟 집합            |
 | events_this_tick | LiveEvent[]   | required | 이 틱에 발생한 이벤트. 순서대로 방출. |
@@ -1573,12 +1603,35 @@ No body returned (204).
 | intro       | string | required | 소개 문구 초안      |
 | skill_topic | string | required |                     |
 
+### FeeBreakdown (2026-04-24 확정)
+
+| Field             | Type   | Required | Notes                                  |
+| ----------------- | ------ | -------- | -------------------------------------- |
+| peer_labor_fee    | number | required | 원화, 파트너 1인당 노동료             |
+| material_cost     | number | required | 재료비 1인분                           |
+| venue_rental      | number | required | 1인분 안분                             |
+| equipment_rental  | number | required | 1인분 안분                             |
+| total             | number | required | 위 4개 합계                            |
+| passthrough_total | number | required | 플랫폼 수수료 제외 pass-through 합계   |
+
 ### ConversionHintsPricing
 
-| Field         | Type    | Required | Notes                                                   |
-| ------------- | ------- | -------- | ------------------------------------------------------- |
-| fee_breakdown | unknown | required | 예: `{ tuition, materials, venue_share }` (스키마 가변) |
-| rationale     | string  | required |                                                         |
+| Field         | Type          | Required | Notes                                         |
+| ------------- | ------------- | -------- | --------------------------------------------- |
+| fee_breakdown | FeeBreakdown  | required | 구조 확정 (2026-04-24)                        |
+| rationale     | string        | required |                                               |
+
+### ConversionSessionContext (2026-04-24 추가)
+
+> FE가 `simulation-conversion-context.ts`에서 직접 집계하던 통계를 BE가 run 전체 기반으로 산출해 대체.
+
+| Field                    | Type   | Required | Notes                                                     |
+| ------------------------ | ------ | -------- | --------------------------------------------------------- |
+| similar_active_count     | number | required | 같은 skill_topic의 활성(OPEN/MATCHED) 스팟 수             |
+| avg_participants         | number | required | 같은 skill_topic의 평균 참여자 수(종료된 건 포함)         |
+| typical_lifespan_minutes | number | required | 중앙값, 분 단위                                           |
+| sample_size              | number | required | 집계 모수. FE가 신뢰도 표시에 사용                        |
+| scope                    | string | required | `"run" | "region" | "global"` — 모수 부족 시 fallback 레벨 |
 
 ### ConversionHintsPlan
 
@@ -1598,13 +1651,112 @@ No body returned (204).
 
 ### ConversionHints
 
-| Field                  | Type                       | Required | Notes                         |
-| ---------------------- | -------------------------- | -------- | ----------------------------- |
-| source_virtual_spot_id | string                     | required | 전환 기반이 되는 가상 spot_id |
-| placeholder            | ConversionHintsPlaceholder | required |                               |
-| pricing_suggestion     | ConversionHintsPricing     | required |                               |
-| plan_help              | ConversionHintsPlan        | required |                               |
-| expected_demand        | ConversionHintsDemand      | required |                               |
+| Field                  | Type                       | Required | Notes                                                                                    |
+| ---------------------- | -------------------------- | -------- | ---------------------------------------------------------------------------------------- |
+| source_virtual_spot_id | string                     | required | 전환 기반이 되는 가상 spot_id                                                            |
+| placeholder            | ConversionHintsPlaceholder | required |                                                                                          |
+| pricing_suggestion     | ConversionHintsPricing     | required |                                                                                          |
+| plan_help              | ConversionHintsPlan        | required |                                                                                          |
+| expected_demand        | ConversionHintsDemand      | required |                                                                                          |
+| session_context        | ConversionSessionContext   | required | 2026-04-24 추가. FE가 직접 집계하던 통계 대체                                            |
+
+### SpotLifecycle (2026-04-24 신규)
+
+> `GET /api/v1/map/spots/lifecycles` 스냅샷 + `GET /api/v1/map/spots/stream` 델타의 기반 엔티티.
+> FE의 `use-mock-spot-lifecycles.ts` 참조 구현을 실제 계약으로 승격.
+
+| Field                   | Type                          | Required | Notes                                                             |
+| ----------------------- | ----------------------------- | -------- | ----------------------------------------------------------------- |
+| spot_id                 | string                        | required |                                                                   |
+| location                | GeoCoord                      | required |                                                                   |
+| category                | string                        | required | `SpotCategory` enum (FE와 공유)                                   |
+| intent                  | SpotIntent                    | required | offer \| request                                                  |
+| title                   | string                        | required |                                                                   |
+| host_persona_id         | string                        | required |                                                                   |
+| created_at_ms           | number                        | required | 시뮬 가상시간(ms)                                                 |
+| expected_closed_at_ms   | number                        | required | **`spot.created` 시점에 결정론적 예측값 포함** (birth/dying 애니) |
+| matched_at_ms           | number                        | optional | null 가능(아직 매칭 전)                                            |
+| closed_at_ms            | number                        | optional | null 가능(아직 종료 전)                                            |
+| participants            | SpotLifecycleParticipant[]    | required |                                                                   |
+
+### SpotLifecycleParticipant
+
+| Field         | Type   | Required | Notes                                         |
+| ------------- | ------ | -------- | --------------------------------------------- |
+| persona_id    | string | required |                                               |
+| joined_at_ms  | number | required |                                               |
+| left_at_ms    | number | optional | null 가능                                     |
+| arrived_at_ms | number | optional | BE가 엔진 상태머신으로 판정. FE의 좌표 임계값 제거 |
+
+### SpotLifecycleEventType (enum)
+
+`"spot.created" | "spot.participant_joined" | "spot.participant_left" | "spot.matched" | "spot.closed" | "spot.extended"`
+
+### SpotLifecycleEvent (discriminated union)
+
+| type                      | payload                                                                                                                 |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| spot.created              | SpotLifecycle (participants=[])                                                                                         |
+| spot.participant_joined   | { spot_id, persona_id, joined_at_ms }                                                                                   |
+| spot.participant_left     | { spot_id, persona_id, left_at_ms, reason }                                                                             |
+| spot.matched              | { spot_id, matched_at_ms, arrived_count, participants (SpotLifecycleParticipant[]) }                                    |
+| spot.closed               | { spot_id, closed_at_ms, outcome (MATCHED \| CANCELED \| TIMEOUT) }                                                     |
+| spot.extended             | { spot_id, new_expected_closed_at_ms } — counter_offer 등 수명 연장의 **유일한 합법적 변경 경로**                        |
+
+### SimulationRunVariant (enum)
+
+`"baseline" | "high_engagement" | "weekend_peak" | "custom"`
+
+### SimulationRunStatus (enum)
+
+`"queued" | "running" | "completed" | "failed"`
+
+### SimulationRunRegion
+
+| Field    | Type           | Required | Notes                      |
+| -------- | -------------- | -------- | -------------------------- |
+| center   | GeoCoord       | required | FE `initialCenter`가 파생  |
+| bbox     | MapPersonaBbox | required | swLat/swLng/neLat/neLng    |
+| timezone | string         | required | 고정 `"Asia/Seoul"`        |
+
+### SimulationRunStreams
+
+| Field          | Type   | Required | Notes                                                        |
+| -------------- | ------ | -------- | ------------------------------------------------------------ |
+| timeline_url   | string | required | `/api/v1/simulation/runs/{run_id}/timeline/stream`           |
+| spots_url      | string | required | `/api/v1/map/spots/stream?run_id={run_id}`                   |
+| personas_url   | string | required | `/api/v1/map/personas/stream?run_id={run_id}`                |
+| highlights_url | string | required | `/api/v1/simulation/runs/{run_id}/highlights`                |
+
+### SimulationRun (2026-04-24 신규)
+
+| Field          | Type                 | Required | Notes                                                            |
+| -------------- | -------------------- | -------- | ---------------------------------------------------------------- |
+| run_id         | string               | required |                                                                  |
+| variant        | SimulationRunVariant | required |                                                                  |
+| status         | SimulationRunStatus  | required |                                                                  |
+| started_at     | string (ISO)         | required |                                                                  |
+| completed_at   | string (ISO)         | optional | status=completed\|failed 때만                                    |
+| total_ticks    | number               | required | 기본 48                                                          |
+| current_tick   | number               | optional | status=running 때만                                              |
+| region         | SimulationRunRegion  | required |                                                                  |
+| agent_count    | number               | required | 기본 500, 범위 50–1000                                           |
+| seed           | number               | required | 재현성                                                           |
+| user_agent_id  | string               | optional | `POST /runs`에 `user_persona_id`가 주어졌을 때만. FE `followingPersonaId` 기본값 |
+| streams        | SimulationRunStreams | required | FE가 구독해야 할 SSE 엔드포인트 모음                             |
+
+### CreateSimulationRunRequest
+
+| Field             | Type                 | Required | Notes                                                      |
+| ----------------- | -------------------- | -------- | ---------------------------------------------------------- |
+| variant           | SimulationRunVariant | required | `custom`이면 `region_bbox` 필수                            |
+| region_bbox       | MapPersonaBbox       | optional | variant 기본값 덮어쓰기                                    |
+| duration_ticks    | number               | optional | 기본 48                                                    |
+| seed              | number               | optional |                                                            |
+| user_persona_id   | string               | optional | 관찰자 모드(미지정)가 기본. 지정 시 에이전트 풀에 주입      |
+| agent_count       | number               | optional | 기본 500, 50–1000 범위                                     |
+
+> **제한**: 인증 사용자당 분당 1회, 동시 running 1개. 초과 시 `429`.
 
 ## Map Personas (2026-04 추가)
 

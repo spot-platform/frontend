@@ -1542,11 +1542,13 @@ All message variants share:
             "p50": 16000,
             "p75": 22000,
             "p90": 30000,
-            "verdict": "slightly_above_p50"
+            "verdict": "slightly_high"
         }
     }
 }
 ```
+
+> `verdict`은 2026-04-24 회의에서 `AttractivenessVerdict` enum 4종(`too_cheap` / `competitive` / `slightly_high` / `too_high`)으로 확정. 기존 예시의 `slightly_above_p50` 는 폐기.
 
 ### ConversionHintsResponse
 
@@ -1561,11 +1563,14 @@ All message variants share:
         },
         "pricing_suggestion": {
             "fee_breakdown": {
-                "tuition": 12000,
-                "materials": 4000,
-                "venue_share": 2000
+                "peer_labor_fee": 12000,
+                "material_cost": 4000,
+                "venue_rental": 2000,
+                "equipment_rental": 0,
+                "total": 18000,
+                "passthrough_total": 6000
             },
-            "rationale": "비슷한 워크숍 p50(16,000원) 대비 경쟁력 있는 세팅. 재료비를 분리 표기해 신뢰도 확보."
+            "rationale": "비슷한 워크숍 p50(16,000원) 대비 경쟁력 있는 세팅. 재료비·장소비를 분리 표기해 신뢰도 확보."
         },
         "plan_help": {
             "warmup_block": "원두 소개와 추출 원리 5분 데모 (0–15분)",
@@ -1579,10 +1584,160 @@ All message variants share:
         "expected_demand": {
             "forecast_join_count_p50": 3,
             "forecast_join_count_p90": 6
+        },
+        "session_context": {
+            "similar_active_count": 4,
+            "avg_participants": 2.3,
+            "typical_lifespan_minutes": 110,
+            "sample_size": 27,
+            "scope": "run"
         }
     }
 }
 ```
+
+> `fee_breakdown`은 2026-04-24 회의에서 `FeeBreakdown` 스키마로 확정 (peer_labor_fee/material_cost/venue_rental/equipment_rental/total/passthrough_total). 기존의 `{ tuition, materials, venue_share }`는 폐기.
+>
+> `session_context`는 2026-04-24 추가. FE가 직접 집계하던 통계를 BE가 run 전체 기반으로 대체. `scope`는 모수 부족 시 `run` → `region` → `global` 순 fallback.
+
+### SpotLifecycle schemas (2026-04-24 신규)
+
+#### MapSpotsLifecyclesQuery (query string)
+
+| Field  | Type   | Required | Notes                             |
+| ------ | ------ | -------- | --------------------------------- |
+| swLat  | number | required | bbox south-west 위도              |
+| swLng  | number | required | bbox south-west 경도              |
+| neLat  | number | required | bbox north-east 위도              |
+| neLng  | number | required | bbox north-east 경도              |
+| run_id | string | optional | 미지정 시 `GetCurrentSimulationRun` |
+
+#### MapSpotsLifecyclesResponse
+
+```json
+{
+    "status": 200,
+    "data": [
+        {
+            "spot_id": "spot-v-001",
+            "location": { "lat": 37.2636, "lng": 127.0286 },
+            "category": "바리스타",
+            "intent": "offer",
+            "title": "연무동 저녁 라떼아트 실습",
+            "host_persona_id": "persona-042",
+            "created_at_ms": 172800000,
+            "expected_closed_at_ms": 179800000,
+            "matched_at_ms": 174500000,
+            "closed_at_ms": null,
+            "participants": [
+                {
+                    "persona_id": "persona-108",
+                    "joined_at_ms": 173200000,
+                    "left_at_ms": null,
+                    "arrived_at_ms": 174100000
+                }
+            ]
+        }
+    ]
+}
+```
+
+#### SpotLifecycleEvent (SSE `text/event-stream`)
+
+```
+event: spot.created
+data: {"type":"spot.created","spot_id":"spot-v-002","location":{"lat":37.2640,"lng":127.0291},"category":"요가","intent":"offer","title":"성수 모닝 요가","host_persona_id":"persona-015","created_at_ms":172800000,"expected_closed_at_ms":179800000,"participants":[]}
+
+event: spot.participant_joined
+data: {"type":"spot.participant_joined","spot_id":"spot-v-001","persona_id":"persona-108","joined_at_ms":173200000}
+
+event: spot.participant_left
+data: {"type":"spot.participant_left","spot_id":"spot-v-001","persona_id":"persona-200","left_at_ms":173900000,"reason":"conflict"}
+
+event: spot.matched
+data: {"type":"spot.matched","spot_id":"spot-v-001","matched_at_ms":174500000,"arrived_count":3,"participants":[{"persona_id":"persona-108","arrived_at_ms":174100000}]}
+
+event: spot.extended
+data: {"type":"spot.extended","spot_id":"spot-v-001","new_expected_closed_at_ms":181000000}
+
+event: spot.closed
+data: {"type":"spot.closed","spot_id":"spot-v-001","closed_at_ms":181000000,"outcome":"MATCHED"}
+
+: keepalive
+```
+
+### SimulationRun schemas (2026-04-24 신규)
+
+#### CreateSimulationRunRequest
+
+```json
+{
+    "variant": "weekend_peak",
+    "region_bbox": { "swLat": 37.25, "swLng": 127.01, "neLat": 37.28, "neLng": 127.04 },
+    "duration_ticks": 48,
+    "seed": 42,
+    "user_persona_id": "user-persona-777",
+    "agent_count": 500
+}
+```
+
+#### CreateSimulationRunResponse (202 Accepted)
+
+```json
+{
+    "status": 202,
+    "data": {
+        "run_id": "run-2026-04-24-weekend-01",
+        "status": "queued",
+        "eta_seconds": 6
+    }
+}
+```
+
+#### SimulationRunResponse
+
+```json
+{
+    "status": 200,
+    "data": {
+        "run_id": "run-2026-04-24-weekend-01",
+        "variant": "weekend_peak",
+        "status": "running",
+        "started_at": "2026-04-24T00:00:00+09:00",
+        "completed_at": null,
+        "total_ticks": 48,
+        "current_tick": 12,
+        "region": {
+            "center": { "lat": 37.2636, "lng": 127.0286 },
+            "bbox": { "swLat": 37.25, "swLng": 127.01, "neLat": 37.28, "neLng": 127.04 },
+            "timezone": "Asia/Seoul"
+        },
+        "agent_count": 500,
+        "seed": 42,
+        "user_agent_id": "A_77700",
+        "streams": {
+            "timeline_url": "/api/v1/simulation/runs/run-2026-04-24-weekend-01/timeline/stream",
+            "spots_url": "/api/v1/map/spots/stream?run_id=run-2026-04-24-weekend-01",
+            "personas_url": "/api/v1/map/personas/stream?run_id=run-2026-04-24-weekend-01",
+            "highlights_url": "/api/v1/simulation/runs/run-2026-04-24-weekend-01/highlights"
+        }
+    }
+}
+```
+
+### RecomputeAttractivenessResponse (202 Accepted)
+
+```json
+{
+    "status": 202,
+    "data": {
+        "job_id": "recompute-7f1e",
+        "status": "queued"
+    }
+}
+```
+
+> Rate limit: 인증 사용자당 분당 3회. 완료 후 FE가 기존 `GET /api/v1/feed/{feed_id}/attractiveness` 를 재호출해 최신 리포트를 받는다.
 
 ## Map Personas schemas (2026-04 추가)
 
