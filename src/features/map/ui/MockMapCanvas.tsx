@@ -84,7 +84,7 @@ export function MockMapCanvas({
 
     return (
         <div
-            className={`relative h-[100dvh] w-full overflow-hidden bg-gray-200 ${className ?? ''}`}
+            className={`relative h-full w-full overflow-hidden bg-gray-200 ${className ?? ''}`}
             onClick={handleClick}
         >
             {gridLines}

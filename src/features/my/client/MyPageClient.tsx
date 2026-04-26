@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/shared/model/auth-store';
 import { Main, Section } from '@/shared/ui';
+import { ThemeSegment } from '@/features/map/ui/ThemeSegment';
 import { formatNumber, getDisplayName } from '../model/my-page-helpers';
 import { useMyProfile } from '../model/use-my';
 
@@ -127,6 +128,18 @@ export function MyPageClient() {
                         )}
                     </div>
                 )}
+            </Section>
+
+            <Section className="mx-[-1rem] flex items-center justify-between bg-card px-4 py-3 rounded-none">
+                <div>
+                    <p className="text-sm font-semibold text-foreground">
+                        테마
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        라이트 / 다크 모드
+                    </p>
+                </div>
+                <ThemeSegment />
             </Section>
 
             {MY_GROUPS.map((group) => (

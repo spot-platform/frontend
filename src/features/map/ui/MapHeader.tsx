@@ -12,9 +12,10 @@ import { useFilterStore } from '@/features/map/model/use-filter-store';
 
 type MapHeaderProps = {
     onCreateClick?: () => void;
+    hidden?: boolean;
 };
 
-export function MapHeader({ onCreateClick }: MapHeaderProps) {
+export function MapHeader({ onCreateClick, hidden = false }: MapHeaderProps) {
     const router = useRouter();
     const searchQuery = useFilterStore((s) => s.searchQuery);
     const setSearchQuery = useFilterStore((s) => s.setSearchQuery);
@@ -25,11 +26,16 @@ export function MapHeader({ onCreateClick }: MapHeaderProps) {
 
     return (
         <div
-            className="pointer-events-auto fixed left-0 right-0 top-0 z-30 flex items-center gap-2 pb-2"
+            aria-hidden={hidden}
+            className="pointer-events-auto fixed left-0 right-0 top-0 z-30 flex items-center gap-2 pb-2 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
             style={{
-                paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)',
+                paddingTop: 'calc(env(safe-area-inset-top) + 2rem)',
                 paddingLeft: 'calc(env(safe-area-inset-left) + 1rem)',
                 paddingRight: 'calc(env(safe-area-inset-right) + 1rem)',
+                transform: hidden
+                    ? 'translateX(calc(100% + 1rem))'
+                    : 'translateX(0)',
+                pointerEvents: hidden ? 'none' : 'auto',
             }}
         >
             <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full bg-white pl-4 pr-2 shadow-md">

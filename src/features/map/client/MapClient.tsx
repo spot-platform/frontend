@@ -12,15 +12,17 @@ import {
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MapHeader } from '@/features/map/ui/MapHeader';
-import { FilterChipBar } from '@/features/map/ui/FilterChipBar';
 import { MapFooter } from '@/features/map/ui/MapFooter';
 import { LayerTransition } from '@/features/map/ui/LayerTransition';
 import { PostTypeSheet } from '@/features/map/ui/PostTypeSheet';
 import { ChatLever } from '@/features/chat/ui/ChatLever';
 import { ChatDrawer } from '@/features/chat/ui/ChatDrawer';
+import {
+    MapFeedCardPager,
+    type FeedCardPagerSnap,
+} from '@/features/feed/ui/MapFeedCardPager';
 import { FeedBottomSheet } from '@/features/feed/ui/FeedBottomSheet';
-import { SpotPreviewSheet } from '@/features/feed/ui/SpotPreviewSheet';
-import { LayerToggle } from '@/features/layer/ui/LayerToggle';
+import type { BottomSheetSnapPoint } from '@frontend/design-system';
 import { useLayerStore } from '@/features/layer/model/use-layer-store';
 import { useMockPersonaSwarm } from '@/features/simulation/model/use-mock-persona-swarm';
 import { useMockSpotLifecycles } from '@/features/simulation/model/use-mock-spot-lifecycles';
@@ -39,11 +41,9 @@ import { SpotInfoCard } from '@/features/map/ui/SpotInfoCard';
 import { MySpotInfoCard } from '@/features/map/ui/MySpotInfoCard';
 import { ARCHETYPE_LABEL } from '@/entities/persona/labels';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
-import { ThemeSegment } from '@/features/map/ui/ThemeSegment';
 import type { TickerEvent } from '@/features/map/model/ticker-adapter';
 import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
 import { useTheme } from '@/shared/model/use-theme';
-import type { BottomSheetSnapPoint } from '@frontend/design-system';
 import type { GeoCoord } from '@/entities/spot/types';
 import type { Persona } from '@/entities/persona/types';
 import type { ActivityCluster } from '@/features/map/model/types';
@@ -71,13 +71,19 @@ export function MapClient() {
         spot: selectedSpotId,
         persona: selectedPersonaId,
         cluster: selectedClusterId,
-        sheet: sheetSnap,
         chat: chatDrawerOpen,
     } = urlState;
 
     const [center, setCenter] = useState({ lat: 37.2636, lng: 127.0286 });
-    const [layerToggleOpen, setLayerToggleOpen] = useState(false);
     const [postTypeSheetOpen, setPostTypeSheetOpen] = useState(false);
+    const [feedListOpen, setFeedListOpen] = useState(false);
+    const [feedListSnap, setFeedListSnap] =
+        useState<BottomSheetSnapPoint>('half');
+    const [pagerSnap, setPagerSnap] = useState<FeedCardPagerSnap>('peek');
+    const [pagerPromotedCount, setPagerPromotedCount] = useState(0);
+    // 카드 페이저는 더 이상 맵/다른 UI 에 영향 주지 않음. expanded 는 뭉치 살짝 커지는 정도.
+    const isStackExpanded = false;
+    void pagerSnap;
     const [viewportBbox, setViewportBbox] = useState<ViewportBbox | null>(null);
     const [followingPersonaId, setFollowingPersonaId] = useState<string | null>(
         null,
@@ -123,24 +129,15 @@ export function MapClient() {
     const categories = useFilterStore((s) => s.categories);
     const searchQuery = useFilterStore((s) => s.searchQuery);
 
-    useEffect(() => {
-        if (searchQuery.trim().length > 0 && sheetSnap === 'peek') {
-            updateUrl({ sheet: 'half' });
-        }
-    }, [searchQuery, sheetSnap, updateUrl]);
     const activeLayer = useLayerStore((s) => s.activeLayer);
 
     const handleMapClick = useCallback(() => {
         updateUrl({ spot: null, persona: null, cluster: null });
         setFollowingPersonaId(null);
+        // 맵 클릭은 카드 페이저도 peek 으로 리셋 — promote 모두 흡수.
+        setPagerSnap('peek');
+        setPagerPromotedCount(0);
     }, [updateUrl]);
-
-    const handleSheetChange = useCallback(
-        (snap: BottomSheetSnapPoint) => {
-            updateUrl({ sheet: snap });
-        },
-        [updateUrl],
-    );
 
     const basePersonaCoordMap = useMemo(() => {
         const map = new Map<string, GeoCoord>();
@@ -181,8 +178,12 @@ export function MapClient() {
     }, [followingPersonaId, swarmSubscribe, swarmPositionsRef]);
 
     const handleToggleListView = useCallback(() => {
-        updateUrl({ sheet: sheetSnap === 'peek' ? 'half' : 'peek' });
-    }, [sheetSnap, updateUrl]);
+        setFeedListOpen((open) => {
+            const next = !open;
+            if (next) setFeedListSnap('half');
+            return next;
+        });
+    }, []);
 
     // 필터 통과한 페르소나만 클러스터링 입력으로 사용.
     const filteredPersonas = useMemo<Persona[]>(() => {
@@ -264,10 +265,8 @@ export function MapClient() {
         [updateUrl],
     );
 
-    // v3 는 spot marker 가 아닌 cluster 중심이라 SpotPreviewSheet 은 null 로 구동한다.
-    // selectedSpotId 는 URL 상태 호환성만 유지.
+    // v3 는 spot marker 가 아닌 cluster 중심이라 SpotPreviewSheet 은 사용하지 않음.
     void selectedSpotId;
-    const selectedSpot = null;
 
     const showSpots = activeLayer === 'mixed' || activeLayer === 'real';
     const showPersonas = activeLayer === 'mixed' || activeLayer === 'virtual';
@@ -383,50 +382,86 @@ export function MapClient() {
 
     return (
         <>
-            <MapV3Canvas
-                center={center}
-                theme={theme}
-                onMapClickAction={handleMapClick}
-                onViewportChangeAction={setViewportBbox}
-                overlays={overlays}
+            <div
+                className="pointer-events-none fixed left-2 right-2 top-2 z-0 overflow-hidden rounded-3xl bg-card shadow-[0_8px_32px_-12px_rgba(0,0,0,0.18)] ring-1 ring-border-soft/60 transition-[bottom] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                style={{
+                    bottom: isStackExpanded ? 'calc(72dvh + 0.5rem)' : '0.5rem',
+                }}
+            >
+                <div className="pointer-events-auto absolute inset-0">
+                    <MapV3Canvas
+                        center={center}
+                        theme={theme}
+                        onMapClickAction={handleMapClick}
+                        onViewportChangeAction={setViewportBbox}
+                        overlays={overlays}
+                    />
+                </div>
+                <LayerTransition activeLayer={activeLayer} />
+            </div>
+
+            <MapHeader
+                onCreateClick={() => setPostTypeSheetOpen(true)}
+                hidden={isStackExpanded}
             />
-
-            <LayerTransition activeLayer={activeLayer} />
-
-            <MapHeader onCreateClick={() => setPostTypeSheetOpen(true)} />
-            <FilterChipBar />
             <MapFooter
                 onCenterToUser={setCenter}
                 onToggleListView={handleToggleListView}
-                onLayerToggle={() => setLayerToggleOpen(true)}
+                hidden={isStackExpanded}
+            />
+            <ChatLever
+                onOpen={() => updateUrl({ chat: true })}
+                hidden={isStackExpanded}
             />
 
-            <FeedBottomSheet
-                snapPoint={sheetSnap}
-                onSnapChange={handleSheetChange}
-                feedType={feedType}
-                categories={categories}
-            />
-
-            <SpotPreviewSheet
-                selectedSpot={selectedSpot}
-                sheetSnap={sheetSnap}
-            />
-
-            <ChatLever onOpen={() => updateUrl({ chat: true })} />
             <ChatDrawer
                 open={chatDrawerOpen}
                 onClose={() => updateUrl({ chat: false })}
             />
 
-            <MapBottomStack className="bottom-[20dvh]">
-                {tickerEvent && (
-                    <LiveTicker
-                        key="live-ticker"
-                        event={tickerEvent}
-                        sseActive
-                    />
-                )}
+            <MapFeedCardPager
+                snap={pagerSnap}
+                onSnapChange={setPagerSnap}
+                promotedCount={pagerPromotedCount}
+                onPromotedCountChange={setPagerPromotedCount}
+                onBookmark={(item) => {
+                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
+                    console.info('[bookmark]', item.id, item.title);
+                }}
+            />
+
+            {feedListOpen && (
+                <FeedBottomSheet
+                    snapPoint={feedListSnap}
+                    onSnapChange={(s) => {
+                        if (s === 'peek') {
+                            setFeedListOpen(false);
+                        } else {
+                            setFeedListSnap(s);
+                        }
+                    }}
+                    feedType={feedType}
+                    categories={categories}
+                />
+            )}
+
+            {tickerEvent && (
+                <div
+                    aria-hidden={isStackExpanded}
+                    className="pointer-events-auto fixed inset-x-0 top-0 z-50 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                    style={{
+                        paddingTop: 'env(safe-area-inset-top)',
+                        transform: isStackExpanded
+                            ? 'translateY(-100%)'
+                            : 'translateY(0)',
+                        pointerEvents: isStackExpanded ? 'none' : 'auto',
+                    }}
+                >
+                    <LiveTicker event={tickerEvent} sseActive />
+                </div>
+            )}
+
+            <MapBottomStack className="bottom-[40dvh]">
                 {(() => {
                     const selectedPersona =
                         basePersonas.find((p) => p.id === selectedPersonaId) ??
@@ -542,18 +577,6 @@ export function MapClient() {
                     );
                 })()}
             </MapBottomStack>
-
-            <LayerToggle
-                open={layerToggleOpen}
-                onClose={() => setLayerToggleOpen(false)}
-            >
-                <div className="mt-4 flex items-center justify-between rounded-lg border border-border-soft bg-card px-3 py-3">
-                    <span className="text-sm font-semibold text-foreground">
-                        테마
-                    </span>
-                    <ThemeSegment />
-                </div>
-            </LayerToggle>
 
             <PostTypeSheet
                 open={postTypeSheetOpen}

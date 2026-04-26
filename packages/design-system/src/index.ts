@@ -56,8 +56,3 @@ export type { BottomSheetProps } from './components/BottomSheet';
 export { Modal } from './components/Modal';
 export type { ModalProps } from './components/Modal';
 
-export { StackedPaperCards } from './components/StackedPaperCards';
-export type {
-    StackedPaperCardItem,
-    StackedPaperCardsProps,
-} from './components/StackedPaperCards';

@@ -40,44 +40,44 @@ export function LiveTicker({ event, sseActive, className }: LiveTickerProps) {
             aria-live="polite"
             onClick={(e) => e.stopPropagation()}
             className={cn(
-                'relative flex h-[34px] items-center gap-2 rounded-[17px] border border-border-soft bg-card/95 px-3 text-[11px] shadow-sm backdrop-blur-md dark:shadow-none',
+                'flex h-7 w-full items-center gap-2 border-b border-border-soft bg-card/95 px-4 text-[11px] backdrop-blur-md',
                 className,
             )}
         >
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={event.id}
-                    initial={{ y: 8, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -8, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="flex flex-1 items-center gap-2"
-                >
-                    <div className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-persona-soft text-[10px]">
-                        <span aria-hidden>{event.personaEmoji}</span>
-                    </div>
-                    <strong className="font-semibold text-foreground">
-                        {event.personaName}
-                    </strong>
-                    <span className="text-muted-foreground">
-                        님이 {event.predicate}
-                    </span>
-                    <span className="ml-auto text-[10px] text-muted-foreground">
-                        {formatRelativeTime(event.timestamp, now)}
-                    </span>
-                </motion.div>
-            </AnimatePresence>
             {sseActive && (
                 <motion.span
                     aria-label="라이브"
-                    className="absolute right-3 top-[-6px] inline-flex items-center gap-[4px] rounded-full bg-destructive px-[6px] py-[1px] text-[9px] font-bold uppercase leading-none tracking-wider text-destructive-foreground"
-                    animate={{ opacity: [1, 0.5, 1] }}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-destructive px-1.25 py-px text-[9px] font-bold uppercase leading-none tracking-wider text-destructive-foreground"
+                    animate={{ opacity: [1, 0.55, 1] }}
                     transition={{ duration: 1.6, repeat: Infinity }}
                 >
-                    <span className="h-[4px] w-[4px] rounded-full bg-destructive-foreground" />
+                    <span className="h-1 w-1 rounded-full bg-destructive-foreground" />
                     LIVE
                 </motion.span>
             )}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={event.id}
+                    initial={{ y: 6, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -6, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="flex min-w-0 flex-1 items-center gap-1.5"
+                >
+                    <span aria-hidden className="text-[12px] leading-none">
+                        {event.personaEmoji}
+                    </span>
+                    <strong className="font-semibold text-foreground">
+                        {event.personaName}
+                    </strong>
+                    <span className="truncate text-muted-foreground">
+                        님이 {event.predicate}
+                    </span>
+                </motion.div>
+            </AnimatePresence>
+            <span className="shrink-0 text-[10px] text-muted-foreground">
+                {formatRelativeTime(event.timestamp, now)}
+            </span>
         </div>
     );
 }

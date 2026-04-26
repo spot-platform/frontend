@@ -193,6 +193,24 @@ function NaverMapV3({
         }
     }, [map, level]);
 
+    // 컨테이너 사이즈 변화 시 map.relayout() 호출. 부모 inset 이 동적으로 바뀔 때
+    // 타일이 새 영역으로 그려지지 않는 버그 방지. ResizeObserver 로 추적.
+    useEffect(() => {
+        if (!map || !containerRef.current) return;
+        const node = containerRef.current;
+        const ro = new ResizeObserver(() => {
+            try {
+                (
+                    map as unknown as { relayout?: () => void }
+                ).relayout?.();
+            } catch {
+                // idempotent
+            }
+        });
+        ro.observe(node);
+        return () => ro.disconnect();
+    }, [map]);
+
     // click 리스너 등록. onMapClickAction 참조가 바뀔 때마다 재등록.
     useEffect(() => {
         if (!map || !onMapClickAction) return;
@@ -252,7 +270,7 @@ function NaverMapV3({
     return (
         <div
             className={className}
-            style={{ position: 'relative', width: '100%', height: '100dvh' }}
+            style={{ position: 'relative', width: '100%', height: '100%' }}
         >
             <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
             {sdkState === 'loading' && (
