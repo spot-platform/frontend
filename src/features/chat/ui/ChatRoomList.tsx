@@ -77,13 +77,11 @@ function RoomAvatar({ room }: { room: ChatRoom }) {
 
     return (
         <div className="relative shrink-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-border-soft text-base font-bold text-text-secondary">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-700">
                 {initial}
             </div>
             {room.category === 'spot' && (
-                <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-800 text-[8px] font-bold text-white">
-                    S
-                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-brand-600 ring-2 ring-white" />
             )}
         </div>
     );
@@ -127,7 +125,7 @@ export function ChatRoomList({
                 </div>
             )}
 
-            <div className="flex flex-col divide-y divide-border-soft">
+            <div className="flex flex-col px-2">
                 {filteredRooms.map((room) => {
                     const lastText = getLastMessageText(room);
                     const timeLabel = formatListTime(room.updatedAt);
@@ -138,32 +136,32 @@ export function ChatRoomList({
                             type="button"
                             onClick={() => router.push(`/chat/${room.id}`)}
                             className={cn(
-                                'flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted',
+                                'group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100',
                             )}
                         >
                             <RoomAvatar room={room} />
 
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-baseline justify-between gap-2">
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <span className="truncate text-sm font-semibold text-foreground">
+                                    <div className="flex min-w-0 items-center gap-1.5">
+                                        <span className="truncate text-[13.5px] font-semibold text-zinc-900">
                                             {room.title}
                                         </span>
                                         {room.category === 'personal' &&
                                             room.unreadCount > 0 && (
-                                                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-800 px-1.5 text-[10px] font-bold text-white">
+                                                <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand-600 px-1.5 text-[10px] font-semibold text-white tabular-nums">
                                                     {room.unreadCount}
                                                 </span>
                                             )}
                                     </div>
                                     <span
                                         suppressHydrationWarning
-                                        className="shrink-0 text-[11px] text-muted-foreground"
+                                        className="shrink-0 text-[10.5px] font-medium text-zinc-400 tabular-nums"
                                     >
                                         {timeLabel}
                                     </span>
                                 </div>
-                                <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                                <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
                                     {lastText}
                                 </p>
                             </div>

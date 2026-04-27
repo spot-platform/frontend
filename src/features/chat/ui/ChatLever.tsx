@@ -22,9 +22,7 @@ export function ChatLever({ onOpen, hidden = false }: ChatLeverProps) {
             aria-hidden={hidden}
             tabIndex={hidden ? -1 : 0}
             style={{
-                transform: hidden
-                    ? 'translateX(100%)'
-                    : 'translateX(0)',
+                transform: hidden ? 'translateX(100%)' : 'translateX(0)',
                 pointerEvents: hidden ? 'none' : 'auto',
             }}
             className="pointer-events-auto fixed right-0 top-[55vh] z-30 flex h-[72px] w-14 items-center justify-center rounded-l-2xl bg-primary shadow-lg active:scale-95 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
