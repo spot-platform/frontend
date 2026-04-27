@@ -346,16 +346,23 @@ export function NaverOverlay({
 
     // 줌 애니메이션 중·후 모두 redraw 를 강제해 overlay 가 stale pixel 에 남지 않도록.
     // GL 렌더링에선 zoom_changed 가 한 번만 발화될 수 있어 bounds_changed + idle 을 함께 구독.
-    // Heartbeat redraw — Naver GL 모드에서 auto-draw 가 누락되는 경우가 있어,
-    // subscribe 가 없는 overlay 도 주기적으로 draw 를 호출해 현재 projection 과 동기 유지.
-    // positionSubscribe 가 있는 overlay 는 subscribe 자체가 heartbeat 역할이므로 스킵.
+    // 과거엔 200ms setInterval 로 폴링했으나, 오버레이 N개 × 초당 5회 draw 가 모바일 발열의
+    // 주범이라 map 이벤트 구독으로 전환. positionSubscribe 가 있는 overlay 는 subscribe 자체가
+    // 동기화 역할이므로 스킵.
     useEffect(() => {
         if (!map || positionSubscribe) return;
-        const id = setInterval(() => {
+        const redraw = () => {
             const ov = overlayRef.current;
             if (ov && ov.getMap()) ov.draw();
-        }, 200);
-        return () => clearInterval(id);
+        };
+        const listeners = [
+            naver.maps.Event.addListener(map, 'idle', redraw),
+            naver.maps.Event.addListener(map, 'zoom_changed', redraw),
+            naver.maps.Event.addListener(map, 'bounds_changed', redraw),
+        ];
+        return () => {
+            for (const l of listeners) naver.maps.Event.removeListener(l);
+        };
     }, [map, positionSubscribe]);
 
     return createPortal(children, container);

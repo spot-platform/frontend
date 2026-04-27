@@ -1,5 +1,5 @@
 // MapBottomStack 에 쌓이는 Spot 상세 카드. 선택된 클러스터의 SpotLifecycle 을 표현.
-// 내부 interval 로 500ms 마다 now 를 갱신해 진행률/남은 시간을 업데이트.
+// 진행률 바는 CSS transition 으로 부드럽게 채우고, interval(1s)은 남은 시간 텍스트/상태 변화용.
 
 'use client';
 
@@ -63,7 +63,7 @@ export function SpotInfoCard({
 }: SpotInfoCardProps) {
     const [now, setNow] = useState(() => performance.now());
     useEffect(() => {
-        const interval = setInterval(() => setNow(performance.now()), 500);
+        const interval = setInterval(() => setNow(performance.now()), 1000);
         return () => clearInterval(interval);
     }, []);
 
@@ -134,10 +134,9 @@ export function SpotInfoCard({
             </div>
 
             <div className="mb-2.5 h-1 overflow-hidden rounded-full bg-muted">
-                <motion.div
-                    className="h-full bg-primary"
-                    animate={{ width: `${progress * 100}%` }}
-                    transition={{ duration: 0.5, ease: 'linear' }}
+                <div
+                    className="h-full bg-primary transition-[width] duration-1000 ease-linear"
+                    style={{ width: `${progress * 100}%` }}
                 />
             </div>
 

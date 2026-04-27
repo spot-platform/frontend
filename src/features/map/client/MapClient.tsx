@@ -1,14 +1,7 @@
 // /map 메인 클라이언트. 2026-04-19 map-v3 에서 승격.
 'use client';
 
-import {
-    startTransition,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MapHeader } from '@/features/map/ui/MapHeader';
@@ -36,10 +29,8 @@ import { useMapUrlState } from '@/features/map/model/use-map-url-state';
 import { ClusterBlob } from '@/features/map/ui/ClusterBlob';
 import { PersonaDotMarkerBlob } from '@/features/map/ui/PersonaDotMarkerBlob';
 import { MapBottomStack } from '@/features/map/ui/MapBottomStack';
-import { PersonaInfoCard } from '@/features/map/ui/PersonaInfoCard';
 import { SpotInfoCard } from '@/features/map/ui/SpotInfoCard';
 import { MySpotInfoCard } from '@/features/map/ui/MySpotInfoCard';
-import { ARCHETYPE_LABEL } from '@/entities/persona/labels';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
 import type { TickerEvent } from '@/features/map/model/ticker-adapter';
 import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
@@ -62,7 +53,6 @@ export function MapClient() {
     const [urlState, updateUrl] = useMapUrlState();
     const {
         spot: selectedSpotId,
-        persona: selectedPersonaId,
         cluster: selectedClusterId,
         chat: chatDrawerOpen,
     } = urlState;
@@ -78,9 +68,6 @@ export function MapClient() {
     const isStackExpanded = false;
     void pagerSnap;
     const [viewportBbox, setViewportBbox] = useState<ViewportBbox | null>(null);
-    const [followingPersonaId, setFollowingPersonaId] = useState<string | null>(
-        null,
-    );
 
     // next-themes 의 resolvedTheme 은 초기 렌더에서 undefined — 이 상태로 MapV3Canvas 가 mount 되면
     // customStyleId 가 잘못 지정되어 기본 스타일로 뜬 뒤 live swap 되며 깜빡인다.
@@ -158,49 +145,15 @@ export function MapClient() {
 
     const handleMapClick = useCallback(() => {
         updateUrl({ spot: null, persona: null, cluster: null });
-        setFollowingPersonaId(null);
         // 맵 클릭은 카드 페이저도 peek 으로 리셋 — promote 모두 흡수.
         setPagerSnap('peek');
         setPagerPromotedCount(0);
     }, [updateUrl]);
 
-    const basePersonaCoordMap = useMemo(() => {
-        const map = new Map<string, GeoCoord>();
-        for (const p of basePersonas) map.set(p.id, p.initialCoord);
-        return map;
-    }, [basePersonas]);
-
     const basePersonaLookup = useMemo(
         () => new Map(basePersonas.map((p) => [p.id, p])),
         [basePersonas],
     );
-
-    // 페르소나 overlay 초기 position 용 (좌표의 첫 값). 이후 live 위치는 subscribe 경유.
-    const getPersonaCoord = useCallback(
-        (personaId: string): GeoCoord => {
-            return basePersonaCoordMap.get(personaId) ?? { lat: 0, lng: 0 };
-        },
-        [basePersonaCoordMap],
-    );
-
-    const handleFollow = useCallback(
-        (personaId: string) => {
-            setFollowingPersonaId(personaId);
-            updateUrl({ persona: null });
-            const coord = getPersonaCoord(personaId);
-            setCenter(coord);
-        },
-        [getPersonaCoord, updateUrl],
-    );
-
-    // swarm follow: subscribe 경유로 ref 에서 실시간 위치 읽어 center 업데이트.
-    useEffect(() => {
-        if (!followingPersonaId) return;
-        return swarmSubscribe(() => {
-            const coord = swarmPositionsRef.current.get(followingPersonaId);
-            if (coord) startTransition(() => setCenter(coord));
-        });
-    }, [followingPersonaId, swarmSubscribe, swarmPositionsRef]);
 
     const handleToggleListView = useCallback(() => {
         setFeedListOpen((open) => {
@@ -351,17 +304,11 @@ export function MapClient() {
             const item: MapOverlayItem = {
                 key: `persona-${persona.id}`,
                 position: coord,
-                clickable: true,
                 render: () => (
                     <PersonaDotMarkerBlob
                         name={persona.name}
                         variant="ai"
-                        emoji={persona.emoji}
                         moving
-                        expanded={selectedPersonaId === persona.id}
-                        onSelectAction={() =>
-                            updateUrl({ persona: persona.id })
-                        }
                     />
                 ),
             };
@@ -380,8 +327,6 @@ export function MapClient() {
         swarmSubscribe,
         swarmPositionsRef,
         showPersonas,
-        selectedPersonaId,
-        updateUrl,
         inViewport,
     ]);
 
@@ -487,29 +432,6 @@ export function MapClient() {
             )}
 
             <MapBottomStack className="bottom-[40dvh]">
-                {(() => {
-                    const selectedPersona =
-                        basePersonas.find((p) => p.id === selectedPersonaId) ??
-                        null;
-                    if (!selectedPersona) return null;
-                    return (
-                        <PersonaInfoCard
-                            key={`persona-${selectedPersona.id}`}
-                            name={selectedPersona.name}
-                            variant="ai"
-                            emoji={selectedPersona.emoji}
-                            role={
-                                ARCHETYPE_LABEL[selectedPersona.archetype] ??
-                                selectedPersona.archetype
-                            }
-                            tags={[selectedPersona.category]}
-                            onCloseAction={() => updateUrl({ persona: null })}
-                            onFollowAction={() =>
-                                handleFollow(selectedPersona.id)
-                            }
-                        />
-                    );
-                })()}
                 {(() => {
                     if (!selectedClusterId) return null;
 
