@@ -71,6 +71,14 @@ export type UseSimRunResult = {
     pause: () => void;
     /** 임의 tick 으로 점프. */
     seek: (tick: number) => void;
+    /**
+     * tick 시간축을 performance.now() ms 시간축으로 변환할 때 쓰는 기준점.
+     * tick T 의 절대 ms = playbackStartMsRef.current + T * tickDurationMs.
+     * pause/seek 호출 시 즉시 갱신된다. 어댑터(예: SpotLifecycle 합성)에서 사용.
+     */
+    playbackStartMsRef: React.RefObject<number>;
+    /** 현재 tick 길이(ms). 어댑터가 tick→ms 변환 시 사용. */
+    tickDurationMsRef: React.RefObject<number>;
 };
 
 const DEFAULT_EMIT_THROTTLE_MS = 200;
@@ -158,7 +166,11 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                 positionsRef.current = init;
 
                 // 첫 청크
-                await loadChunk(0, Math.min(m.chunk_size_ticks, m.total_ticks), runId);
+                await loadChunk(
+                    0,
+                    Math.min(m.chunk_size_ticks, m.total_ticks),
+                    runId,
+                );
                 if (!mounted) return;
                 setIsReady(true);
                 notify();
@@ -183,7 +195,11 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     }, [tickDurationMs]);
 
     // ── 청크 로더 ──────────────────────────────────────────────────────────
-    async function loadChunk(from: number, to: number, rid: string): Promise<void> {
+    async function loadChunk(
+        from: number,
+        to: number,
+        rid: string,
+    ): Promise<void> {
         const [moveChunk, lifeChunk] = await Promise.all([
             fetchSimMovements(rid, from, to),
             fetchSimLifecycle(rid, from, to),
@@ -267,14 +283,31 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
         for (const a of agents) {
             if (a.agent_role === 'background') {
-                // 서버 movement 가 없는 background 는 home 주위에서 옅게 떠다니게.
-                // 실제 wander 로직은 시각화 레이어에서 처리(여기선 home 기준 정적).
+                // 서버 movement 가 없는 background 는 시각화에서 제외(어댑터에서 hide).
                 continue;
             }
+            const tl = timelines.get(a.agent_id);
+
+            // 대기 상태 정의:
+            //   - timeline 비었음 → 항상 대기
+            //   - 첫 movement 전 (tFloat < first.depart_tick) → 대기
+            //   - 마지막 movement 가 go_home 이고 도착 완료 → 다시 대기(귀가)
+            // 대기 중인 agent 는 positionsRef 에서 좌표를 제거해 마커 자체를 hide.
+            const isIdle =
+                !tl ||
+                tl.length === 0 ||
+                tFloat < tl[0].depart_tick ||
+                (tl[tl.length - 1].reason === 'go_home' &&
+                    tFloat >= tl[tl.length - 1].arrive_tick);
+
+            if (isIdle) {
+                next.delete(a.agent_id);
+                continue;
+            }
+
             const pos = resolveAgentPosition(a, timelines, tFloat, placeMap);
             if (!pos) continue;
-            // 도착 후 dwell 인지 빠르게 판정해 jitter 적용.
-            const tl = timelines.get(a.agent_id);
+            // spot 도착 후 dwell 은 잔잔한 jitter 만(움직이지 않는 모임 멤버 표현).
             const isDwell =
                 !tl ||
                 tl.length === 0 ||
@@ -282,7 +315,11 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             next.set(
                 a.agent_id,
                 isDwell && dwellJitterM > 0
-                    ? jitterAround(pos, a.agent_id + ':' + Math.floor(tFloat), dwellJitterM)
+                    ? jitterAround(
+                          pos,
+                          a.agent_id + ':' + Math.floor(tFloat),
+                          dwellJitterM,
+                      )
                     : pos,
             );
         }
@@ -301,7 +338,8 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const play = useCallback(() => {
         if (!manifest) return;
         playbackStartMsRef.current =
-            performance.now() - pausedAtTickRef.current * tickDurationMsRef.current;
+            performance.now() -
+            pausedAtTickRef.current * tickDurationMsRef.current;
         setIsPlaying(true);
     }, [manifest]);
 
@@ -339,6 +377,8 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             play,
             pause,
             seek,
+            playbackStartMsRef,
+            tickDurationMsRef,
         }),
         [
             manifest,

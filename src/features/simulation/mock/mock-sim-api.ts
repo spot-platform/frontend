@@ -22,8 +22,7 @@ import type {
 } from '@/entities/spot/sim-stream-types';
 
 const SIMULATED_LATENCY_MS = 80;
-const sleep = (ms: number) =>
-    new Promise<void>((res) => setTimeout(res, ms));
+const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
 /** 모든 fixture 가 동일 run 을 가리킨다고 가정. 차후 multi-run 시 path 분기 추가. */
 const KNOWN_RUN_ID = (manifestJson as SimManifest).run_id;

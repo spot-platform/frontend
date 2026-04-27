@@ -1,7 +1,7 @@
 {
   "run_id": "demo_run_001",
   "dataset_version": "mock_v1",
-  "approved_spot_count": 60,
+  "approved_spot_count": 18,
   "filter_kind": "published_only",
   "total_ticks": 48,
   "tick_duration_ms_default": 1000,
@@ -13,671 +13,839 @@
       "archetype": "learner",
       "name": "지원",
       "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
+      "home_region_id": "emd_sinchon",
+      "category": "요가",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0002",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "수빈",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
+      "archetype": "creator",
+      "name": "서준",
+      "emoji": "🧘",
+      "home_region_id": "emd_jangan",
+      "category": "미술",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0003",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "예원",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "creator",
+      "name": "서연",
+      "emoji": "🏃",
+      "home_region_id": "emd_yeonmu",
+      "category": "음악",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0004",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "도윤",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
+      "archetype": "creator",
+      "name": "채원",
+      "emoji": "☕",
+      "home_region_id": "emd_yeongtong",
+      "category": "공예",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0005",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "정우",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
+      "archetype": "creator",
+      "name": "민지",
+      "emoji": "🎵",
+      "home_region_id": "emd_ingye",
+      "category": "공예",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0006",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "도윤",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "creator",
+      "name": "준호",
+      "emoji": "📚",
+      "home_region_id": "emd_gwonseon",
+      "category": "등산",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0007",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "재민",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
+      "archetype": "helper",
+      "name": "유진",
+      "emoji": "📚",
+      "home_region_id": "emd_paldal",
+      "category": "요리",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0008",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "채원",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
+      "archetype": "explorer",
+      "name": "소연",
+      "emoji": "☕",
+      "home_region_id": "emd_maetan",
+      "category": "요리",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0009",
       "agent_role": "protagonist",
       "archetype": "explorer",
-      "name": "도하",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
+      "name": "건우",
+      "emoji": "🧘",
+      "home_region_id": "emd_sinchon",
+      "category": "요리",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0010",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "소연",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
+      "archetype": "creator",
+      "name": "도윤",
+      "emoji": "🍳",
+      "home_region_id": "emd_jangan",
+      "category": "공예",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0011",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "지원",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
+      "archetype": "helper",
+      "name": "민지",
+      "emoji": "🍳",
+      "home_region_id": "emd_yeonmu",
+      "category": "코딩",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0012",
       "agent_role": "protagonist",
       "archetype": "learner",
-      "name": "시은",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
+      "name": "서연",
+      "emoji": "💻",
+      "home_region_id": "emd_yeongtong",
+      "category": "코딩",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0013",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "소연",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
+      "archetype": "connector",
+      "name": "수빈",
+      "emoji": "🎨",
+      "home_region_id": "emd_ingye",
+      "category": "등산",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0014",
       "agent_role": "protagonist",
       "archetype": "learner",
-      "name": "소연",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
+      "name": "주원",
+      "emoji": "💻",
+      "home_region_id": "emd_gwonseon",
+      "category": "코딩",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0015",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "도하",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "creator",
+      "name": "시은",
+      "emoji": "🧗",
+      "home_region_id": "emd_paldal",
+      "category": "등산",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0016",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "시은",
+      "archetype": "learner",
+      "name": "민지",
       "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
+      "home_region_id": "emd_maetan",
+      "category": "볼더링",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0017",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "민지",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
+      "archetype": "creator",
+      "name": "주원",
+      "emoji": "🧘",
+      "home_region_id": "emd_sinchon",
+      "category": "공예",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0018",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "수빈",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "connector",
+      "name": "하린",
+      "emoji": "📚",
+      "home_region_id": "emd_jangan",
+      "category": "코딩",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0019",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "시은",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
+      "archetype": "connector",
+      "name": "민지",
+      "emoji": "🥾",
+      "home_region_id": "emd_sinchon",
+      "category": "운동",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0020",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지원",
+      "archetype": "creator",
+      "name": "나윤",
       "emoji": "🏃",
-      "home_region_id": "emd_jangan"
+      "home_region_id": "emd_jangan",
+      "category": "공예",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0021",
       "agent_role": "protagonist",
       "archetype": "creator",
-      "name": "소연",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
+      "name": "도하",
+      "emoji": "🧗",
+      "home_region_id": "emd_yeonmu",
+      "category": "요리",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0022",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "준호",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
+      "archetype": "helper",
+      "name": "유진",
+      "emoji": "🏃",
+      "home_region_id": "emd_yeongtong",
+      "category": "볼더링",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0023",
       "agent_role": "protagonist",
       "archetype": "connector",
-      "name": "서준",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
+      "name": "하연",
+      "emoji": "🧗",
+      "home_region_id": "emd_ingye",
+      "category": "음악",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0024",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "재민",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "creator",
+      "name": "채원",
+      "emoji": "☕",
+      "home_region_id": "emd_gwonseon",
+      "category": "등산",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0025",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "승민",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
+      "archetype": "explorer",
+      "name": "서준",
+      "emoji": "🎨",
+      "home_region_id": "emd_paldal",
+      "category": "운동",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0026",
       "agent_role": "protagonist",
       "archetype": "explorer",
-      "name": "하연",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
+      "name": "지원",
+      "emoji": "🍳",
+      "home_region_id": "emd_maetan",
+      "category": "볼더링",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0027",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도윤",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "explorer",
+      "name": "유진",
+      "emoji": "📚",
+      "home_region_id": "emd_sinchon",
+      "category": "음악",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0028",
       "agent_role": "protagonist",
       "archetype": "explorer",
-      "name": "서준",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
+      "name": "유진",
+      "emoji": "📚",
+      "home_region_id": "emd_jangan",
+      "category": "볼더링",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0029",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
+      "archetype": "connector",
+      "name": "준호",
+      "emoji": "🥾",
+      "home_region_id": "emd_yeonmu",
+      "category": "요가",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0030",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "민지",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "learner",
+      "name": "예원",
+      "emoji": "💻",
+      "home_region_id": "emd_yeongtong",
+      "category": "요가",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0031",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "서준",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
+      "archetype": "explorer",
+      "name": "하연",
+      "emoji": "🥾",
+      "home_region_id": "emd_ingye",
+      "category": "미술",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0032",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "예원",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
+      "archetype": "connector",
+      "name": "소연",
+      "emoji": "🎨",
+      "home_region_id": "emd_gwonseon",
+      "category": "등산",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0033",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "소연",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "learner",
+      "name": "수빈",
+      "emoji": "🥾",
+      "home_region_id": "emd_paldal",
+      "category": "등산",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0034",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "소연",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
+      "archetype": "explorer",
+      "name": "서연",
+      "emoji": "🎨",
+      "home_region_id": "emd_maetan",
+      "category": "공예",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0035",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
+      "archetype": "connector",
+      "name": "주원",
+      "emoji": "🍳",
+      "home_region_id": "emd_sinchon",
+      "category": "코딩",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0036",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "소연",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "helper",
+      "name": "예원",
+      "emoji": "📚",
+      "home_region_id": "emd_jangan",
+      "category": "운동",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0037",
       "agent_role": "protagonist",
       "archetype": "helper",
-      "name": "도윤",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
+      "name": "예린",
+      "emoji": "🍳",
+      "home_region_id": "emd_yeonmu",
+      "category": "음악",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0038",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "정우",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
+      "archetype": "helper",
+      "name": "수빈",
+      "emoji": "🎨",
+      "home_region_id": "emd_yeongtong",
+      "category": "요리",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0039",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "승민",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "learner",
+      "name": "정우",
+      "emoji": "💻",
+      "home_region_id": "emd_ingye",
+      "category": "볼더링",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0040",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "준호",
+      "archetype": "connector",
+      "name": "하연",
       "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
+      "home_region_id": "emd_gwonseon",
+      "category": "공예",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0041",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "나윤",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
+      "archetype": "connector",
+      "name": "예원",
+      "emoji": "🎨",
+      "home_region_id": "emd_paldal",
+      "category": "요가",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0042",
       "agent_role": "protagonist",
       "archetype": "creator",
-      "name": "하린",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
+      "name": "수빈",
+      "emoji": "💻",
+      "home_region_id": "emd_maetan",
+      "category": "요가",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0043",
       "agent_role": "protagonist",
       "archetype": "learner",
-      "name": "지훈",
+      "name": "도하",
       "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
+      "home_region_id": "emd_sinchon",
+      "category": "등산",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0044",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "민지",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
+      "archetype": "creator",
+      "name": "정우",
+      "emoji": "🧗",
+      "home_region_id": "emd_jangan",
+      "category": "미술",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0045",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "시은",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "learner",
+      "name": "서준",
+      "emoji": "🏃",
+      "home_region_id": "emd_yeonmu",
+      "category": "음악",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0046",
       "agent_role": "protagonist",
-      "archetype": "helper",
+      "archetype": "learner",
       "name": "지훈",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
+      "emoji": "🧘",
+      "home_region_id": "emd_yeongtong",
+      "category": "음악",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0047",
       "agent_role": "protagonist",
-      "archetype": "learner",
+      "archetype": "connector",
       "name": "민지",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
+      "emoji": "🏃",
+      "home_region_id": "emd_ingye",
+      "category": "요리",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0048",
       "agent_role": "protagonist",
       "archetype": "learner",
-      "name": "소연",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
+      "name": "도윤",
+      "emoji": "🥾",
+      "home_region_id": "emd_gwonseon",
+      "category": "코딩",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0049",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "나윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
+      "archetype": "connector",
+      "name": "정우",
+      "emoji": "☕",
+      "home_region_id": "emd_paldal",
+      "category": "미술",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0050",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "유진",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
+      "archetype": "explorer",
+      "name": "지훈",
+      "emoji": "🥾",
+      "home_region_id": "emd_maetan",
+      "category": "코딩",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0051",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "예원",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "helper",
+      "name": "수빈",
+      "emoji": "🎵",
+      "home_region_id": "emd_sinchon",
+      "category": "요리",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0052",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "승민",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
+      "archetype": "explorer",
+      "name": "유진",
+      "emoji": "🎵",
+      "home_region_id": "emd_jangan",
+      "category": "공예",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0053",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "채원",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
+      "archetype": "learner",
+      "name": "소연",
+      "emoji": "🍳",
+      "home_region_id": "emd_yeonmu",
+      "category": "등산",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0054",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "소연",
+      "archetype": "connector",
+      "name": "승민",
       "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
+      "home_region_id": "emd_yeongtong",
+      "category": "볼더링",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0055",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "예린",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
+      "archetype": "helper",
+      "name": "하연",
+      "emoji": "🧘",
+      "home_region_id": "emd_ingye",
+      "category": "등산",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0056",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "유진",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
+      "archetype": "learner",
+      "name": "준호",
+      "emoji": "🧘",
+      "home_region_id": "emd_gwonseon",
+      "category": "요리",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0057",
       "agent_role": "protagonist",
       "archetype": "connector",
-      "name": "지훈",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
+      "name": "수빈",
+      "emoji": "🏃",
+      "home_region_id": "emd_paldal",
+      "category": "볼더링",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0058",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "수빈",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
+      "archetype": "explorer",
+      "name": "현우",
+      "emoji": "🎵",
+      "home_region_id": "emd_maetan",
+      "category": "등산",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0059",
       "agent_role": "protagonist",
       "archetype": "connector",
-      "name": "건우",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
+      "name": "민지",
+      "emoji": "🧗",
+      "home_region_id": "emd_sinchon",
+      "category": "운동",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0060",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "주원",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "explorer",
+      "name": "채원",
+      "emoji": "🎨",
+      "home_region_id": "emd_jangan",
+      "category": "음악",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0061",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서연",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
+      "archetype": "learner",
+      "name": "건우",
+      "emoji": "🎨",
+      "home_region_id": "emd_yeonmu",
+      "category": "공예",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0062",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "소연",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
+      "archetype": "explorer",
+      "name": "하연",
+      "emoji": "💻",
+      "home_region_id": "emd_yeongtong",
+      "category": "운동",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0063",
       "agent_role": "protagonist",
       "archetype": "helper",
-      "name": "승민",
+      "name": "준호",
       "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
+      "home_region_id": "emd_ingye",
+      "category": "요가",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0064",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "건우",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
+      "archetype": "creator",
+      "name": "현우",
+      "emoji": "🧘",
+      "home_region_id": "emd_gwonseon",
+      "category": "요가",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0065",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "지훈",
+      "archetype": "learner",
+      "name": "현우",
       "emoji": "☕",
-      "home_region_id": "emd_jangan"
+      "home_region_id": "emd_paldal",
+      "category": "요리",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0066",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "helper",
+      "name": "도윤",
+      "emoji": "🎨",
+      "home_region_id": "emd_maetan",
+      "category": "요리",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0067",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "민지",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
+      "archetype": "creator",
+      "name": "수빈",
+      "emoji": "🧗",
+      "home_region_id": "emd_sinchon",
+      "category": "미술",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0068",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "건우",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
+      "archetype": "helper",
+      "name": "소연",
+      "emoji": "🧗",
+      "home_region_id": "emd_jangan",
+      "category": "요가",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0069",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "건우",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "helper",
+      "name": "소연",
+      "emoji": "🏃",
+      "home_region_id": "emd_yeonmu",
+      "category": "운동",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0070",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "지훈",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
+      "archetype": "explorer",
+      "name": "채원",
+      "emoji": "📚",
+      "home_region_id": "emd_yeongtong",
+      "category": "요리",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0071",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "하연",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
+      "archetype": "creator",
+      "name": "주원",
+      "emoji": "📚",
+      "home_region_id": "emd_ingye",
+      "category": "미술",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0072",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "하연",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "explorer",
+      "name": "재민",
+      "emoji": "🧗",
+      "home_region_id": "emd_gwonseon",
+      "category": "미술",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0073",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "서준",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
+      "archetype": "creator",
+      "name": "지훈",
+      "emoji": "☕",
+      "home_region_id": "emd_paldal",
+      "category": "볼더링",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0074",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "서준",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
+      "archetype": "explorer",
+      "name": "하린",
+      "emoji": "🧘",
+      "home_region_id": "emd_maetan",
+      "category": "요가",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0075",
       "agent_role": "protagonist",
       "archetype": "explorer",
-      "name": "민지",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
+      "name": "현우",
+      "emoji": "🧗",
+      "home_region_id": "emd_sinchon",
+      "category": "공예",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0076",
       "agent_role": "protagonist",
       "archetype": "creator",
-      "name": "유진",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
+      "name": "지훈",
+      "emoji": "🥾",
+      "home_region_id": "emd_jangan",
+      "category": "음악",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0077",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
+      "archetype": "helper",
+      "name": "유진",
+      "emoji": "🎨",
+      "home_region_id": "emd_yeonmu",
+      "category": "미술",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0078",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도윤",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "creator",
+      "name": "소연",
+      "emoji": "📚",
+      "home_region_id": "emd_yeongtong",
+      "category": "코딩",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0079",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "수빈",
+      "archetype": "explorer",
+      "name": "민지",
       "emoji": "☕",
-      "home_region_id": "emd_sinchon"
+      "home_region_id": "emd_ingye",
+      "category": "코딩",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0080",
       "agent_role": "protagonist",
       "archetype": "learner",
-      "name": "주원",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
+      "name": "예원",
+      "emoji": "🍳",
+      "home_region_id": "emd_gwonseon",
+      "category": "음악",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0081",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "explorer",
+      "name": "재민",
+      "emoji": "🧘",
+      "home_region_id": "emd_paldal",
+      "category": "음악",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0082",
       "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "도하",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
+      "archetype": "learner",
+      "name": "주원",
+      "emoji": "🏃",
+      "home_region_id": "emd_maetan",
+      "category": "미술",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0083",
       "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "민지",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
+      "archetype": "connector",
+      "name": "소연",
+      "emoji": "📚",
+      "home_region_id": "emd_sinchon",
+      "category": "코딩",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0084",
       "agent_role": "protagonist",
       "archetype": "explorer",
-      "name": "시은",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
+      "name": "소연",
+      "emoji": "☕",
+      "home_region_id": "emd_jangan",
+      "category": "운동",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0085",
@@ -685,3327 +853,59 @@
       "archetype": "explorer",
       "name": "지훈",
       "emoji": "📚",
-      "home_region_id": "emd_sinchon"
+      "home_region_id": "emd_yeonmu",
+      "category": "요가",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0086",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "예원",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
+      "archetype": "creator",
+      "name": "나윤",
+      "emoji": "🏃",
+      "home_region_id": "emd_yeongtong",
+      "category": "볼더링",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0087",
       "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "정우",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
+      "archetype": "connector",
+      "name": "하린",
+      "emoji": "🎵",
+      "home_region_id": "emd_ingye",
+      "category": "공예",
+      "intent": "request"
     },
     {
       "agent_id": "A_p_0088",
       "agent_role": "protagonist",
       "archetype": "learner",
-      "name": "건우",
+      "name": "주원",
       "emoji": "☕",
-      "home_region_id": "emd_sinchon"
+      "home_region_id": "emd_gwonseon",
+      "category": "미술",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0089",
       "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "채원",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
+      "archetype": "creator",
+      "name": "민지",
+      "emoji": "💻",
+      "home_region_id": "emd_paldal",
+      "category": "미술",
+      "intent": "offer"
     },
     {
       "agent_id": "A_p_0090",
       "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0091",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "주원",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0092",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "정우",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0093",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "하연",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0094",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지훈",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0095",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "지원",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0096",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "현우",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0097",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "재민",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0098",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "준호",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0099",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서연",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0100",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "서연",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0101",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "재민",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0102",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "정우",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0103",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "시은",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0104",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "하린",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0105",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "준호",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0106",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "유진",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0107",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "예원",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0108",
-      "agent_role": "protagonist",
       "archetype": "connector",
       "name": "도윤",
       "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0109",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "예린",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0110",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "유진",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0111",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "하린",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0112",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0113",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "하연",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0114",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "현우",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0115",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "하린",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0116",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "건우",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0117",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "주원",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0118",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "건우",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0119",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0120",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0121",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지원",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0122",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "소연",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0123",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "하연",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0124",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "도윤",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0125",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "소연",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0126",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "하연",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0127",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "소연",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0128",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0129",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "건우",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0130",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "승민",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0131",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0132",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "하린",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0133",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "정우",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0134",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도하",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0135",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서준",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0136",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "하연",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0137",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지원",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0138",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "준호",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0139",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "수빈",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0140",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "채원",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0141",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "예린",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0142",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "하린",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0143",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "서준",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0144",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0145",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "도윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0146",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "도윤",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0147",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "민지",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0148",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지훈",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0149",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "시은",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0150",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "서연",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0151",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "유진",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0152",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "나윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0153",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "승민",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0154",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서연",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0155",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "승민",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0156",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "정우",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0157",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "건우",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0158",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "예린",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0159",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "수빈",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0160",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "재민",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0161",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "하린",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0162",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "소연",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0163",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "시은",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0164",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "준호",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0165",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "예린",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0166",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "지훈",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0167",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "현우",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0168",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "서연",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0169",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "나윤",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0170",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "지훈",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0171",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "유진",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0172",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "서준",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0173",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "시은",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0174",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "하연",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0175",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "승민",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0176",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "현우",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0177",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "나윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0178",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "소연",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0179",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "예린",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0180",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "주원",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0181",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "주원",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0182",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "민지",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0183",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "서연",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0184",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도윤",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0185",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0186",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0187",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "재민",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0188",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0189",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "승민",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0190",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "건우",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0191",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "건우",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0192",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서연",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0193",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "준호",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0194",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "하린",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0195",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "시은",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0196",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "도윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0197",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지훈",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0198",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "시은",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0199",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "유진",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0200",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "채원",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0201",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "하린",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0202",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "하연",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0203",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "수빈",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0204",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "건우",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0205",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0206",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0207",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "유진",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0208",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "서준",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0209",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "도윤",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0210",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "소연",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0211",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "준호",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0212",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "수빈",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0213",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "도하",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0214",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "유진",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0215",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "하린",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0216",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "예린",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0217",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지훈",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0218",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "예린",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0219",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "재민",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0220",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "재민",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0221",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "수빈",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0222",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "정우",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0223",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서준",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0224",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0225",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지원",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0226",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서준",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0227",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "현우",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0228",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "예원",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0229",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도윤",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0230",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "하린",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0231",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "서연",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0232",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "도하",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0233",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "건우",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0234",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "시은",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0235",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "채원",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0236",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "승민",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0237",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "지훈",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0238",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0239",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "예원",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0240",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "유진",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0241",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "시은",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0242",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "지원",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0243",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "주원",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0244",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "지원",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0245",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "건우",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0246",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "지원",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0247",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "현우",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0248",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "건우",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0249",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "민지",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0250",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "도하",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0251",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "유진",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0252",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "시은",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0253",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "서연",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0254",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "서연",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0255",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "지훈",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0256",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "승민",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0257",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "재민",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0258",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0259",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "주원",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0260",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도하",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0261",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "지원",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0262",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "하린",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0263",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "서준",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0264",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "주원",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0265",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "현우",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0266",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0267",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "서준",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0268",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "도하",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0269",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "도하",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0270",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0271",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "채원",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0272",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "시은",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0273",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "건우",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0274",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "건우",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0275",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "준호",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0276",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "정우",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0277",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "재민",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0278",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "준호",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0279",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "나윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0280",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "민지",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0281",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "예원",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0282",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "주원",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0283",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "재민",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0284",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "예원",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0285",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "소연",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0286",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "준호",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0287",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "정우",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0288",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "소연",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0289",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "나윤",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0290",
-      "agent_role": "protagonist",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0291",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0292",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "수빈",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0293",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "유진",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0294",
-      "agent_role": "protagonist",
-      "archetype": "helper",
-      "name": "도윤",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0295",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "현우",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0296",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "지원",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0297",
-      "agent_role": "protagonist",
-      "archetype": "creator",
-      "name": "시은",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_p_0298",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "수빈",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_p_0299",
-      "agent_role": "protagonist",
-      "archetype": "explorer",
-      "name": "예린",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_p_0300",
-      "agent_role": "protagonist",
-      "archetype": "connector",
-      "name": "도하",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0301",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "예린",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0302",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "예린",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0303",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "시은",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0304",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "유진",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0305",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "예린",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0306",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "도하",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0307",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "재민",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0308",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "서연",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0309",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "승민",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0310",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "하연",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0311",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "서준",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0312",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0313",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "수빈",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0314",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "승민",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0315",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0316",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "정우",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0317",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "채원",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0318",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "도윤",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0319",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "지훈",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0320",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "주원",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0321",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "지원",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0322",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "주원",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0323",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "하연",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0324",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0325",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "예원",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0326",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "승민",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0327",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "지훈",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0328",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "시은",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0329",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "시은",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0330",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "소연",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0331",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "현우",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0332",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "정우",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0333",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "정우",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0334",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "수빈",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0335",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "지훈",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0336",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "현우",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0337",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "민지",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0338",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "유진",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0339",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "소연",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0340",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "하린",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0341",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "하연",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0342",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "채원",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0343",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "현우",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0344",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "주원",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0345",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "채원",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0346",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "예원",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0347",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "나윤",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0348",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "시은",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0349",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0350",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "승민",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0351",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "소연",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0352",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "나윤",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0353",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "서연",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0354",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "준호",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0355",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0356",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "승민",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0357",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "현우",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0358",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "정우",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0359",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "승민",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0360",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "현우",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0361",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "서연",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0362",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "민지",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0363",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "나윤",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0364",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "준호",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0365",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "소연",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0366",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "수빈",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0367",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "서연",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0368",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "재민",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0369",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "도하",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0370",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "서연",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0371",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "재민",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0372",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "지훈",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0373",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "건우",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0374",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "예린",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0375",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "현우",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0376",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "건우",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0377",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "건우",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0378",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "재민",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0379",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "승민",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0380",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "하린",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0381",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "하연",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0382",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "서연",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0383",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0384",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "도윤",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0385",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "지원",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0386",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0387",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "정우",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0388",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "민지",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0389",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "서연",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0390",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "채원",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0391",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "승민",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0392",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "건우",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0393",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "건우",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0394",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "예원",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0395",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "지훈",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0396",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "지원",
-      "emoji": "🧘",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0397",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "시은",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0398",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "주원",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0399",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "서준",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0400",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "재민",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0401",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "승민",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0402",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "도하",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0403",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0404",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "현우",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0405",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "정우",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0406",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "민지",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0407",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "예원",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0408",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "도하",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0409",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "서준",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0410",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "현우",
-      "emoji": "🧘",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0411",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "하연",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0412",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "민지",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0413",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "예린",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0414",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "주원",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0415",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "시은",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0416",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "도하",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0417",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "예원",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0418",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "유진",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0419",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "주원",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0420",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "하린",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0421",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "준호",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0422",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0423",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "수빈",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0424",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "지훈",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0425",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "도하",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0426",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0427",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "예원",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0428",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "현우",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0429",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "하연",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0430",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "준호",
-      "emoji": "☕",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0431",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "하연",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0432",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "현우",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0433",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "주원",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0434",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "하린",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0435",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "예린",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0436",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "예린",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0437",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "시은",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0438",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "채원",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0439",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "수빈",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0440",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "민지",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0441",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "소연",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0442",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "예원",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0443",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "정우",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0444",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "시은",
-      "emoji": "🧗",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0445",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "서연",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0446",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "시은",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0447",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "하린",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0448",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "준호",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0449",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "서준",
-      "emoji": "📚",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0450",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "준호",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0451",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "승민",
-      "emoji": "🎨",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0452",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "서준",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0453",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0454",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "도윤",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0455",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "예원",
-      "emoji": "🎨",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0456",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "나윤",
-      "emoji": "🍳",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0457",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "서준",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0458",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "수빈",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0459",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "서준",
-      "emoji": "💻",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0460",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "민지",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0461",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "예원",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0462",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "수빈",
-      "emoji": "☕",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0463",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "서연",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0464",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "지원",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0465",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "민지",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0466",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "승민",
-      "emoji": "🧘",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0467",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "채원",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0468",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "하린",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0469",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "지원",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0470",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "준호",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0471",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "예린",
-      "emoji": "📚",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0472",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "재민",
-      "emoji": "📚",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0473",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "도윤",
-      "emoji": "🥾",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0474",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "정우",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0475",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0476",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "준호",
-      "emoji": "🎵",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0477",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "승민",
-      "emoji": "🎨",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0478",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "수빈",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0479",
-      "agent_role": "background",
-      "archetype": "connector",
-      "name": "도하",
-      "emoji": "🧗",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0480",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "승민",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0481",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "승민",
-      "emoji": "🎵",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0482",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "나윤",
-      "emoji": "☕",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0483",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "정우",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0484",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "수빈",
-      "emoji": "🏃",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0485",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "도하",
-      "emoji": "💻",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0486",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "서준",
-      "emoji": "🏃",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0487",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "승민",
-      "emoji": "💻",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0488",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "예원",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0489",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0490",
-      "agent_role": "background",
-      "archetype": "helper",
-      "name": "지훈",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0491",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "시은",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0492",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "도윤",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0493",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "수빈",
-      "emoji": "🧗",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0494",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "지원",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0495",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "현우",
-      "emoji": "🎵",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0496",
-      "agent_role": "background",
-      "archetype": "creator",
-      "name": "하연",
-      "emoji": "🥾",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0497",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "서연",
-      "emoji": "🍳",
-      "home_region_id": "emd_jangan"
-    },
-    {
-      "agent_id": "A_b_0498",
-      "agent_role": "background",
-      "archetype": "explorer",
-      "name": "시은",
-      "emoji": "🥾",
-      "home_region_id": "emd_yeonmu"
-    },
-    {
-      "agent_id": "A_b_0499",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "예린",
-      "emoji": "🍳",
-      "home_region_id": "emd_sinchon"
-    },
-    {
-      "agent_id": "A_b_0500",
-      "agent_role": "background",
-      "archetype": "learner",
-      "name": "주원",
-      "emoji": "🏃",
-      "home_region_id": "emd_jangan"
+      "home_region_id": "emd_maetan",
+      "category": "볼더링",
+      "intent": "request"
     }
   ],
   "places": [
@@ -4031,484 +931,237 @@
       "label": "연무동"
     },
     {
+      "place_id": "emd_yeongtong",
+      "place_type": "region",
+      "lat": 37.255,
+      "lng": 127.07,
+      "label": "영통동"
+    },
+    {
+      "place_id": "emd_ingye",
+      "place_type": "region",
+      "lat": 37.265,
+      "lng": 127.025,
+      "label": "인계동"
+    },
+    {
+      "place_id": "emd_gwonseon",
+      "place_type": "region",
+      "lat": 37.245,
+      "lng": 127,
+      "label": "권선동"
+    },
+    {
+      "place_id": "emd_paldal",
+      "place_type": "region",
+      "lat": 37.278,
+      "lng": 127.015,
+      "label": "팔달동"
+    },
+    {
+      "place_id": "emd_maetan",
+      "place_type": "region",
+      "lat": 37.252,
+      "lng": 127.05,
+      "label": "매탄동"
+    },
+    {
       "place_id": "S_0001",
       "place_type": "spot",
-      "lat": 37.263660198170776,
-      "lng": 127.0271165658156,
+      "lat": 37.27536220103936,
+      "lng": 127.03015476862298,
       "region_id": "emd_sinchon",
-      "label": "S_0001"
+      "label": "S_0001",
+      "category": "요가",
+      "intent": "offer",
+      "title": "공원 모닝 요가"
     },
     {
       "place_id": "S_0002",
       "place_type": "spot",
-      "lat": 37.29949431428527,
-      "lng": 127.01521206911455,
+      "lat": 37.30309518266565,
+      "lng": 127.0064564136551,
       "region_id": "emd_jangan",
-      "label": "S_0002"
+      "label": "S_0002",
+      "category": "미술",
+      "intent": "request",
+      "title": "드로잉 같이"
     },
     {
       "place_id": "S_0003",
       "place_type": "spot",
-      "lat": 37.28713466953912,
-      "lng": 127.03553580583093,
+      "lat": 37.27966769430316,
+      "lng": 127.03777602575568,
       "region_id": "emd_yeonmu",
-      "label": "S_0003"
+      "label": "S_0003",
+      "category": "음악",
+      "intent": "offer",
+      "title": "합주 모임"
     },
     {
       "place_id": "S_0004",
       "place_type": "spot",
-      "lat": 37.26288107277864,
-      "lng": 127.03134866687705,
-      "region_id": "emd_sinchon",
-      "label": "S_0004"
+      "lat": 37.249680583748784,
+      "lng": 127.07709172393461,
+      "region_id": "emd_yeongtong",
+      "label": "S_0004",
+      "category": "공예",
+      "intent": "offer",
+      "title": "가죽공예 같이"
     },
     {
       "place_id": "S_0005",
       "place_type": "spot",
-      "lat": 37.30083337056995,
-      "lng": 127.00923553040847,
-      "region_id": "emd_jangan",
-      "label": "S_0005"
+      "lat": 37.261714445385444,
+      "lng": 127.02151439952476,
+      "region_id": "emd_ingye",
+      "label": "S_0005",
+      "category": "공예",
+      "intent": "offer",
+      "title": "도자기 원데이"
     },
     {
       "place_id": "S_0006",
       "place_type": "spot",
-      "lat": 37.28744996764451,
-      "lng": 127.03359607829121,
-      "region_id": "emd_yeonmu",
-      "label": "S_0006"
+      "lat": 37.24775965144291,
+      "lng": 126.99609423883064,
+      "region_id": "emd_gwonseon",
+      "label": "S_0006",
+      "category": "등산",
+      "intent": "request",
+      "title": "등산 크루 구해요"
     },
     {
       "place_id": "S_0007",
       "place_type": "spot",
-      "lat": 37.26037622582486,
-      "lng": 127.03012407391884,
-      "region_id": "emd_sinchon",
-      "label": "S_0007"
+      "lat": 37.27126252649378,
+      "lng": 127.01274018321253,
+      "region_id": "emd_paldal",
+      "label": "S_0007",
+      "category": "요리",
+      "intent": "request",
+      "title": "초심자 요리 모임"
     },
     {
       "place_id": "S_0008",
       "place_type": "spot",
-      "lat": 37.303531825489955,
-      "lng": 127.00951329860347,
-      "region_id": "emd_jangan",
-      "label": "S_0008"
+      "lat": 37.259651058486114,
+      "lng": 127.04521365927828,
+      "region_id": "emd_maetan",
+      "label": "S_0008",
+      "category": "요리",
+      "intent": "request",
+      "title": "초심자 요리 모임"
     },
     {
       "place_id": "S_0009",
       "place_type": "spot",
-      "lat": 37.28329269885575,
-      "lng": 127.03364569038621,
-      "region_id": "emd_yeonmu",
-      "label": "S_0009"
+      "lat": 37.271798459352446,
+      "lng": 127.0296302983555,
+      "region_id": "emd_sinchon",
+      "label": "S_0009",
+      "category": "요리",
+      "intent": "request",
+      "title": "요리 같이 배우실 분"
     },
     {
       "place_id": "S_0010",
       "place_type": "spot",
-      "lat": 37.25963911151044,
-      "lng": 127.03034451270786,
-      "region_id": "emd_sinchon",
-      "label": "S_0010"
+      "lat": 37.29143242292296,
+      "lng": 127.00381089131614,
+      "region_id": "emd_jangan",
+      "label": "S_0010",
+      "category": "공예",
+      "intent": "offer",
+      "title": "가죽공예 같이"
     },
     {
       "place_id": "S_0011",
       "place_type": "spot",
-      "lat": 37.30141461378958,
-      "lng": 127.01368303950012,
-      "region_id": "emd_jangan",
-      "label": "S_0011"
+      "lat": 37.2784159303398,
+      "lng": 127.03138303241627,
+      "region_id": "emd_yeonmu",
+      "label": "S_0011",
+      "category": "코딩",
+      "intent": "offer",
+      "title": "사이드프로젝트"
     },
     {
       "place_id": "S_0012",
       "place_type": "spot",
-      "lat": 37.28305033184387,
-      "lng": 127.03532889868758,
-      "region_id": "emd_yeonmu",
-      "label": "S_0012"
+      "lat": 37.26071808635216,
+      "lng": 127.0779364834951,
+      "region_id": "emd_yeongtong",
+      "label": "S_0012",
+      "category": "코딩",
+      "intent": "request",
+      "title": "리액트 멘토 모집"
     },
     {
       "place_id": "S_0013",
       "place_type": "spot",
-      "lat": 37.259430277408,
-      "lng": 127.02896813547754,
-      "region_id": "emd_sinchon",
-      "label": "S_0013"
+      "lat": 37.261554872191205,
+      "lng": 127.01198954310289,
+      "region_id": "emd_ingye",
+      "label": "S_0013",
+      "category": "등산",
+      "intent": "offer",
+      "title": "청계산 오전"
     },
     {
       "place_id": "S_0014",
       "place_type": "spot",
-      "lat": 37.30105595263534,
-      "lng": 127.00769551835624,
-      "region_id": "emd_jangan",
-      "label": "S_0014"
+      "lat": 37.238680610352276,
+      "lng": 127.00091858051897,
+      "region_id": "emd_gwonseon",
+      "label": "S_0014",
+      "category": "코딩",
+      "intent": "request",
+      "title": "코딩 스터디 같이"
     },
     {
       "place_id": "S_0015",
       "place_type": "spot",
-      "lat": 37.28288110322295,
-      "lng": 127.03545005421388,
-      "region_id": "emd_yeonmu",
-      "label": "S_0015"
+      "lat": 37.272270310869395,
+      "lng": 127.01906403245285,
+      "region_id": "emd_paldal",
+      "label": "S_0015",
+      "category": "등산",
+      "intent": "request",
+      "title": "등산 크루 구해요"
     },
     {
       "place_id": "S_0016",
       "place_type": "spot",
-      "lat": 37.26380581806447,
-      "lng": 127.02984409508802,
-      "region_id": "emd_sinchon",
-      "label": "S_0016"
+      "lat": 37.247495978115225,
+      "lng": 127.05879548337944,
+      "region_id": "emd_maetan",
+      "label": "S_0016",
+      "category": "볼더링",
+      "intent": "offer",
+      "title": "볼더링 크루"
     },
     {
       "place_id": "S_0017",
       "place_type": "spot",
-      "lat": 37.30100446083394,
-      "lng": 127.0137173691224,
-      "region_id": "emd_jangan",
-      "label": "S_0017"
+      "lat": 37.265674554350525,
+      "lng": 127.0152766514193,
+      "region_id": "emd_sinchon",
+      "label": "S_0017",
+      "category": "공예",
+      "intent": "request",
+      "title": "금속공예 입문"
     },
     {
       "place_id": "S_0018",
       "place_type": "spot",
-      "lat": 37.28485287261538,
-      "lng": 127.03507769150781,
-      "region_id": "emd_yeonmu",
-      "label": "S_0018"
-    },
-    {
-      "place_id": "S_0019",
-      "place_type": "spot",
-      "lat": 37.25961541809708,
-      "lng": 127.02884947399652,
-      "region_id": "emd_sinchon",
-      "label": "S_0019"
-    },
-    {
-      "place_id": "S_0020",
-      "place_type": "spot",
-      "lat": 37.30114259120101,
-      "lng": 127.01551431034198,
+      "lat": 37.291317888728855,
+      "lng": 127.02075389441623,
       "region_id": "emd_jangan",
-      "label": "S_0020"
-    },
-    {
-      "place_id": "S_0021",
-      "place_type": "spot",
-      "lat": 37.288591843069796,
-      "lng": 127.03432187619553,
-      "region_id": "emd_yeonmu",
-      "label": "S_0021"
-    },
-    {
-      "place_id": "S_0022",
-      "place_type": "spot",
-      "lat": 37.26162907560124,
-      "lng": 127.02663242518621,
-      "region_id": "emd_sinchon",
-      "label": "S_0022"
-    },
-    {
-      "place_id": "S_0023",
-      "place_type": "spot",
-      "lat": 37.29852671759464,
-      "lng": 127.01274088616667,
-      "region_id": "emd_jangan",
-      "label": "S_0023"
-    },
-    {
-      "place_id": "S_0024",
-      "place_type": "spot",
-      "lat": 37.28605981444381,
-      "lng": 127.03653842858343,
-      "region_id": "emd_yeonmu",
-      "label": "S_0024"
-    },
-    {
-      "place_id": "S_0025",
-      "place_type": "spot",
-      "lat": 37.26334011679585,
-      "lng": 127.02551432884918,
-      "region_id": "emd_sinchon",
-      "label": "S_0025"
-    },
-    {
-      "place_id": "S_0026",
-      "place_type": "spot",
-      "lat": 37.2981389217896,
-      "lng": 127.01230638042864,
-      "region_id": "emd_jangan",
-      "label": "S_0026"
-    },
-    {
-      "place_id": "S_0027",
-      "place_type": "spot",
-      "lat": 37.28693978105813,
-      "lng": 127.03221330193433,
-      "region_id": "emd_yeonmu",
-      "label": "S_0027"
-    },
-    {
-      "place_id": "S_0028",
-      "place_type": "spot",
-      "lat": 37.25989906571671,
-      "lng": 127.02904940726438,
-      "region_id": "emd_sinchon",
-      "label": "S_0028"
-    },
-    {
-      "place_id": "S_0029",
-      "place_type": "spot",
-      "lat": 37.2995282837217,
-      "lng": 127.00829855588744,
-      "region_id": "emd_jangan",
-      "label": "S_0029"
-    },
-    {
-      "place_id": "S_0030",
-      "place_type": "spot",
-      "lat": 37.284117352892906,
-      "lng": 127.03660423819267,
-      "region_id": "emd_yeonmu",
-      "label": "S_0030"
-    },
-    {
-      "place_id": "S_0031",
-      "place_type": "spot",
-      "lat": 37.259569761045256,
-      "lng": 127.03007915487805,
-      "region_id": "emd_sinchon",
-      "label": "S_0031"
-    },
-    {
-      "place_id": "S_0032",
-      "place_type": "spot",
-      "lat": 37.30218148177637,
-      "lng": 127.0130219551574,
-      "region_id": "emd_jangan",
-      "label": "S_0032"
-    },
-    {
-      "place_id": "S_0033",
-      "place_type": "spot",
-      "lat": 37.28882098283525,
-      "lng": 127.03548746532553,
-      "region_id": "emd_yeonmu",
-      "label": "S_0033"
-    },
-    {
-      "place_id": "S_0034",
-      "place_type": "spot",
-      "lat": 37.260031681964364,
-      "lng": 127.02826598723367,
-      "region_id": "emd_sinchon",
-      "label": "S_0034"
-    },
-    {
-      "place_id": "S_0035",
-      "place_type": "spot",
-      "lat": 37.30236517239217,
-      "lng": 127.01249845330733,
-      "region_id": "emd_jangan",
-      "label": "S_0035"
-    },
-    {
-      "place_id": "S_0036",
-      "place_type": "spot",
-      "lat": 37.28759978613944,
-      "lng": 127.03312986391587,
-      "region_id": "emd_yeonmu",
-      "label": "S_0036"
-    },
-    {
-      "place_id": "S_0037",
-      "place_type": "spot",
-      "lat": 37.26187052789962,
-      "lng": 127.02614236817068,
-      "region_id": "emd_sinchon",
-      "label": "S_0037"
-    },
-    {
-      "place_id": "S_0038",
-      "place_type": "spot",
-      "lat": 37.30116750511895,
-      "lng": 127.00953133402842,
-      "region_id": "emd_jangan",
-      "label": "S_0038"
-    },
-    {
-      "place_id": "S_0039",
-      "place_type": "spot",
-      "lat": 37.28843084207348,
-      "lng": 127.03157024632178,
-      "region_id": "emd_yeonmu",
-      "label": "S_0039"
-    },
-    {
-      "place_id": "S_0040",
-      "place_type": "spot",
-      "lat": 37.261984746640884,
-      "lng": 127.02644480549358,
-      "region_id": "emd_sinchon",
-      "label": "S_0040"
-    },
-    {
-      "place_id": "S_0041",
-      "place_type": "spot",
-      "lat": 37.29958340774216,
-      "lng": 127.00960788002989,
-      "region_id": "emd_jangan",
-      "label": "S_0041"
-    },
-    {
-      "place_id": "S_0042",
-      "place_type": "spot",
-      "lat": 37.28779607820342,
-      "lng": 127.03335232074883,
-      "region_id": "emd_yeonmu",
-      "label": "S_0042"
-    },
-    {
-      "place_id": "S_0043",
-      "place_type": "spot",
-      "lat": 37.264071659026314,
-      "lng": 127.02907010884043,
-      "region_id": "emd_sinchon",
-      "label": "S_0043"
-    },
-    {
-      "place_id": "S_0044",
-      "place_type": "spot",
-      "lat": 37.302962536546545,
-      "lng": 127.00959961426321,
-      "region_id": "emd_jangan",
-      "label": "S_0044"
-    },
-    {
-      "place_id": "S_0045",
-      "place_type": "spot",
-      "lat": 37.28615933351985,
-      "lng": 127.0357710925782,
-      "region_id": "emd_yeonmu",
-      "label": "S_0045"
-    },
-    {
-      "place_id": "S_0046",
-      "place_type": "spot",
-      "lat": 37.26436731362972,
-      "lng": 127.02732906206917,
-      "region_id": "emd_sinchon",
-      "label": "S_0046"
-    },
-    {
-      "place_id": "S_0047",
-      "place_type": "spot",
-      "lat": 37.30359742118455,
-      "lng": 127.01240453801567,
-      "region_id": "emd_jangan",
-      "label": "S_0047"
-    },
-    {
-      "place_id": "S_0048",
-      "place_type": "spot",
-      "lat": 37.284716268900226,
-      "lng": 127.03729213578633,
-      "region_id": "emd_yeonmu",
-      "label": "S_0048"
-    },
-    {
-      "place_id": "S_0049",
-      "place_type": "spot",
-      "lat": 37.26081112487897,
-      "lng": 127.03061281970588,
-      "region_id": "emd_sinchon",
-      "label": "S_0049"
-    },
-    {
-      "place_id": "S_0050",
-      "place_type": "spot",
-      "lat": 37.30026282546252,
-      "lng": 127.00954750840957,
-      "region_id": "emd_jangan",
-      "label": "S_0050"
-    },
-    {
-      "place_id": "S_0051",
-      "place_type": "spot",
-      "lat": 37.287919725212355,
-      "lng": 127.03563795510466,
-      "region_id": "emd_yeonmu",
-      "label": "S_0051"
-    },
-    {
-      "place_id": "S_0052",
-      "place_type": "spot",
-      "lat": 37.261385593564135,
-      "lng": 127.02666634819897,
-      "region_id": "emd_sinchon",
-      "label": "S_0052"
-    },
-    {
-      "place_id": "S_0053",
-      "place_type": "spot",
-      "lat": 37.303541483340595,
-      "lng": 127.01075369963095,
-      "region_id": "emd_jangan",
-      "label": "S_0053"
-    },
-    {
-      "place_id": "S_0054",
-      "place_type": "spot",
-      "lat": 37.286690514881144,
-      "lng": 127.03598623976009,
-      "region_id": "emd_yeonmu",
-      "label": "S_0054"
-    },
-    {
-      "place_id": "S_0055",
-      "place_type": "spot",
-      "lat": 37.263700512537376,
-      "lng": 127.02722427403562,
-      "region_id": "emd_sinchon",
-      "label": "S_0055"
-    },
-    {
-      "place_id": "S_0056",
-      "place_type": "spot",
-      "lat": 37.3002896814399,
-      "lng": 127.00827144405784,
-      "region_id": "emd_jangan",
-      "label": "S_0056"
-    },
-    {
-      "place_id": "S_0057",
-      "place_type": "spot",
-      "lat": 37.288280016907606,
-      "lng": 127.03284707164697,
-      "region_id": "emd_yeonmu",
-      "label": "S_0057"
-    },
-    {
-      "place_id": "S_0058",
-      "place_type": "spot",
-      "lat": 37.26228855795288,
-      "lng": 127.02632196444532,
-      "region_id": "emd_sinchon",
-      "label": "S_0058"
-    },
-    {
-      "place_id": "S_0059",
-      "place_type": "spot",
-      "lat": 37.303110944031395,
-      "lng": 127.01251047395824,
-      "region_id": "emd_jangan",
-      "label": "S_0059"
-    },
-    {
-      "place_id": "S_0060",
-      "place_type": "spot",
-      "lat": 37.28808901382901,
-      "lng": 127.03392047787665,
-      "region_id": "emd_yeonmu",
-      "label": "S_0060"
+      "label": "S_0018",
+      "category": "코딩",
+      "intent": "request",
+      "title": "코딩 스터디 같이"
     }
   ]
 }

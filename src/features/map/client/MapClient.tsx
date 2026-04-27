@@ -24,8 +24,8 @@ import {
 import { FeedBottomSheet } from '@/features/feed/ui/FeedBottomSheet';
 import type { BottomSheetSnapPoint } from '@frontend/design-system';
 import { useLayerStore } from '@/features/layer/model/use-layer-store';
-import { useMockPersonaSwarm } from '@/features/simulation/model/use-mock-persona-swarm';
-import { useMockSpotLifecycles } from '@/features/simulation/model/use-mock-spot-lifecycles';
+import { useSimRun } from '@/features/simulation/model/use-sim-run';
+import { useSimDomain } from '@/features/simulation/model/sim-domain-adapter';
 import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
 import {
     saveSimulationConversionContext,
@@ -50,14 +50,7 @@ import type { ActivityCluster } from '@/features/map/model/types';
 import type { MapOverlayItem } from '@/features/map/ui/MapCanvas';
 import type { ViewportBbox } from '@/features/map/ui/MapV3Canvas';
 
-// Swarm 시뮬레이션 고정 bbox (수원시 전역 ~10km×10km). 모드 분기 없이 항상 swarm.
-const SWARM_BBOX = {
-    swLat: 37.22,
-    swLng: 126.97,
-    neLat: 37.31,
-    neLng: 127.08,
-};
-const SWARM_MAX_N = 1000;
+// (구) swarm bbox 상수는 useSimRun 으로 전면 교체된 이후 더 이상 사용되지 않음.
 
 const MapV3Canvas = dynamic(
     () => import('@/features/map/ui/MapV3Canvas').then((m) => m.MapV3Canvas),
@@ -105,25 +98,57 @@ export function MapClient() {
             ? resolvedTheme
             : initialDomTheme;
 
-    const searchParams = useSearchParams();
-    const swarmN = (() => {
-        const raw = Number(searchParams.get('n') ?? '');
-        if (!Number.isFinite(raw) || raw <= 0) return 80;
-        return Math.min(SWARM_MAX_N, Math.floor(raw));
-    })();
+    // sim run 재생: useMockPersonaSwarm 대체. manifest+lifecycle/movement 청크 기반.
+    // tickDurationMs 는 시각적으로 차분한 속도를 위해 길게 잡는다(48 tick × 2.5s ≈ 2분).
+    const sim = useSimRun({ enabled: true, tickDurationMs: 2500 });
+    // 자동 재생 + 루프: ready 시 시작, total_ticks 도달 시 처음으로 되돌려 무한 재생.
+    // 루프가 없으면 종료 후 모든 protagonist 가 go_home 도착점에 정적 정지해 화면이 굳음.
+    const autoPlayedRef = useRef(false);
+    useEffect(() => {
+        if (sim.isReady && !autoPlayedRef.current) {
+            autoPlayedRef.current = true;
+            sim.play();
+        }
+    }, [sim.isReady, sim]);
+    // sim 의 메서드 참조는 useMemo 로 안정화되어 있어 effect 가 매번 재실행되지 않음.
+    const simSeek = sim.seek;
+    const simPlay = sim.play;
+    useEffect(() => {
+        if (
+            sim.isReady &&
+            sim.manifest &&
+            !sim.isPlaying &&
+            sim.currentTick >= sim.manifest.total_ticks - 1
+        ) {
+            simSeek(0);
+            simPlay();
+        }
+    }, [
+        sim.isReady,
+        sim.isPlaying,
+        sim.currentTick,
+        sim.manifest,
+        simSeek,
+        simPlay,
+    ]);
 
-    const {
-        personas: swarmPersonas,
-        positionsRef: swarmPositionsRef,
-        subscribe: swarmSubscribe,
-        setSpotTargets: swarmSetSpotTargets,
-    } = useMockPersonaSwarm({
-        n: swarmN,
-        enabled: true,
-        bbox: SWARM_BBOX,
+    const swarmPositionsRef = sim.positionsRef;
+    const swarmSubscribe = sim.subscribe;
+
+    const simDomain = useSimDomain({
+        manifest: sim.manifest,
+        isReady: sim.isReady,
+        runId: sim.manifest?.run_id ?? '',
+        currentTick: sim.currentTick,
+        subscribe: sim.subscribe,
+        positionsRef: sim.positionsRef,
+        playbackStartMsRef: sim.playbackStartMsRef,
+        tickDurationMsRef: sim.tickDurationMsRef,
     });
 
-    const basePersonas = swarmPersonas;
+    const basePersonas = simDomain.personas;
+    // useSearchParams 는 다른 곳에서 추후 쓰일 수 있어 호출만 유지.
+    void useSearchParams;
 
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
@@ -205,14 +230,10 @@ export function MapClient() {
         });
     }, [basePersonas, feedType, categories, searchQuery]);
 
-    // SpotLifecycle 객체 기반 클러스터. 위치는 swarm ref 에서 직접 읽음.
-    // 참여자→스팟 assignments 를 swarm.setSpotTargets 로 흘려, 참여자들이 실제로 스팟 좌표로 이동.
-    const lifecycleResult = useMockSpotLifecycles({
-        enabled: true,
-        personas: filteredPersonas,
-        positionsRef: swarmPositionsRef,
-        onAssignmentsChangeAction: swarmSetSpotTargets,
-    });
+    // sim run 결과를 SpotLifecycle/cluster 도메인으로 변환한 결과를 그대로 재사용.
+    // sim 의 movement 가 이미 spot 좌표로 이동시키므로 setSpotTargets 류 가 필요 없음.
+    // 표시용 페르소나는 filteredPersonas 로 좁히지만 sim 좌표/lifecycle 자체는 전체 풀 기준.
+    const lifecycleResult = simDomain;
 
     // 사용자 본인이 생성한 spot → 시각적으로 primary 톤 클러스터로 병합.
     const mySpots = useMySpotsStore((s) => s.spots);
@@ -316,13 +337,16 @@ export function MapClient() {
     // 이동 중인 참여자 dot 은 맵에 보이게 두어 "이동 중" 감각 유지.
     const clusteredPersonaIds = lifecycleResult.arrivedParticipantIds;
 
-    // 단독 페르소나만 dot 으로 렌더
+    // 단독 페르소나만 dot 으로 렌더.
+    // 대기 중인 agent 는 useSimRun 이 positionsRef 에서 좌표를 제거 → 여기서 skip.
     const personaOverlays: MapOverlayItem[] = useMemo(() => {
         if (!showPersonas) return [];
         const result: MapOverlayItem[] = [];
         for (const persona of filteredPersonas) {
             if (clusteredPersonaIds.has(persona.id)) continue;
-            const coord = getPersonaCoord(persona.id);
+            const livePos = swarmPositionsRef.current.get(persona.id);
+            if (!livePos) continue;
+            const coord = livePos;
             if (!inViewport(coord)) continue;
             const item: MapOverlayItem = {
                 key: `persona-${persona.id}`,
@@ -430,20 +454,22 @@ export function MapClient() {
                 }}
             />
 
-            {feedListOpen && (
-                <FeedBottomSheet
-                    snapPoint={feedListSnap}
-                    onSnapChange={(s) => {
-                        if (s === 'peek') {
-                            setFeedListOpen(false);
-                        } else {
-                            setFeedListSnap(s);
-                        }
-                    }}
-                    feedType={feedType}
-                    categories={categories}
-                />
-            )}
+            <FeedBottomSheet
+                open={feedListOpen}
+                snapPoint={feedListSnap}
+                onSnapChange={(s) => {
+                    if (s === 'peek') {
+                        setFeedListOpen(false);
+                        return;
+                    }
+                    setFeedListSnap(s);
+                }}
+                onOpenChange={(o) => {
+                    if (!o) setFeedListOpen(false);
+                }}
+                feedType={feedType}
+                categories={categories}
+            />
 
             {tickerEvent && (
                 <div

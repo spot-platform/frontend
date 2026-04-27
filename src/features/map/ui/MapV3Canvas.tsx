@@ -200,9 +200,7 @@ function NaverMapV3({
         const node = containerRef.current;
         const ro = new ResizeObserver(() => {
             try {
-                (
-                    map as unknown as { relayout?: () => void }
-                ).relayout?.();
+                (map as unknown as { relayout?: () => void }).relayout?.();
             } catch {
                 // idempotent
             }

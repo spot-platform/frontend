@@ -16,8 +16,10 @@ import { MOCK_FEED } from '../model/mock';
 import type { FeedItem } from '../model/types';
 
 type FeedBottomSheetProps = {
+    open: boolean;
     snapPoint: BottomSheetSnapPoint;
     onSnapChange: (snap: BottomSheetSnapPoint) => void;
+    onOpenChange?: (open: boolean) => void;
     feedType?: 'all' | 'offer' | 'request';
     categories?: SpotCategory[];
 };
@@ -36,8 +38,10 @@ function getSimulationScore(
 }
 
 export function FeedBottomSheet({
+    open,
     snapPoint,
     onSnapChange,
+    onOpenChange,
     feedType = 'all',
     categories = [],
 }: FeedBottomSheetProps) {
@@ -76,9 +80,11 @@ export function FeedBottomSheet({
 
     return (
         <PersistentDrawer
-            open
+            open={open}
+            onOpenChange={onOpenChange}
             snapPoint={snapPoint}
             onSnapChange={onSnapChange}
+            dismissible
             className="inset-x-3 rounded-t-2xl"
         >
             {snapPoint !== 'peek' && (

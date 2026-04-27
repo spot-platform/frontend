@@ -11,14 +11,12 @@ import {
     IconFileText,
     IconHeartHandshake,
     IconMap,
-    IconMessageCirclePlus,
-    IconSearch,
-    IconUserPlus,
 } from '@tabler/icons-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/shared/lib/cn';
 import { useChatNavStore } from '@/shared/model/chat-nav-store';
 import { SearchBar } from '@/shared/ui/SearchBar';
+import { ChatBottomNav } from '../ui/ChatBottomNav';
 import { ChatCreationPanel } from '../ui/ChatCreationPanel';
 import { ChatHeaderContextSelect } from '../ui/ChatHeaderContextSelect';
 import { ChatRoomList } from '../ui/ChatRoomList';
@@ -187,30 +185,30 @@ function SpotRoomListRow({
         <button
             type="button"
             onClick={onOpen}
-            className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100"
         >
             <div className="relative shrink-0">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-border-soft text-base font-bold text-text-secondary">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-700">
                     {room.title.slice(0, 1)}
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-brand-800 text-[8px] font-bold text-white">
+                <div className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-zinc-900 text-[7px] font-bold text-white">
                     S
                 </div>
             </div>
 
             <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate text-sm font-semibold text-foreground">
+                    <span className="truncate text-[13.5px] font-semibold text-zinc-900">
                         {room.title}
                     </span>
                     <span
                         suppressHydrationWarning
-                        className="shrink-0 text-[11px] text-muted-foreground"
+                        className="shrink-0 text-[10.5px] font-medium text-zinc-400 tabular-nums"
                     >
                         {formatListTime(room.updatedAt)}
                     </span>
                 </div>
-                <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
                     {getLastSpotRoomPreview(room)}
                 </p>
             </div>
@@ -223,68 +221,69 @@ function FileListRow({ files }: { files: SharedFile[] }) {
     const [open, setOpen] = useState(false);
 
     return (
-        <div className="divide-y divide-border-soft">
-            {/* 헤더 행 — 1대1 채팅 행과 동일한 높이/패딩 */}
+        <div>
             <button
                 type="button"
                 onClick={() => setOpen((p) => !p)}
-                className="flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
+                className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100"
             >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <IconFileText size={20} />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500">
+                    <IconFileText size={16} stroke={1.75} />
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-sm font-semibold text-foreground">
+                        <span className="text-[13.5px] font-semibold text-zinc-900">
                             파일
                         </span>
-                        <span className="shrink-0 text-[11px] text-muted-foreground">
+                        <span className="shrink-0 text-[10.5px] font-medium text-zinc-400 tabular-nums">
                             {files.length}개
                         </span>
                     </div>
-                    <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                    <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
                         {files.map((f) => f.name).join(', ')}
                     </p>
                 </div>
-                <span className="shrink-0 text-border-strong">
+                <span className="shrink-0 text-zinc-300">
                     {open ? (
-                        <IconChevronDown size={16} />
+                        <IconChevronDown size={14} stroke={1.75} />
                     ) : (
-                        <IconChevronRight size={16} />
+                        <IconChevronRight size={14} stroke={1.75} />
                     )}
                 </span>
             </button>
 
-            {/* 펼쳐진 파일 목록 */}
-            {open &&
-                files.map((file) => (
-                    <div
-                        key={file.id}
-                        className="flex items-center gap-3 bg-muted px-4 py-3"
-                    >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card text-muted-foreground shadow-sm">
-                            <IconFileText size={16} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-text-secondary">
-                                {file.name}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                                {file.uploaderNickname} ·{' '}
-                                {formatFileSize(file.sizeBytes)}
-                            </p>
-                        </div>
-                        <a
-                            href={file.url}
-                            download={file.name}
-                            onClick={(e) => e.stopPropagation()}
-                            className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-border-soft hover:text-text-secondary active:bg-border-strong"
-                            aria-label={`${file.name} 다운로드`}
+            {open && (
+                <div className="mx-3 mt-1 flex flex-col gap-1 rounded-2xl bg-zinc-50/80 p-2">
+                    {files.map((file) => (
+                        <div
+                            key={file.id}
+                            className="flex items-center gap-3 rounded-xl bg-white px-3 py-2"
                         >
-                            <IconDownload size={16} />
-                        </a>
-                    </div>
-                ))}
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500">
+                                <IconFileText size={14} stroke={1.75} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-[12.5px] font-medium text-zinc-800">
+                                    {file.name}
+                                </p>
+                                <p className="text-[10.5px] text-zinc-400">
+                                    {file.uploaderNickname} ·{' '}
+                                    {formatFileSize(file.sizeBytes)}
+                                </p>
+                            </div>
+                            <a
+                                href={file.url}
+                                download={file.name}
+                                onClick={(e) => e.stopPropagation()}
+                                className="shrink-0 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                                aria-label={`${file.name} 다운로드`}
+                            >
+                                <IconDownload size={14} stroke={1.75} />
+                            </a>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -321,31 +320,31 @@ function SpotItemList({
         hasFiles;
 
     return (
-        <div className="flex flex-col divide-y divide-border-soft">
+        <div className="flex flex-col px-2">
             <SpotRoomListRow room={room} onOpen={onOpenRoom} />
 
             {reverseOfferItem && reverseOfferItem.kind === 'reverse-offer' && (
                 <button
                     type="button"
                     onClick={() => onActionItem(reverseOfferItem)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
+                    className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100"
                 >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                        <IconHeartHandshake size={20} />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-600">
+                        <IconHeartHandshake size={16} stroke={1.75} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-semibold text-foreground">
+                            <span className="truncate text-[13.5px] font-semibold text-zinc-900">
                                 역제안 진행 상태
                             </span>
                             <span
                                 suppressHydrationWarning
-                                className="shrink-0 text-[11px] text-muted-foreground"
+                                className="shrink-0 text-[10.5px] font-medium text-zinc-400 tabular-nums"
                             >
                                 {formatListTime(reverseOfferItem.updatedAt)}
                             </span>
                         </div>
-                        <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                        <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
                             {getReverseOfferStatusLabel(
                                 reverseOfferItem.reverseOffer.status,
                             )}{' '}
@@ -358,30 +357,29 @@ function SpotItemList({
                 </button>
             )}
 
-            {/* 투표 */}
             {voteItems.map((item) => (
                 <button
                     key={item.id}
                     type="button"
                     onClick={() => onActionItem(item)}
-                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
+                    className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100"
                 >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500">
-                        <IconChartBar size={20} />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-600">
+                        <IconChartBar size={16} stroke={1.75} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-semibold text-foreground">
+                            <span className="truncate text-[13.5px] font-semibold text-zinc-900">
                                 {item.kind === 'vote' ? item.vote.question : ''}
                             </span>
                             <span
                                 suppressHydrationWarning
-                                className="shrink-0 text-[11px] text-muted-foreground"
+                                className="shrink-0 text-[10.5px] font-medium text-zinc-400 tabular-nums"
                             >
                                 {formatListTime(item.updatedAt)}
                             </span>
                         </div>
-                        <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                        <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
                             {item.kind === 'vote'
                                 ? `${item.vote.options.length}개 선택지 · ${item.vote.multiSelect ? '복수 선택' : '단일 선택'}`
                                 : ''}
@@ -390,7 +388,6 @@ function SpotItemList({
                 </button>
             ))}
 
-            {/* 일정 — 탭 시 확장 nav 오픈 */}
             {hasSchedule && room.spot.schedule && (
                 <button
                     type="button"
@@ -408,38 +405,37 @@ function SpotItemList({
                             onActionItem(scheduleItem);
                         }
                     }}
-                    className="flex items-center gap-3 px-4 py-3.5 text-left active:bg-muted"
+                    className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100"
                 >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                        <IconCalendarEvent size={20} />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-600">
+                        <IconCalendarEvent size={16} stroke={1.75} />
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
-                            <span className="truncate text-sm font-semibold text-foreground">
+                            <span className="truncate text-[13.5px] font-semibold text-zinc-900">
                                 {room.spot.schedule.confirmedSlot
                                     ? '일정 확정'
                                     : '일정 조율 중'}
                             </span>
                             <span
                                 suppressHydrationWarning
-                                className="shrink-0 text-[11px] text-muted-foreground"
+                                className="shrink-0 text-[10.5px] font-medium text-zinc-400 tabular-nums"
                             >
                                 {formatListTime(room.updatedAt)}
                             </span>
                         </div>
-                        <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                        <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
                             {buildScheduleSubtitle(room.spot.schedule)}
                         </p>
                     </div>
                 </button>
             )}
 
-            {/* 파일 묶음 */}
             {hasFiles && <FileListRow files={room.spot.files} />}
 
             {!hasItems ? (
-                <div className="px-4 py-4 text-sm text-muted-foreground">
-                    아직 등록된 투표·일정·파일·역제안이 없어요.
+                <div className="mx-1 mt-2 rounded-2xl border border-dashed border-zinc-200 px-4 py-6 text-center text-[12.5px] text-zinc-400">
+                    아직 등록된 항목이 없어요. 아래 바에서 추가해 보세요.
                 </div>
             ) : null}
         </div>
@@ -482,8 +478,6 @@ export function MainChatPageClient({
         applyRouteIntent,
     } = useMainChatStore();
     const {
-        subNavOpen,
-        setSubNavOpen,
         close: closeChatNav,
         openPersonalCreate,
         openFriendAdd,
@@ -685,114 +679,46 @@ export function MainChatPageClient({
     );
 
     return (
-        <Main>
-            <div className="flex min-h-0 flex-1 flex-col bg-card">
-                {/* 헤더 */}
-                <div className="shrink-0 border-b border-border-soft bg-card">
-                    <div className="flex min-h-14 items-center justify-between gap-3 px-4 py-2">
-                        <div className="min-w-0 max-w-60 flex-1">
+        <Main safeArea={false}>
+            <div className="relative flex min-h-0 flex-1 flex-col bg-white">
+                {/* 플로팅 헤더 — 좌(타이틀/드롭다운 캡슐) + 우(맵 캡슐) */}
+                <div className="sticky top-0 z-20 px-4 pt-[calc(env(safe-area-inset-top)+0.625rem)] pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="inline-flex max-w-[calc(100%-3.5rem)] items-center rounded-full border border-zinc-200/80 bg-white px-1 py-1 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.18)]">
                             {isPersonalMode ? (
-                                <div className="px-1 font-bold">개인 채팅</div>
+                                <span className="px-3.5 py-1.5 text-[15px] font-semibold tracking-[-0.01em] text-zinc-900">
+                                    개인 채팅
+                                </span>
                             ) : (
-                                <ChatHeaderContextSelect
-                                    value={safeTeamContextId ?? ''}
-                                    onChange={(e) =>
-                                        setSelectedContextId(e.target.value)
-                                    }
-                                    options={teamContextSelectOptions}
-                                    disabled={teamDropdownOptions.length === 0}
-                                    ariaLabel="팀 채팅방 전환"
-                                />
+                                <div className="min-w-0 max-w-56">
+                                    <ChatHeaderContextSelect
+                                        value={safeTeamContextId ?? ''}
+                                        onChange={(e) =>
+                                            setSelectedContextId(e.target.value)
+                                        }
+                                        options={teamContextSelectOptions}
+                                        disabled={
+                                            teamDropdownOptions.length === 0
+                                        }
+                                        ariaLabel="팀 채팅방 전환"
+                                    />
+                                </div>
                             )}
                         </div>
 
-                        <div className="flex items-center gap-1">
-                            {isPersonalMode ? (
-                                <>
-                                    <IconButton
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            setIsPersonalSearchOpen(
-                                                (current) => !current,
-                                            )
-                                        }
-                                        label="개인 채팅 검색"
-                                        className="text-text-secondary"
-                                        icon={
-                                            <IconSearch
-                                                size={22}
-                                                className="text-text-secondary"
-                                            />
-                                        }
-                                    />
-                                    <IconButton
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={openPersonalCreate}
-                                        label="채팅 생성"
-                                        className="text-text-secondary"
-                                        icon={
-                                            <IconMessageCirclePlus
-                                                size={22}
-                                                className="text-text-secondary"
-                                            />
-                                        }
-                                    />
-                                </>
-                            ) : (
-                                <IconButton
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSubNavOpen(!subNavOpen)}
-                                    label="항목 추가"
-                                    className="text-text-secondary"
-                                    icon={
-                                        <IconMessageCirclePlus
-                                            size={22}
-                                            className="text-text-secondary"
-                                        />
-                                    }
-                                />
-                            )}
-                            {isPersonalMode ? (
-                                <IconButton
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={openFriendAdd}
-                                    label="친구 추가"
-                                    className="text-text-secondary"
-                                    icon={
-                                        <IconUserPlus
-                                            size={22}
-                                            className="text-text-secondary"
-                                        />
-                                    }
-                                />
-                            ) : null}
-                            <IconButton
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => push('/map')}
-                                label="맵으로 돌아가기"
-                                className="text-text-secondary"
-                                icon={
-                                    <IconMap
-                                        size={22}
-                                        className="text-text-secondary"
-                                    />
-                                }
-                            />
-                        </div>
+                        <IconButton
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => push('/map')}
+                            label="맵으로 돌아가기"
+                            className="h-10 w-10 rounded-full border border-zinc-200/80 bg-white text-zinc-600 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.18)] hover:bg-zinc-50 hover:text-zinc-900"
+                            icon={<IconMap size={18} stroke={1.75} />}
+                        />
                     </div>
 
                     {isPersonalMode && isPersonalSearchOpen ? (
-                        <div className="border-t border-border-soft">
+                        <div className="mt-2 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-[0_8px_20px_-14px_rgba(15,23,42,0.18)]">
                             <SearchBar
                                 value={personalSearchQuery}
                                 onChange={setPersonalSearchQuery}
@@ -802,9 +728,8 @@ export function MainChatPageClient({
                         </div>
                     ) : null}
 
-                    {/* 개인채팅 필터 칩 */}
                     {isPersonalMode ? (
-                        <div className="flex items-center gap-2 overflow-x-auto px-4 pb-3 scrollbar-hide">
+                        <div className="mt-2 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                             {PERSONAL_FILTERS.map((filter) => {
                                 const selected =
                                     personalFilter === filter.value;
@@ -813,7 +738,7 @@ export function MainChatPageClient({
                                         key={filter.value}
                                         selected={selected}
                                         tone="brand"
-                                        size="md"
+                                        size="sm"
                                         onClick={() =>
                                             setPersonalFilter(
                                                 filter.value as MainChatPersonalFilter,
@@ -822,8 +747,8 @@ export function MainChatPageClient({
                                         className={cn(
                                             'shrink-0',
                                             selected
-                                                ? 'border-foreground bg-foreground text-background'
-                                                : 'border-border-soft bg-card text-text-secondary',
+                                                ? 'border-brand-600 bg-brand-600 text-white'
+                                                : 'border-zinc-200 bg-white text-zinc-600',
                                         )}
                                     >
                                         {filter.label}
@@ -835,12 +760,12 @@ export function MainChatPageClient({
                 </div>
 
                 {/* 컨텐츠 */}
-                <div className="flex-1 overflow-y-auto pb-28">
+                <div className="flex-1 overflow-y-auto pb-32">
                     {isPersonalMode ? (
                         filteredPersonalRooms.length > 0 ? (
                             <ChatRoomList rooms={filteredPersonalRooms} />
                         ) : (
-                            <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+                            <div className="mx-4 mt-4 rounded-2xl border border-dashed border-zinc-200 px-4 py-8 text-center text-[12.5px] text-zinc-400">
                                 {personalSearchQuery.trim()
                                     ? '검색한 닉네임과 맞는 개인 채팅이 없어요.'
                                     : '현재 필터에 맞는 개인 채팅이 없어요.'}
@@ -855,12 +780,34 @@ export function MainChatPageClient({
                             onActionItem={(item) => openActionItem(item)}
                         />
                     ) : (
-                        <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+                        <div className="mx-4 mt-4 rounded-2xl border border-dashed border-zinc-200 px-4 py-8 text-center text-[12.5px] text-zinc-400">
                             참여 중인 팀 채팅이 없어요.
                         </div>
                     )}
                 </div>
             </div>
+
+            {isPersonalMode ? (
+                <ChatBottomNav
+                    mode="personal"
+                    searchActive={isPersonalSearchOpen}
+                    onSearchToggle={() =>
+                        setIsPersonalSearchOpen((current) => !current)
+                    }
+                    onCreatePersonal={openPersonalCreate}
+                    onAddFriend={openFriendAdd}
+                />
+            ) : (
+                <ChatBottomNav
+                    mode="team"
+                    showReverseOffer={
+                        !!selectedSpotRoom &&
+                        isSupporterForSpot(selectedSpotRoom)
+                    }
+                    disabled={!selectedSpotRoom}
+                    onAddItem={(step) => openCreation(step)}
+                />
+            )}
 
             <BottomSheet
                 open={showMobileChatNavPanel}
@@ -869,81 +816,6 @@ export function MainChatPageClient({
                 className="border-2 border-[#3b4954] bg-[#1e2938]"
             >
                 <ChatCreationPanel onClose={closeChatNav} />
-            </BottomSheet>
-
-            <BottomSheet
-                open={!isPersonalMode && subNavOpen}
-                onClose={() => setSubNavOpen(false)}
-                snapPoint="half"
-                title="항목 추가"
-                className="md:hidden"
-            >
-                <div className="grid grid-cols-2 gap-2 pb-4">
-                    {[
-                        {
-                            step: 'schedule' as const,
-                            label: '일정',
-                            description: '가능한 시간 조율',
-                            icon: <IconCalendarEvent size={18} />,
-                            tone: 'bg-brand-50 text-brand-800',
-                        },
-                        {
-                            step: 'vote' as const,
-                            label: '투표',
-                            description: '선택지를 제안해요',
-                            icon: <IconChartBar size={18} />,
-                            tone: 'bg-amber-50 text-amber-700',
-                        },
-                        {
-                            step: 'file' as const,
-                            label: '파일',
-                            description: '첨부 파일 공유',
-                            icon: <IconFileText size={18} />,
-                            tone: 'bg-muted text-text-secondary',
-                        },
-                        ...(selectedSpotRoom &&
-                        isSupporterForSpot(selectedSpotRoom)
-                            ? [
-                                  {
-                                      step: 'reverse-offer' as const,
-                                      label: '역제안',
-                                      description: '파트너에게 역제안',
-                                      icon: <IconHeartHandshake size={18} />,
-                                      tone: 'bg-emerald-50 text-emerald-700',
-                                  },
-                              ]
-                            : []),
-                    ].map(({ step, label, description, icon, tone }) => (
-                        <button
-                            key={step}
-                            type="button"
-                            onClick={() => {
-                                setSubNavOpen(false);
-                                openCreation(step);
-                            }}
-                            className={cn(
-                                'flex items-start gap-3 rounded-2xl border border-border-soft bg-card px-3 py-3 text-left transition hover:bg-muted active:scale-[0.99]',
-                            )}
-                        >
-                            <div
-                                className={cn(
-                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-                                    tone,
-                                )}
-                            >
-                                {icon}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-foreground">
-                                    {label}
-                                </p>
-                                <p className="mt-0.5 text-xs text-muted-foreground">
-                                    {description}
-                                </p>
-                            </div>
-                        </button>
-                    ))}
-                </div>
             </BottomSheet>
         </Main>
     );

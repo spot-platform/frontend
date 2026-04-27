@@ -5,8 +5,7 @@ import suwonJson from './locality-fixtures/suwon.json';
 import type { LocalityFeatureSet } from '@/entities/spot/locality-types';
 
 const SIMULATED_LATENCY_MS = 60;
-const sleep = (ms: number) =>
-    new Promise<void>((res) => setTimeout(res, ms));
+const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
 const FIXTURES: Record<string, LocalityFeatureSet> = {
     suwon: suwonJson as LocalityFeatureSet,

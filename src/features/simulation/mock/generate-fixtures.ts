@@ -24,6 +24,11 @@ import type {
     SimAgent,
     SimManifest,
 } from '../../../entities/spot/sim-stream-types';
+import {
+    SPOT_CATEGORIES,
+    type SpotCategory,
+} from '../../../entities/spot/categories';
+import type { PersonaIntent } from '../../../entities/persona/types';
 
 // ─── seed 고정 RNG ──────────────────────────────────────────────────────────
 
@@ -43,30 +48,132 @@ const pickInt = (min: number, max: number) =>
     Math.floor(rand() * (max - min + 1)) + min;
 const pick = <T>(arr: readonly T[]): T => arr[Math.floor(rand() * arr.length)];
 
-// ─── 수원시 region 정의 (실측 region_id 사용) ───────────────────────────────
+// ─── 수원시 region 정의 (수원시 전역 분산용 8개) ────────────────────────────
+// 핸드오프 §9 의 3종(신촌/장안/연무) 에서 시각적 분산을 위해 수원시 주요 동을 추가.
+// 좌표는 각 동 중심 근사값(수원시 bbox sw=37.22,126.97 ne=37.31,127.08 내부에 분산).
 
 const REGIONS: { id: string; label: string; lat: number; lng: number }[] = [
     { id: 'emd_sinchon', label: '신촌동', lat: 37.262, lng: 127.029 },
     { id: 'emd_jangan', label: '장안동', lat: 37.301, lng: 127.012 },
     { id: 'emd_yeonmu', label: '연무동', lat: 37.286, lng: 127.034 },
+    { id: 'emd_yeongtong', label: '영통동', lat: 37.255, lng: 127.07 },
+    { id: 'emd_ingye', label: '인계동', lat: 37.265, lng: 127.025 },
+    { id: 'emd_gwonseon', label: '권선동', lat: 37.245, lng: 127.0 },
+    { id: 'emd_paldal', label: '팔달동', lat: 37.278, lng: 127.015 },
+    { id: 'emd_maetan', label: '매탄동', lat: 37.252, lng: 127.05 },
 ];
 
 // ─── 페르소나 풀 ────────────────────────────────────────────────────────────
 
-const ARCHETYPES = ['explorer', 'helper', 'creator', 'connector', 'learner'] as const;
-const EMOJIS = ['🏃', '🧘', '💻', '🥾', '🎨', '🎵', '☕', '📚', '🍳', '🧗'] as const;
-const NAMES = [
-    '민지', '서연', '지훈', '현우', '수빈', '하연', '도윤', '예린',
-    '재민', '소연', '준호', '유진', '정우', '채원', '승민', '시은',
-    '도하', '예원', '서준', '하린', '주원', '나윤', '건우', '지원',
+const ARCHETYPES = [
+    'explorer',
+    'helper',
+    'creator',
+    'connector',
+    'learner',
 ] as const;
+const EMOJIS = [
+    '🏃',
+    '🧘',
+    '💻',
+    '🥾',
+    '🎨',
+    '🎵',
+    '☕',
+    '📚',
+    '🍳',
+    '🧗',
+] as const;
+const NAMES = [
+    '민지',
+    '서연',
+    '지훈',
+    '현우',
+    '수빈',
+    '하연',
+    '도윤',
+    '예린',
+    '재민',
+    '소연',
+    '준호',
+    '유진',
+    '정우',
+    '채원',
+    '승민',
+    '시은',
+    '도하',
+    '예원',
+    '서준',
+    '하린',
+    '주원',
+    '나윤',
+    '건우',
+    '지원',
+] as const;
+
+const INTENTS: readonly PersonaIntent[] = ['offer', 'request'] as const;
+
+const TITLE_TEMPLATES: Record<
+    SpotCategory,
+    { offer: readonly string[]; request: readonly string[] }
+> = {
+    요리: {
+        offer: ['홈쿠킹 같이', '이탈리안 클래스'],
+        request: ['요리 같이 배우실 분', '초심자 요리 모임'],
+    },
+    운동: {
+        offer: ['러닝 크루', '주말 HIIT'],
+        request: ['운동 메이트 구해요', '아침 요가 파트너'],
+    },
+    음악: {
+        offer: ['어쿠스틱 잼', '합주 모임'],
+        request: ['기타 같이 치실 분', '보컬 연습 파트너'],
+    },
+    공예: {
+        offer: ['도자기 원데이', '가죽공예 같이'],
+        request: ['공방 같이 가실 분', '금속공예 입문'],
+    },
+    코딩: {
+        offer: ['사이드프로젝트', 'Next.js 스터디'],
+        request: ['코딩 스터디 같이', '리액트 멘토 모집'],
+    },
+    등산: {
+        offer: ['청계산 오전', '북한산 일출'],
+        request: ['등산 크루 구해요', '초보 등산 파트너'],
+    },
+    요가: {
+        offer: ['공원 모닝 요가', '하타 요가'],
+        request: ['요가 클래스 같이', '명상 파트너'],
+    },
+    미술: {
+        offer: ['야외 스케치', '수채화 원데이'],
+        request: ['드로잉 같이', '미술관 동행'],
+    },
+    볼더링: {
+        offer: ['볼더링 크루', '클라이밍'],
+        request: ['볼더링 초심자', '같이 오를 분'],
+    },
+};
+
+function pickTitle(category: SpotCategory, intent: PersonaIntent): string {
+    const bucket = TITLE_TEMPLATES[category][intent];
+    return bucket[Math.floor(rand() * bucket.length)];
+}
 
 // ─── 분포 헬퍼 ──────────────────────────────────────────────────────────────
 
 /** §9 실측 분포: tick 차이 6~15, mode=8 가중치 ~3, 나머지 1. */
 const TRAVEL_DIST = [
-    [6, 1], [7, 1], [8, 3], [9, 1], [10, 1],
-    [11, 1], [12, 1], [13, 1], [14, 1], [15, 1],
+    [6, 1],
+    [7, 1],
+    [8, 3],
+    [9, 1],
+    [10, 1],
+    [11, 1],
+    [12, 1],
+    [13, 1],
+    [14, 1],
+    [15, 1],
 ] as const;
 const TRAVEL_TOTAL = TRAVEL_DIST.reduce((s, [, w]) => s + w, 0);
 
@@ -79,12 +186,17 @@ function sampleTravelTicks(): number {
     return 8;
 }
 
-/** spot 의 시각적 좌표를 region 중심에서 ±150~400m 반경에 배치. */
-function spotCoordIn(region: (typeof REGIONS)[number]): { lat: number; lng: number } {
-    const r = 150 + rand() * 250; // meters
+/** spot 의 시각적 좌표를 region 중심에서 ±400~1500m 반경에 배치(시각적 분산 강화). */
+function spotCoordIn(region: (typeof REGIONS)[number]): {
+    lat: number;
+    lng: number;
+} {
+    const r = 400 + rand() * 1100; // meters
     const angle = rand() * Math.PI * 2;
     const dLat = (r * Math.sin(angle)) / 111_320;
-    const dLng = (r * Math.cos(angle)) / (111_320 * Math.cos((region.lat * Math.PI) / 180));
+    const dLng =
+        (r * Math.cos(angle)) /
+        (111_320 * Math.cos((region.lat * Math.PI) / 180));
     return { lat: region.lat + dLat, lng: region.lng + dLng };
 }
 
@@ -94,8 +206,10 @@ const RUN_ID = 'demo_run_001';
 const DATASET_VERSION = 'mock_v1';
 const TOTAL_TICKS = 48;
 const CHUNK_SIZE = 24;
-const APPROVED_SPOT_COUNT = 60;
-const BACKGROUND_AGENT_COUNT = 200;
+const APPROVED_SPOT_COUNT = 18;
+// background 는 시각화에서 hide 되어 의미 없음 → 0 으로 비활성. region 통계 등 비시각 용도가
+// 다시 필요해지면 늘리면 된다.
+const BACKGROUND_AGENT_COUNT = 0;
 const TICK_DURATION_MS_DEFAULT = 1000;
 
 // ─── 빌드 ───────────────────────────────────────────────────────────────────
@@ -114,6 +228,8 @@ function makeAgent(
         name,
         emoji: pick(EMOJIS),
         home_region_id: region.id,
+        category: pick(SPOT_CATEGORIES),
+        intent: pick(INTENTS),
     };
 }
 
@@ -149,9 +265,16 @@ function build(): {
 
     for (let i = 0; i < APPROVED_SPOT_COUNT; i++) {
         const region = REGIONS[i % REGIONS.length];
-        const create_tick = pickInt(0, TOTAL_TICKS - 18);
-        const start_tick = create_tick + pickInt(10, 16);
-        const complete_tick = start_tick + pickInt(2, 5);
+        // create_tick 을 거의 전체 시간축에 균등 분포(끝 5 tick 만 제외)해 동시 활성 수를 평탄화.
+        const create_tick = pickInt(0, TOTAL_TICKS - 6);
+        const start_tick = Math.min(
+            create_tick + pickInt(8, 14),
+            TOTAL_TICKS - 3,
+        );
+        const complete_tick = Math.min(
+            start_tick + pickInt(2, 4),
+            TOTAL_TICKS - 1,
+        );
         const host = makeAgent(++agentSeq, 'protagonist', region);
         protagonistAgents.push(host);
 
@@ -181,9 +304,13 @@ function build(): {
         backgroundAgents.push(makeAgent(++agentSeq, 'background', region));
     }
 
-    // 5) spot place geometry 추가
+    // 5) spot place geometry 추가 — host 의 category/intent 를 spot 에 그대로 승계.
+    const hostLookup = new Map(protagonistAgents.map((a) => [a.agent_id, a]));
     for (const s of spots) {
         const c = spotCoordIn(s.region);
+        const host = hostLookup.get(s.host_agent_id);
+        const category: SpotCategory = host?.category ?? '운동';
+        const intent: PersonaIntent = host?.intent ?? 'offer';
         places.push({
             place_id: s.spot_id,
             place_type: 'spot',
@@ -191,6 +318,9 @@ function build(): {
             lng: c.lng,
             region_id: s.region.id,
             label: s.spot_id,
+            category,
+            intent,
+            title: pickTitle(category, intent),
         });
     }
 
@@ -225,7 +355,10 @@ function build(): {
         for (let j = 0; j < s.join_count; j++) {
             const joiner = pick(joinerPool);
             joiners.push(joiner);
-            const joinTick = pickInt(s.create_tick, Math.max(s.create_tick, s.start_tick - 8));
+            const joinTick = pickInt(
+                s.create_tick,
+                Math.max(s.create_tick, s.start_tick - 8),
+            );
             const travel = sampleTravelTicks();
             const arrive = Math.min(joinTick + travel, s.start_tick - 1);
             const safeArrive = Math.max(arrive, joinTick + 1);
@@ -361,8 +494,12 @@ function main() {
         JSON.stringify(lifecycle),
     );
 
-    const proCount = manifest.agents.filter((a) => a.agent_role === 'protagonist').length;
-    const bgCount = manifest.agents.filter((a) => a.agent_role === 'background').length;
+    const proCount = manifest.agents.filter(
+        (a) => a.agent_role === 'protagonist',
+    ).length;
+    const bgCount = manifest.agents.filter(
+        (a) => a.agent_role === 'background',
+    ).length;
     console.log(`✓ wrote fixtures to ${outDir}`);
     console.log(
         `  agents: ${manifest.agents.length} (protagonist=${proCount}, background=${bgCount})`,

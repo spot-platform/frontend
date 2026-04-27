@@ -540,69 +540,69 @@
 
 ### Entities
 
-| Entity                   | Fields                                                                                                                                                                                        |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SpotCard                 | spot_id, provenance, title, skill_topic, teach_mode, venue_type (enum), fee_per_partner, location, host_preview, person_fitness_score, attractiveness_score                                   |
-| AttractivenessReport     | composite_score, signals (Record<AttractivenessSignal, number>), improvement_hints[], price_benchmark                                                                                         |
-| AttractivenessSignal     | title_hookiness \| price_reasonableness \| venue_accessibility \| host_reputation_fit \| time_slot_demand \| skill_rarity_bonus \| narrative_authenticity \| bonded_repeat_potential          |
-| AttractivenessVerdict    | too_cheap \| competitive \| slightly_high \| too_high                                                                                                                                         |
-| AgentMarker              | agent_id, location, archetype?                                                                                                                                                                |
-| SpotMarker               | spot_id, location, provenance, status (OPEN \| MATCHED \| CLOSED)                                                                                                                             |
-| LiveEventType            | CREATE_TEACH_SPOT \| JOIN_TEACH_SPOT \| LEAVE_TEACH_SPOT \| MATCH_TEACH_SPOT \| COUNTER_OFFER \| BOND_UPGRADE \| CLOSE_TEACH_SPOT                                                             |
-| LiveEvent                | event_id, event_type (LiveEventType), payload (discriminated union, 아래 §LiveEventPayload)                                                                                                   |
-| TimelineFrame            | tick, day_of_week, time_slot (HH:MM, KST), active_agents[], active_spots[], events_this_tick[]                                                                                                |
-| HighlightClip            | clip_id, title, category, start_tick, end_tick, involved_agents[], narrative                                                                                                                  |
-| ConversionHints          | source_virtual_spot_id, placeholder, pricing_suggestion (fee_breakdown 포함), plan_help, expected_demand, session_context                                                                     |
-| FeeBreakdown             | peer_labor_fee, material_cost, venue_rental, equipment_rental, total, passthrough_total                                                                                                       |
-| ConversionSessionContext | similar_active_count, avg_participants, typical_lifespan_minutes, sample_size, scope (run \| region \| global)                                                                                |
-| SpotLifecycle            | spot_id, location, category, intent (offer \| request), title, host_persona_id, created_at_ms, expected_closed_at_ms, matched_at_ms?, closed_at_ms?, participants[]                           |
-| SpotLifecycleParticipant | persona_id, joined_at_ms, left_at_ms?, arrived_at_ms?                                                                                                                                         |
-| SpotLifecycleEventType   | spot.created \| spot.participant_joined \| spot.participant_left \| spot.matched \| spot.closed \| spot.extended                                                                              |
-| SpotLifecycleEvent       | discriminated union; payload은 아래 §SpotLifecycle 스트림 참고                                                                                                                                |
+| Entity                   | Fields                                                                                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| SpotCard                 | spot_id, provenance, title, skill_topic, teach_mode, venue_type (enum), fee_per_partner, location, host_preview, person_fitness_score, attractiveness_score                                            |
+| AttractivenessReport     | composite_score, signals (Record<AttractivenessSignal, number>), improvement_hints[], price_benchmark                                                                                                  |
+| AttractivenessSignal     | title_hookiness \| price_reasonableness \| venue_accessibility \| host_reputation_fit \| time_slot_demand \| skill_rarity_bonus \| narrative_authenticity \| bonded_repeat_potential                   |
+| AttractivenessVerdict    | too_cheap \| competitive \| slightly_high \| too_high                                                                                                                                                  |
+| AgentMarker              | agent_id, location, archetype?                                                                                                                                                                         |
+| SpotMarker               | spot_id, location, provenance, status (OPEN \| MATCHED \| CLOSED)                                                                                                                                      |
+| LiveEventType            | CREATE_TEACH_SPOT \| JOIN_TEACH_SPOT \| LEAVE_TEACH_SPOT \| MATCH_TEACH_SPOT \| COUNTER_OFFER \| BOND_UPGRADE \| CLOSE_TEACH_SPOT                                                                      |
+| LiveEvent                | event_id, event_type (LiveEventType), payload (discriminated union, 아래 §LiveEventPayload)                                                                                                            |
+| TimelineFrame            | tick, day_of_week, time_slot (HH:MM, KST), active_agents[], active_spots[], events_this_tick[]                                                                                                         |
+| HighlightClip            | clip_id, title, category, start_tick, end_tick, involved_agents[], narrative                                                                                                                           |
+| ConversionHints          | source_virtual_spot_id, placeholder, pricing_suggestion (fee_breakdown 포함), plan_help, expected_demand, session_context                                                                              |
+| FeeBreakdown             | peer_labor_fee, material_cost, venue_rental, equipment_rental, total, passthrough_total                                                                                                                |
+| ConversionSessionContext | similar_active_count, avg_participants, typical_lifespan_minutes, sample_size, scope (run \| region \| global)                                                                                         |
+| SpotLifecycle            | spot_id, location, category, intent (offer \| request), title, host_persona_id, created_at_ms, expected_closed_at_ms, matched_at_ms?, closed_at_ms?, participants[]                                    |
+| SpotLifecycleParticipant | persona_id, joined_at_ms, left_at_ms?, arrived_at_ms?                                                                                                                                                  |
+| SpotLifecycleEventType   | spot.created \| spot.participant_joined \| spot.participant_left \| spot.matched \| spot.closed \| spot.extended                                                                                       |
+| SpotLifecycleEvent       | discriminated union; payload은 아래 §SpotLifecycle 스트림 참고                                                                                                                                         |
 | SimulationRun            | run_id, variant, status (queued \| running \| completed \| failed), started_at, completed_at?, total_ticks, current_tick?, region (center, bbox, timezone), agent_count, seed, user_agent_id?, streams |
-| SimulationRunVariant     | baseline \| high_engagement \| weekend_peak \| custom                                                                                                                                         |
+| SimulationRunVariant     | baseline \| high_engagement \| weekend_peak \| custom                                                                                                                                                  |
 
 ### Request DTO
 
-| DTO                        | Fields                                                                                                      |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| MapSpotsQuery              | mode? ('virtual' \| 'real' \| 'mixed')                                                                      |
-| TimelineStreamQuery        | speed? ('1x' \| '4x' \| '16x'), start_tick?                                                                 |
-| MapSpotsLifecyclesQuery    | swLat, swLng, neLat, neLng, run_id?                                                                         |
-| MapSpotsStreamQuery        | swLat, swLng, neLat, neLng, run_id?                                                                         |
-| CreateSimulationRunRequest | variant, region_bbox?, duration_ticks?, seed?, user_persona_id?, agent_count?                               |
-| CurrentSimulationRunQuery  | variant? ('baseline' \| 'high_engagement' \| 'weekend_peak')                                                |
-| RecomputeAttractivenessReq | -                                                                                                           |
+| DTO                        | Fields                                                                        |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| MapSpotsQuery              | mode? ('virtual' \| 'real' \| 'mixed')                                        |
+| TimelineStreamQuery        | speed? ('1x' \| '4x' \| '16x'), start_tick?                                   |
+| MapSpotsLifecyclesQuery    | swLat, swLng, neLat, neLng, run_id?                                           |
+| MapSpotsStreamQuery        | swLat, swLng, neLat, neLng, run_id?                                           |
+| CreateSimulationRunRequest | variant, region_bbox?, duration_ticks?, seed?, user_persona_id?, agent_count? |
+| CurrentSimulationRunQuery  | variant? ('baseline' \| 'high_engagement' \| 'weekend_peak')                  |
+| RecomputeAttractivenessReq | -                                                                             |
 
 ### Response DTO
 
-| DTO                            | Fields                                |
-| ------------------------------ | ------------------------------------- |
-| MapSpotsResponse               | data (SpotCard[])                     |
-| MapSpotsLifecyclesResponse     | data (SpotLifecycle[])                |
-| HighlightClipsResponse         | data (HighlightClip[])                |
-| AttractivenessReportResponse   | data (AttractivenessReport)           |
-| ConversionHintsResponse        | data (ConversionHints)                |
-| SimulationRunResponse          | data (SimulationRun)                  |
-| CreateSimulationRunResponse    | data ({ run_id, status, eta_seconds }) |
-| RecomputeAttractivenessResponse| data ({ job_id, status })             |
+| DTO                             | Fields                                 |
+| ------------------------------- | -------------------------------------- |
+| MapSpotsResponse                | data (SpotCard[])                      |
+| MapSpotsLifecyclesResponse      | data (SpotLifecycle[])                 |
+| HighlightClipsResponse          | data (HighlightClip[])                 |
+| AttractivenessReportResponse    | data (AttractivenessReport)            |
+| ConversionHintsResponse         | data (ConversionHints)                 |
+| SimulationRunResponse           | data (SimulationRun)                   |
+| CreateSimulationRunResponse     | data ({ run_id, status, eta_seconds }) |
+| RecomputeAttractivenessResponse | data ({ job_id, status })              |
 
 ### Queries
 
-| Name                           | Method | Route                                                             | Request DTO                | Response DTO                    |
-| ------------------------------ | ------ | ----------------------------------------------------------------- | -------------------------- | ------------------------------- |
-| GetMapSpots                    | GET    | /api/v1/map/spots                                                 | MapSpotsQuery              | MapSpotsResponse                |
-| GetMapSpotLifecycles           | GET    | /api/v1/map/spots/lifecycles                                      | MapSpotsLifecyclesQuery    | MapSpotsLifecyclesResponse      |
-| StreamMapSpots                 | GET    | /api/v1/map/spots/stream                                          | MapSpotsStreamQuery        | SSE: SpotLifecycleEvent         |
-| StreamSimulationTimeline       | GET    | /api/v1/simulation/runs/{run_id}/timeline/stream                  | TimelineStreamQuery        | SSE: TimelineFrame              |
-| GetSimulationHighlights        | GET    | /api/v1/simulation/runs/{run_id}/highlights                       | -                          | HighlightClipsResponse          |
-| CreateSimulationRun            | POST   | /api/v1/simulation/runs                                           | CreateSimulationRunRequest | CreateSimulationRunResponse     |
-| GetCurrentSimulationRun        | GET    | /api/v1/simulation/runs/current                                   | CurrentSimulationRunQuery  | SimulationRunResponse           |
-| GetSimulationRun               | GET    | /api/v1/simulation/runs/{run_id}                                  | -                          | SimulationRunResponse           |
-| GetRunSpotConversionHints      | GET    | /api/v1/simulation/runs/{run_id}/spots/{spot_id}/conversion-hints | -                          | ConversionHintsResponse         |
-| GetFeedAttractiveness          | GET    | /api/v1/feed/{feed_id}/attractiveness                             | -                          | AttractivenessReportResponse    |
-| RecomputeFeedAttractiveness    | POST   | /api/v1/feed/{feed_id}/attractiveness/recompute                   | RecomputeAttractivenessReq | RecomputeAttractivenessResponse |
-| GetFeedConversionHints         | GET    | /api/v1/feed/{feed_id}/conversion-hints                           | -                          | ConversionHintsResponse         |
+| Name                        | Method | Route                                                             | Request DTO                | Response DTO                    |
+| --------------------------- | ------ | ----------------------------------------------------------------- | -------------------------- | ------------------------------- |
+| GetMapSpots                 | GET    | /api/v1/map/spots                                                 | MapSpotsQuery              | MapSpotsResponse                |
+| GetMapSpotLifecycles        | GET    | /api/v1/map/spots/lifecycles                                      | MapSpotsLifecyclesQuery    | MapSpotsLifecyclesResponse      |
+| StreamMapSpots              | GET    | /api/v1/map/spots/stream                                          | MapSpotsStreamQuery        | SSE: SpotLifecycleEvent         |
+| StreamSimulationTimeline    | GET    | /api/v1/simulation/runs/{run_id}/timeline/stream                  | TimelineStreamQuery        | SSE: TimelineFrame              |
+| GetSimulationHighlights     | GET    | /api/v1/simulation/runs/{run_id}/highlights                       | -                          | HighlightClipsResponse          |
+| CreateSimulationRun         | POST   | /api/v1/simulation/runs                                           | CreateSimulationRunRequest | CreateSimulationRunResponse     |
+| GetCurrentSimulationRun     | GET    | /api/v1/simulation/runs/current                                   | CurrentSimulationRunQuery  | SimulationRunResponse           |
+| GetSimulationRun            | GET    | /api/v1/simulation/runs/{run_id}                                  | -                          | SimulationRunResponse           |
+| GetRunSpotConversionHints   | GET    | /api/v1/simulation/runs/{run_id}/spots/{spot_id}/conversion-hints | -                          | ConversionHintsResponse         |
+| GetFeedAttractiveness       | GET    | /api/v1/feed/{feed_id}/attractiveness                             | -                          | AttractivenessReportResponse    |
+| RecomputeFeedAttractiveness | POST   | /api/v1/feed/{feed_id}/attractiveness/recompute                   | RecomputeAttractivenessReq | RecomputeAttractivenessResponse |
+| GetFeedConversionHints      | GET    | /api/v1/feed/{feed_id}/conversion-hints                           | -                          | ConversionHintsResponse         |
 
 > `StreamSimulationTimeline` / `StreamMapSpots`는 `text/event-stream`으로 프레임/이벤트 JSON을 단위 송출. 연결 유지 ping은 주석 라인(`: keepalive`)으로만 보내고 데이터 프레임에는 포함하지 않는다.
 
@@ -631,13 +631,13 @@ CLOSE_TEACH_SPOT     → { spot_id, closed_at_ms, outcome (MATCHED | CANCELED | 
 
 ### 모호했던 필드 확정 (2026-04-24)
 
-| 필드 | 확정값 |
-| --- | --- |
-| `SpotCard.venue_type` | `Literal["cafe","home","studio","park","gym"]` (enum) |
-| `AttractivenessReport.price_benchmark.verdict` | `AttractivenessVerdict` enum (`too_cheap`/`competitive`/`slightly_high`/`too_high`) |
+| 필드                                               | 확정값                                                                                                    |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `SpotCard.venue_type`                              | `Literal["cafe","home","studio","park","gym"]` (enum)                                                     |
+| `AttractivenessReport.price_benchmark.verdict`     | `AttractivenessVerdict` enum (`too_cheap`/`competitive`/`slightly_high`/`too_high`)                       |
 | `ConversionHints.pricing_suggestion.fee_breakdown` | `FeeBreakdown` 구조체(peer_labor_fee/material_cost/venue_rental/equipment_rental/total/passthrough_total) |
-| `LiveEvent.event_type` | 위 `LiveEventType` enum. `payload`는 discriminated union |
-| `TimelineFrame.time_slot` | `"HH:MM"` 24h, **KST 고정**. 타임존은 `SimulationRun.region.timezone` (`"Asia/Seoul"`)에도 명시 |
+| `LiveEvent.event_type`                             | 위 `LiveEventType` enum. `payload`는 discriminated union                                                  |
+| `TimelineFrame.time_slot`                          | `"HH:MM"` 24h, **KST 고정**. 타임존은 `SimulationRun.region.timezone` (`"Asia/Seoul"`)에도 명시           |
 
 ### Attractiveness 재계산 정책
 

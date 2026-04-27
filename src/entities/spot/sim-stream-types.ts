@@ -9,7 +9,8 @@
 // 시뮬 모드("A") 한정. 지역 특성 모드("B") 는 별도 타입.
 
 import type { GeoCoord } from './types';
-import type { PersonaArchetype } from '@/entities/persona/types';
+import type { SpotCategory } from './categories';
+import type { PersonaArchetype, PersonaIntent } from '@/entities/persona/types';
 
 // ─── Place ───────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,11 @@ export type PlaceGeometry = {
     region_id?: string;
     /** UI 라벨. region 은 "영통동" 같은 한글, spot 은 title 단축형. */
     label?: string;
+    /** spot 일 때만. host 의 카테고리/intent 와 동일. region 엔 없음. */
+    category?: SpotCategory;
+    intent?: PersonaIntent;
+    /** spot 일 때 UI 카드 제목(template 기반 합성). */
+    title?: string;
 };
 
 // ─── Agent ───────────────────────────────────────────────────────────────────
@@ -45,6 +51,10 @@ export type SimAgent = {
     emoji: string;
     /** 기본 거주 region id. background 는 항상 이 주변에서 wander. */
     home_region_id: string;
+    /** 페르소나의 활동 카테고리. 도메인 필터/클러스터 카테고리 표시에 사용. */
+    category: SpotCategory;
+    /** offer(호스트 모집) / request(영청). */
+    intent: PersonaIntent;
 };
 
 // ─── Manifest (1회 로드) ─────────────────────────────────────────────────────
@@ -71,11 +81,7 @@ export type SimManifest = {
 
 // ─── Movement (청크 단위) ────────────────────────────────────────────────────
 
-export type MovementReason =
-    | 'create_spot'
-    | 'join_spot'
-    | 'go_home'
-    | 'wander';
+export type MovementReason = 'create_spot' | 'join_spot' | 'go_home' | 'wander';
 
 export type Movement = {
     agent_id: string;

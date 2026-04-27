@@ -4,21 +4,21 @@ Spot의 1차 MVP 프론트엔드입니다. Next.js App Router 기반으로 맵, 
 
 ## Stack
 
-| 영역               | 기술                                |
-| ------------------ | ----------------------------------- |
-| Framework          | Next.js 16 + React 19 (App Router)  |
-| Styling            | Tailwind CSS v4 (`@theme` in CSS)   |
-| Theming            | next-themes (light/dark)            |
-| State              | Zustand v5                          |
-| Server state       | TanStack Query v5                   |
-| HTTP               | Ky                                  |
-| Animation          | framer-motion 12                    |
-| Bottom sheet       | Vaul                                |
+| 영역               | 기술                                     |
+| ------------------ | ---------------------------------------- |
+| Framework          | Next.js 16 + React 19 (App Router)       |
+| Styling            | Tailwind CSS v4 (`@theme` in CSS)        |
+| Theming            | next-themes (light/dark)                 |
+| State              | Zustand v5                               |
+| Server state       | TanStack Query v5                        |
+| HTTP               | Ky                                       |
+| Animation          | framer-motion 12                         |
+| Bottom sheet       | Vaul                                     |
 | Map                | Naver Maps (with MockMapCanvas fallback) |
-| PWA                | Serwist                             |
-| Test               | Vitest + Testing Library            |
-| Component explorer | Storybook 10                        |
-| Commit             | Commitizen + Conventional Changelog |
+| PWA                | Serwist                                  |
+| Test               | Vitest + Testing Library                 |
+| Component explorer | Storybook 10                             |
+| Commit             | Commitizen + Conventional Changelog      |
 
 ## Workspace structure
 
@@ -111,12 +111,12 @@ pnpm dev
 cp .env.example .env.local
 ```
 
-| 변수                                 | 설명                                                                                   |
-| ------------------------------------ | -------------------------------------------------------------------------------------- |
-| `ENABLE_DEV_DUMMY_LOGIN`             | `true`로 설정하면 로그인 화면에 개발용 더미 로그인 버튼이 노출됩니다                   |
-| `NEXT_PUBLIC_NAVER_MAP_CLIENT_KEY`   | 네이버 지도 client ID. 비워두면 `MockMapCanvas`로 폴백합니다                           |
-| `NEXT_PUBLIC_NAVER_MAP_STYLE_LIGHT`  | 네이버 지도 라이트 모드 customStyleId (Naver Cloud Console에서 발급)                   |
-| `NEXT_PUBLIC_NAVER_MAP_STYLE_DARK`   | 네이버 지도 다크 모드 customStyleId                                                    |
+| 변수                                | 설명                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| `ENABLE_DEV_DUMMY_LOGIN`            | `true`로 설정하면 로그인 화면에 개발용 더미 로그인 버튼이 노출됩니다 |
+| `NEXT_PUBLIC_NAVER_MAP_CLIENT_KEY`  | 네이버 지도 client ID. 비워두면 `MockMapCanvas`로 폴백합니다         |
+| `NEXT_PUBLIC_NAVER_MAP_STYLE_LIGHT` | 네이버 지도 라이트 모드 customStyleId (Naver Cloud Console에서 발급) |
+| `NEXT_PUBLIC_NAVER_MAP_STYLE_DARK`  | 네이버 지도 다크 모드 customStyleId                                  |
 
 ## Scripts
 
@@ -152,15 +152,15 @@ FE↔BE 계약은 저장소 루트의 `BACKEND_HANDOFF*.md`(entities / schemas /
 
 ## Current status
 
-| 도메인                              | 완성도                                                |
-| ----------------------------------- | ----------------------------------------------------- |
-| map / app shell                     | 가장 완성된 영역 (홈 surface)                         |
-| feed                                | 맵 바텀시트 연동 완료                                 |
-| onboarding (persona wizard)         | 3-step 위저드 + mock 응답                             |
-| simulation (persona / SSE timeline) | 아바타 이동, 이벤트 재생, 하이라이트 피드             |
-| auth                                | Route Handler 부분 연결 (`src/app/api/auth/*`)        |
-| spot, chat, my                      | mock 기반 정상 동작                                   |
-| pay, notifications, bookmarks       | scaffold 위주의 MVP 라우트                            |
+| 도메인                              | 완성도                                         |
+| ----------------------------------- | ---------------------------------------------- |
+| map / app shell                     | 가장 완성된 영역 (홈 surface)                  |
+| feed                                | 맵 바텀시트 연동 완료                          |
+| onboarding (persona wizard)         | 3-step 위저드 + mock 응답                      |
+| simulation (persona / SSE timeline) | 아바타 이동, 이벤트 재생, 하이라이트 피드      |
+| auth                                | Route Handler 부분 연결 (`src/app/api/auth/*`) |
+| spot, chat, my                      | mock 기반 정상 동작                            |
+| pay, notifications, bookmarks       | scaffold 위주의 MVP 라우트                     |
 
 ## Contributing
 

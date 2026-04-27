@@ -1604,12 +1604,12 @@ All message variants share:
 
 #### MapSpotsLifecyclesQuery (query string)
 
-| Field  | Type   | Required | Notes                             |
-| ------ | ------ | -------- | --------------------------------- |
-| swLat  | number | required | bbox south-west 위도              |
-| swLng  | number | required | bbox south-west 경도              |
-| neLat  | number | required | bbox north-east 위도              |
-| neLng  | number | required | bbox north-east 경도              |
+| Field  | Type   | Required | Notes                               |
+| ------ | ------ | -------- | ----------------------------------- |
+| swLat  | number | required | bbox south-west 위도                |
+| swLng  | number | required | bbox south-west 경도                |
+| neLat  | number | required | bbox north-east 위도                |
+| neLng  | number | required | bbox north-east 경도                |
 | run_id | string | optional | 미지정 시 `GetCurrentSimulationRun` |
 
 #### MapSpotsLifecyclesResponse
@@ -1673,7 +1673,12 @@ data: {"type":"spot.closed","spot_id":"spot-v-001","closed_at_ms":181000000,"out
 ```json
 {
     "variant": "weekend_peak",
-    "region_bbox": { "swLat": 37.25, "swLng": 127.01, "neLat": 37.28, "neLng": 127.04 },
+    "region_bbox": {
+        "swLat": 37.25,
+        "swLng": 127.01,
+        "neLat": 37.28,
+        "neLng": 127.04
+    },
     "duration_ticks": 48,
     "seed": 42,
     "user_persona_id": "user-persona-777",
@@ -1709,7 +1714,12 @@ data: {"type":"spot.closed","spot_id":"spot-v-001","closed_at_ms":181000000,"out
         "current_tick": 12,
         "region": {
             "center": { "lat": 37.2636, "lng": 127.0286 },
-            "bbox": { "swLat": 37.25, "swLng": 127.01, "neLat": 37.28, "neLng": 127.04 },
+            "bbox": {
+                "swLat": 37.25,
+                "swLng": 127.01,
+                "neLat": 37.28,
+                "neLng": 127.04
+            },
             "timezone": "Asia/Seoul"
         },
         "agent_count": 500,

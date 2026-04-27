@@ -142,6 +142,8 @@ interface PersistentDrawerProps {
     children: ReactNode;
     snapPoint?: BottomSheetSnapPoint;
     onSnapChange?: (snap: BottomSheetSnapPoint) => void;
+    onOpenChange?: (open: boolean) => void;
+    dismissible?: boolean;
     className?: string;
 }
 
@@ -150,6 +152,8 @@ function PersistentDrawer({
     children,
     snapPoint = 'half',
     onSnapChange,
+    onOpenChange,
+    dismissible = false,
     className,
 }: PersistentDrawerProps) {
     const activeSnap = SNAP_VALUES[snapPoint];
@@ -169,11 +173,12 @@ function PersistentDrawer({
     return (
         <VaulDrawer.Root
             open={open}
+            onOpenChange={onOpenChange}
             snapPoints={SNAP_POINTS_ARRAY}
             activeSnapPoint={activeSnap}
             setActiveSnapPoint={handleSetActiveSnap}
             modal={false}
-            dismissible={false}
+            dismissible={dismissible}
             handleOnly
         >
             <VaulDrawer.Portal>

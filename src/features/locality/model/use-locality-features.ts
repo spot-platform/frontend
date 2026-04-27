@@ -93,7 +93,10 @@ export function useLocalityFeatures(
                 const max = features.density_max[category] || 1;
                 const out = new Map<string, number>();
                 for (const r of features.regions) {
-                    out.set(r.region_id, Math.min(1, r.density[category] / max));
+                    out.set(
+                        r.region_id,
+                        Math.min(1, r.density[category] / max),
+                    );
                 }
                 normCacheRef.current.set(category, out);
                 return out;

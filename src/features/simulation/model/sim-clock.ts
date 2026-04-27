@@ -119,9 +119,7 @@ export function buildAgentTimelines(
     movements: Movement[],
     existing?: AgentTimelineMap,
 ): AgentTimelineMap {
-    const map: AgentTimelineMap = existing
-        ? new Map(existing)
-        : new Map();
+    const map: AgentTimelineMap = existing ? new Map(existing) : new Map();
 
     for (const m of movements) {
         const arr = map.get(m.agent_id);
@@ -146,12 +144,37 @@ export function jitterAround(
 ): GeoCoord {
     const h = hashStringToUnit(seed);
     const angle = h * Math.PI * 2;
-    const r = ((hashStringToUnit(seed + 'r') * 2) - 1) * radiusM;
+    const r = (hashStringToUnit(seed + 'r') * 2 - 1) * radiusM;
     const dLat = (r * Math.sin(angle)) / 111_320;
     const dLng =
         (r * Math.cos(angle)) /
         (111_320 * Math.cos((coord.lat * Math.PI) / 180) || 1);
     return { lat: coord.lat + dLat, lng: coord.lng + dLng };
+}
+
+/**
+ * 대기 상태(첫 movement 전 OR 귀가 완료) agent 의 부드러운 home wander 좌표.
+ * agent_id seed 로 위상/반경/주기를 결정 → 같은 시간 동일 좌표(루프 안전).
+ * 평균 반경 ~250m, agent 마다 다른 주기로 한 점 뭉침 방지.
+ */
+export function idleWanderPosition(
+    agent: SimAgent,
+    home: GeoCoord,
+    tFloat: number,
+): GeoCoord {
+    const seed = agent.agent_id;
+    const radiusM = 120 + hashStringToUnit(seed) * 280;
+    const phase = hashStringToUnit(seed + 'p') * Math.PI * 2;
+    const periodTicks = 8 + hashStringToUnit(seed + 't') * 16;
+    const angle = phase + (tFloat / periodTicks) * Math.PI * 2;
+    const r =
+        radiusM *
+        (0.6 + 0.4 * Math.sin(phase * 1.7 + (tFloat / periodTicks) * Math.PI));
+    const dLat = (r * Math.sin(angle)) / 111_320;
+    const dLng =
+        (r * Math.cos(angle)) /
+        (111_320 * Math.cos((home.lat * Math.PI) / 180) || 1);
+    return { lat: home.lat + dLat, lng: home.lng + dLng };
 }
 
 function hashStringToUnit(s: string): number {
