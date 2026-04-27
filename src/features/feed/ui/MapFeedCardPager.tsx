@@ -1,6 +1,3 @@
-// 맵 위에 떠 있는 피드 카드 페이저.
-// 단계: peek → expanded → promote (한 장씩 누적)
-// promote 카드 본문은 FeedCard 풀 — 아바타 가로 자동 스크롤 등 포함.
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
@@ -307,26 +304,33 @@ export function MapFeedCardPager({
                                             e.stopPropagation();
                                         }}
                                     >
-                                        <FeedCard item={item} />
-                                        {isTop && (
-                                            <button
-                                                type="button"
-                                                data-pager-action="bookmark"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    bookmarkTopPromoted();
-                                                }}
-                                                onPointerDown={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                aria-label="찜에 추가"
-                                                className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border-soft/70 bg-card/90 text-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-destructive hover:text-destructive-foreground"
-                                            >
-                                                <IconHeart
-                                                    size={16}
-                                                    stroke={2}
-                                                />
-                                            </button>
+                                        {isTop ? (
+                                            <>
+                                                <FeedCard item={item} />
+                                                <button
+                                                    type="button"
+                                                    data-pager-action="bookmark"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        bookmarkTopPromoted();
+                                                    }}
+                                                    onPointerDown={(e) =>
+                                                        e.stopPropagation()
+                                                    }
+                                                    aria-label="찜에 추가"
+                                                    className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border-soft/70 bg-card/90 text-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                                                >
+                                                    <IconHeart
+                                                        size={16}
+                                                        stroke={2}
+                                                    />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <div
+                                                aria-hidden
+                                                className="h-[200px]"
+                                            />
                                         )}
                                     </div>
                                 </motion.div>
