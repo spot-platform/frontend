@@ -48,20 +48,6 @@ export const UserDotMoving: Story = {
     ),
 };
 
-export const UserDotExpanded: Story = {
-    args: baseArgs,
-    render: () => (
-        <Stage>
-            <PersonaDotMarkerBlob
-                name="민지"
-                variant="user"
-                profileImageUrl="https://i.pravatar.cc/80?img=5"
-                expanded
-            />
-        </Stage>
-    ),
-};
-
 export const AiDotIdle: Story = {
     args: baseArgs,
     render: () => (
@@ -71,16 +57,11 @@ export const AiDotIdle: Story = {
     ),
 };
 
-export const AiDotExpanded: Story = {
+export const AiDotMoving: Story = {
     args: baseArgs,
     render: () => (
         <Stage>
-            <PersonaDotMarkerBlob
-                name="GPT Persona"
-                variant="ai"
-                emoji="🧘"
-                expanded
-            />
+            <PersonaDotMarkerBlob name="GPT Persona" variant="ai" moving />
         </Stage>
     ),
 };
@@ -90,15 +71,15 @@ export const MixedCrowd: Story = {
     render: () => (
         <div className="relative h-55 w-90 overflow-hidden bg-map-bg">
             {[
-                { x: 60, y: 40, v: 'user', name: '민지', img: 'img=5' },
-                { x: 120, y: 80, v: 'ai', name: 'GPT', emoji: '💻' },
-                { x: 180, y: 50, v: 'user', name: '서연', img: 'img=12' },
-                { x: 220, y: 110, v: 'ai', name: 'Claude', emoji: '🎨' },
-                { x: 90, y: 140, v: 'user', name: '지훈', img: 'img=14' },
-                { x: 260, y: 170, v: 'ai', name: 'Mini', emoji: '🧘' },
-                { x: 160, y: 170, v: 'user', name: '수빈', img: 'img=32' },
-                { x: 300, y: 60, v: 'user', name: '하연', img: 'img=47' },
-                { x: 40, y: 180, v: 'ai', name: 'Agent', emoji: '☕' },
+                { x: 60, y: 40, v: 'user', name: '민지' },
+                { x: 120, y: 80, v: 'ai', name: 'GPT' },
+                { x: 180, y: 50, v: 'user', name: '서연' },
+                { x: 220, y: 110, v: 'ai', name: 'Claude' },
+                { x: 90, y: 140, v: 'user', name: '지훈' },
+                { x: 260, y: 170, v: 'ai', name: 'Mini' },
+                { x: 160, y: 170, v: 'user', name: '수빈' },
+                { x: 300, y: 60, v: 'user', name: '하연' },
+                { x: 40, y: 180, v: 'ai', name: 'Agent' },
             ].map((d, i) => (
                 <div
                     key={i}
@@ -108,12 +89,6 @@ export const MixedCrowd: Story = {
                     <PersonaDotMarkerBlob
                         name={d.name}
                         variant={d.v as 'user' | 'ai'}
-                        emoji={d.emoji}
-                        profileImageUrl={
-                            d.img
-                                ? `https://i.pravatar.cc/80?${d.img}`
-                                : undefined
-                        }
                     />
                 </div>
             ))}
@@ -121,30 +96,20 @@ export const MixedCrowd: Story = {
     ),
 };
 
-export const DarkUserDotExpanded: Story = {
+export const DarkUserDot: Story = {
     args: baseArgs,
     render: () => (
         <Stage dark>
-            <PersonaDotMarkerBlob
-                name="민지"
-                variant="user"
-                profileImageUrl="https://i.pravatar.cc/80?img=5"
-                expanded
-            />
+            <PersonaDotMarkerBlob name="민지" variant="user" moving />
         </Stage>
     ),
 };
 
-export const DarkAiDotExpanded: Story = {
+export const DarkAiDot: Story = {
     args: baseArgs,
     render: () => (
         <Stage dark>
-            <PersonaDotMarkerBlob
-                name="GPT Persona"
-                variant="ai"
-                emoji="🧘"
-                expanded
-            />
+            <PersonaDotMarkerBlob name="GPT Persona" variant="ai" moving />
         </Stage>
     ),
 };

@@ -1,2 +1,22 @@
 @import 'tailwindcss';
 @import '../../packages/design-system/src/styles/tokens.css';
+
+/* persona dot 의 이동 중 pulse — JS 가 아닌 CPU 부담이 적은 GPU 컴포지터 transform 애니메이션. */
+@keyframes persona-dot-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.12);
+    }
+}
+.animate-persona-dot-pulse {
+    animation: persona-dot-pulse 1.4s ease-in-out infinite;
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .animate-persona-dot-pulse {
+        animation: none;
+    }
+}

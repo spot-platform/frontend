@@ -50,16 +50,12 @@ export function MapFeedCardPager({
     const searchQuery = useFilterStore((s) => s.searchQuery);
     const setPromotedCount = onPromotedCountChange;
     const isStackDragging = useRef(false);
-    const exitDirRef = useRef<Map<string, ExitDirection>>(new Map());
-    const [, forceRerender] = useState(0);
-
-    function setExitDir(id: string, dir: ExitDirection) {
-        exitDirRef.current.set(id, dir);
-        forceRerender((n) => n + 1);
-    }
-    function clearExitDir(id: string) {
-        exitDirRef.current.delete(id);
-    }
+    // 좌/우 swipe 가 시작된 단일 카드만 override — 그 외는 기본 'down' exit.
+    // ref + forceRerender 안티패턴 대신 단일 state 로 정리 (한 시점에 override 대상은 1장).
+    const [exitOverride, setExitOverride] = useState<{
+        id: string;
+        dir: ExitDirection;
+    } | null>(null);
 
     const filtered = useMemo(() => {
         const q = searchQuery.trim().toLowerCase();
@@ -107,9 +103,9 @@ export function MapFeedCardPager({
     function bookmarkTopPromoted() {
         const top = promotedItems[promotedItems.length - 1];
         if (!top) return;
-        // exit 방향을 먼저 ref+state 로 커밋해 다음 렌더에 반영,
+        // exit 방향을 state 로 먼저 커밋해 다음 렌더에 반영,
         // 다음 frame 에서 promote 카운트를 줄여 AnimatePresence 가 'left' exit 로 빠지게.
-        setExitDir(top.id, 'left');
+        setExitOverride({ id: top.id, dir: 'left' });
         onBookmark?.(top);
         requestAnimationFrame(() => {
             if (safePromoted > 0) setPromotedCount(safePromoted - 1);
@@ -118,29 +114,24 @@ export function MapFeedCardPager({
     function openDetailTopPromoted() {
         const top = promotedItems[promotedItems.length - 1];
         if (!top) return;
-        setExitDir(top.id, 'right');
+        setExitOverride({ id: top.id, dir: 'right' });
         requestAnimationFrame(() => {
             if (safePromoted > 0) setPromotedCount(safePromoted - 1);
             router.push(`/feed/${top.id}`);
         });
     }
     function resetToPeek() {
-        // 한 장씩 stagger 로 흡수. promote 가 N 장이면 N 회 setTimeout.
+        // 모든 promoted 카드를 한 번에 제거. 시각적 stagger 는 각 카드의
+        // exit transition.delay (order * 0.09s) 로 표현 — N 회 setTimeout 호출과
+        // setPromotedCount state 변경을 1 회로 압축해 리렌더 비용 절감.
         const start = safePromoted;
         if (start === 0) {
             onSnapChange('peek');
             return;
         }
-        for (let i = 0; i < start; i++) {
-            setTimeout(() => {
-                // 가장 위(최근 promote) 부터 한 장씩 차감.
-                setPromotedCount(start - 1 - i);
-            }, i * 90);
-        }
-        // 마지막 카드까지 빠진 후 peek 으로 전환.
-        setTimeout(() => {
-            onSnapChange('peek');
-        }, start * 90);
+        setPromotedCount(0);
+        // 가장 깊은 카드의 exit 가 끝난 시점 직후에 snap 전환.
+        setTimeout(() => onSnapChange('peek'), start * 90);
     }
 
     function handleStackDragEnd(_e: unknown, info: PanInfo) {
@@ -198,7 +189,10 @@ export function MapFeedCardPager({
                     className="relative mx-auto"
                     style={{ width: PROMOTED_CARD_WIDTH }}
                 >
-                    <AnimatePresence initial={false}>
+                    <AnimatePresence
+                        initial={false}
+                        onExitComplete={() => setExitOverride(null)}
+                    >
                         {promotedItems.map((item, i) => {
                             const order = promotedItems.length - 1 - i;
                             const isTop = order === 0;
@@ -209,8 +203,10 @@ export function MapFeedCardPager({
                             const yDvh = order * PROMOTED_STACK_STEP_DVH;
                             const scale = 1 - order * 0.025;
 
-                            const exitDir =
-                                exitDirRef.current.get(item.id) ?? 'down';
+                            const exitDir: ExitDirection =
+                                exitOverride?.id === item.id
+                                    ? exitOverride.dir
+                                    : 'down';
                             const horizontalExitTransition = {
                                 duration: 0.32,
                                 ease: [0.32, 0.72, 0, 1] as [
@@ -238,7 +234,19 @@ export function MapFeedCardPager({
                                             transition:
                                                 horizontalExitTransition,
                                         }
-                                      : { y: '60dvh', opacity: 0 };
+                                      : {
+                                            y: '60dvh',
+                                            opacity: 0,
+                                            transition: prefersReducedMotion
+                                                ? { duration: 0 }
+                                                : {
+                                                      type: 'spring' as const,
+                                                      stiffness: 240,
+                                                      damping: 28,
+                                                      mass: 0.7,
+                                                      delay: order * 0.09,
+                                                  },
+                                        };
 
                             return (
                                 <motion.div
@@ -263,9 +271,6 @@ export function MapFeedCardPager({
                                         isTop
                                             ? handleTopPromotedDragEnd
                                             : undefined
-                                    }
-                                    onAnimationComplete={() =>
-                                        clearExitDir(item.id)
                                     }
                                     initial={{ y: '60dvh', opacity: 0 }}
                                     animate={{
