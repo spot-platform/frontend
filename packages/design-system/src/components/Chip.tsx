@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../lib/cn';
-import { cva, type VariantProps } from '../lib/cva';
+import { cva } from '../lib/cva';
 
 const chipVariants = cva(
     'inline-flex items-center justify-center rounded-full font-medium transition-colors',

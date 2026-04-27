@@ -377,7 +377,6 @@ export function MapClient() {
     }, [
         filteredPersonas,
         clusteredPersonaIds,
-        getPersonaCoord,
         swarmSubscribe,
         swarmPositionsRef,
         showPersonas,

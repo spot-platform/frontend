@@ -43,9 +43,17 @@ export function useLocalityFeatures(
 ): UseLocalityFeaturesResult {
     const { targetCity = DEFAULT_CITY, enabled = true } = options;
 
-    const [features, setFeatures] = useState<LocalityFeatureSet | null>(null);
-    const [isReady, setIsReady] = useState(false);
-    const [error, setError] = useState<Error | null>(null);
+    // targetCity/enabled 키가 바뀌면 fetch 결과가 적용된 직후의 키와 비교해서
+    // stale 결과를 무시한다. effect 내부에서 setState 만 호출하므로 cascading
+    // render 가 발생하지 않는다.
+    const requestKey = enabled ? targetCity : null;
+
+    const [state, setState] = useState<{
+        key: string | null;
+        features: LocalityFeatureSet | null;
+        isReady: boolean;
+        error: Error | null;
+    }>({ key: null, features: null, isReady: false, error: null });
 
     // 정규화된 결과를 카테고리 단위로 메모이즈.
     const normCacheRef = useRef<Map<LocalityCategory, Map<string, number>>>(
@@ -55,25 +63,37 @@ export function useLocalityFeatures(
     useEffect(() => {
         if (!enabled) return;
         let mounted = true;
-        setIsReady(false);
-        setError(null);
-        normCacheRef.current.clear();
 
         fetchLocalityFeatures(targetCity)
             .then((set) => {
                 if (!mounted) return;
-                setFeatures(set);
-                setIsReady(true);
+                normCacheRef.current.clear();
+                setState({
+                    key: targetCity,
+                    features: set,
+                    isReady: true,
+                    error: null,
+                });
             })
             .catch((e: unknown) => {
                 if (!mounted) return;
-                setError(e instanceof Error ? e : new Error(String(e)));
+                normCacheRef.current.clear();
+                setState({
+                    key: targetCity,
+                    features: null,
+                    isReady: false,
+                    error: e instanceof Error ? e : new Error(String(e)),
+                });
             });
 
         return () => {
             mounted = false;
         };
     }, [targetCity, enabled]);
+
+    const features = state.key === requestKey ? state.features : null;
+    const isReady = state.key === requestKey && state.isReady;
+    const error = state.key === requestKey ? state.error : null;
 
     const regionMap = useMemo(() => {
         const m = new Map<string, LocalityRegion>();

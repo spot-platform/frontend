@@ -361,6 +361,9 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             // 즉시 한 프레임 반영
             emitFrame(clamped);
         },
+        // emitFrame 은 컴포넌트 본체의 일반 함수 선언이라 매 렌더 새 참조다.
+        // ref 들만 읽고 클로저 캡처가 없으므로 deps 에서 의도적으로 제외.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [manifest],
     );
 

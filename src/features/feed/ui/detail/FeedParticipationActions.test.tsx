@@ -15,9 +15,12 @@ const mockSetQueryData = vi.fn();
 const mockInvalidateQueries = vi.fn();
 const mockCreateOrSelectFeedParticipationRoom = vi.fn(() => ({ id: 'room-1' }));
 const mockShowMessage = vi.fn();
-const mockConsumeMockPoints = vi.fn((_deposit: number, _label: string) => ({
-    data: { balance: 39500 },
-}));
+const mockConsumeMockPoints = vi.fn(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_deposit: number, _label: string) => ({
+        data: { balance: 39500 },
+    }),
+);
 const mockUsePointBalance = vi.fn(() => ({
     data: { data: { balance: 50000 } },
     isLoading: false,
