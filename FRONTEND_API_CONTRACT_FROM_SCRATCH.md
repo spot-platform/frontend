@@ -1890,7 +1890,370 @@ responses:
 
 ---
 
-## 4. 프론트 구현 우선순위
+## 4. 백엔드 구현용 상세 규칙
+
+이 섹션은 백엔드 팀원이 별도 설명 없이 구현할 수 있도록 enum, validation, 상태 전이, 권한 규칙을 한곳에 모은다. 위의 API 명세와 충돌하면 **이 섹션을 우선 기준**으로 삼는다.
+
+### 4.1 Enum 사전
+
+#### Auth / User
+
+| enum | values | 설명 |
+|---|---|---|
+| `OAuthProvider` | `kakao`, `google` | 소셜 로그인 제공자 |
+| `UserPersonaRole` | `SUPPORTER`, `PARTNER` | 사용자가 주로 수행하려는 역할 |
+| `ProfileType` | `SUPPORTER`, `PARTNER` | 공개 프로필 타입 |
+| `SupporterRegistrationStatus` | `NOT_SUBMITTED`, `PENDING`, `VERIFIED`, `REJECTED` | 서포터 검증 상태 |
+| `PersonaArchetype` | `explorer`, `helper`, `creator`, `connector`, `learner` | 온보딩 성향 타입 |
+
+#### Spot / Feed
+
+| enum | values | 설명 |
+|---|---|---|
+| `SpotType` | `OFFER`, `REQUEST` | OFFER=내가 무언가를 제공/개설, REQUEST=내가 도움/모임을 요청 |
+| `SpotStatus` | `OPEN`, `MATCHED`, `CLOSED`, `CANCELLED` | 스팟 생명주기 상태 |
+| `FeedItemType` | `OFFER`, `REQUEST`, `RENT` | 피드 카드 타입. `RENT`는 MVP에서 feed-only 타입으로 취급 가능 |
+| `FeedItemStatus` | `OPEN`, `MATCHED`, `CLOSED` | 피드 노출용 상태. 취소된 스팟은 기본 목록에서 제외 권장 |
+| `FeedCategory` | `음악`, `요리`, `운동`, `공예`, `언어`, `기타` | 피드 필터 카테고리 |
+| `SpotCategory` | `요리`, `운동`, `음악`, `공예`, `코딩`, `등산`, `요가`, `미술`, `볼더링` | 지도/시뮬레이션/스팟 도메인 카테고리 |
+| `FeedAuthorRole` | `SUPPORTER`, `PARTNER` | 피드 작성자 역할 |
+| `FeedApplicationStatus` | `APPLIED`, `ACCEPTED`, `REJECTED`, `CANCELLED` | 피드 신청 상태 |
+| `FeedApplicationRole` | `SUPPORTER`, `PARTNER` | 신청자가 어떤 역할로 신청했는지 |
+| `TimelineEventKind` | `CREATED`, `MATCHED`, `COMPLETED`, `CANCELLED`, `COMMENT`, `SETTLEMENT_REQUESTED`, `SETTLEMENT_APPROVED` | 스팟 타임라인 이벤트 타입 |
+
+#### Collaboration
+
+| enum | values | 설명 |
+|---|---|---|
+| `SpotParticipant.role` | `AUTHOR`, `PARTICIPANT` | 스팟 작성자/참여자 구분 |
+| `WorkflowApprovalStatus` | `PENDING`, `APPROVED` | 정산/최종 승인 상태 |
+| `SpotReview.rating` | `1`, `2`, `3`, `4`, `5` | 별점. 정수만 허용 |
+
+#### Chat
+
+| enum | values | 설명 |
+|---|---|---|
+| `ChatRoomCategory` | `personal`, `spot` | 1:1 채팅 / 스팟 팀 채팅 |
+| `MainChatTopTab` | `personal`, `team` | 프론트 상단 탭 |
+| `PersonalCounterpartRole` | `SUPPORTER`, `PARTNER` | 1:1 채팅 상대 역할 |
+| `MainChatPersonalFilter` | `all`, `unread`, `SUPPORTER`, `PARTNER` | 개인 채팅 필터 |
+| `MainChatTeamFilter` | `all`, `vote`, `schedule`, `file` | 팀 채팅 필터 |
+| `ChatActionKind` | `vote`, `schedule`, `file`, `reverse-offer` | 채팅에서 독립 액션으로 노출되는 항목 |
+| `ChatMessage.kind` | `system`, `message`, `vote`, `schedule`, `file`, `shortcut`, `reverse-offer`, `proposal` | 메시지 payload discriminator |
+| `ProposalStatus` | `PENDING`, `ACCEPTED`, `NEGOTIATING`, `DECLINED` | 채팅 제안 카드 상태 |
+| `ChatSSEEventType` | `message`, `read`, `typing` | SSE 이벤트 타입 |
+| `ChatReverseOfferStatus` | `PARTNER_REVIEW`, `ADMIN_APPROVAL_PENDING` | 역제안 진행 상태 |
+
+#### Pay / Notification / Admin
+
+| enum | values | 설명 |
+|---|---|---|
+| `PointTransaction.type` | `CHARGE`, `USE`, `REFUND`, `WITHDRAW` | 포인트 거래 타입 |
+| `PointWithdrawal.status` | `PENDING`, `COMPLETED`, `REJECTED` | 출금 요청 상태 |
+| `AdminPostType` | `curation`, `notice`, `report` | 운영 게시글 타입 |
+| `Notification.targetType` | `spot`, `feed`, `chat`, `pay`, `system`, `admin-post` | 알림 클릭 시 이동 대상 |
+
+#### Simulation / Locality
+
+| enum | values | 설명 |
+|---|---|---|
+| `SpotProvenance` | `virtual`, `real`, `mixed` | 실제/가상/혼합 데이터 출처 |
+| `SpotTeachMode` | `1:1`, `small_group`, `workshop` | 진행 방식 |
+| `SpotVenueType` | `cafe`, `home`, `studio`, `park`, `gym` | 장소 타입 |
+| `PlaceRole` | `meetup`, `main`, `secondary`, `wrapup` | POI가 플랜에서 맡는 역할 |
+| `AddOnMechanism` | `fixed`, `funding`, `realcost` | 추가 비용 산정 방식 |
+| `AttractivenessVerdict` | `too_cheap`, `competitive`, `slightly_high`, `too_high` | 가격 매력도 판정 |
+| `SimAgentRole` | `protagonist`, `background` | 시뮬레이션 에이전트 역할 |
+| `MovementReason` | `create_spot`, `join_spot`, `go_home`, `wander` | 이동 사유 |
+| `LifecycleEventType` | `SPOT_CREATED`, `SPOT_MATCHED`, `SPOT_CONFIRMED`, `SPOT_STARTED`, `SPOT_COMPLETED`, `NO_SHOW` | 시뮬레이션 생명주기 이벤트 |
+| `LocalityCategory` | `food`, `cafe`, `activity`, `park`, `culture`, `nightlife`, `lesson` | 지역 특성 카테고리 |
+
+### 4.2 요청/응답 validation 규칙
+
+#### 공통
+
+- `id`는 string으로 내려준다. UUID 권장이나 프론트는 string이면 동작한다.
+- `createdAt`, `updatedAt`, `joinedAt`, `uploadedAt`, `requestedAt` 등은 ISO 8601 timestamp로 내려준다.
+- 금액/포인트 필드는 모두 정수 KRW/point 단위로 내려준다. 음수 금지. 단, 거래 내역의 `amount`는 타입에 따라 양수로 두고 `type`으로 방향을 구분한다.
+- 빈 문자열은 저장하지 않는다. optional string은 값이 없으면 `undefined`/필드 누락 또는 `null` 중 하나로 통일한다. 프론트 타입은 주로 optional을 기대한다.
+- 목록 API는 빈 결과일 때 `data: []`를 반환한다. `null` 반환 금지.
+- 단건 조회에서 대상이 없으면 `404 ErrorResponse`를 반환한다. 단, 명세에서 명시한 `SimulationSpotDetail | null`, `SpotSchedule | null`, `SpotChecklist | null`, `LinkedBankAccount | null`은 `200` + `data: null` 허용.
+
+#### Auth
+
+| field | rule |
+|---|---|
+| `email` | 필수, email format, trim 후 저장/비교 |
+| `password` | 필수, 최소 8자 권장 |
+| `next` | 내부 경로만 허용. `http://`, `https://`, `//` 외부 redirect 금지 |
+| `accessToken` | API 인증용. 만료 시간 짧게 권장 |
+| `refreshToken` | 재발급용. 탈취 위험 고려해 httpOnly cookie 권장 |
+
+#### Profile / Onboarding
+
+| field | rule |
+|---|---|
+| `nickname` | 1~20자 권장, trim 필수 |
+| `phone` | optional, 숫자/하이픈 허용 |
+| `avatarUrl` | optional, URL string |
+| `interests` | 1개 이상 권장, 중복 제거 |
+| `mediaUrls` | URL string 배열, 최대 10개 권장 |
+| `career`, `bio` | 0~2000자 권장 |
+
+#### Feed / Spot
+
+| field | rule |
+|---|---|
+| `title` | 필수, 1~80자 권장 |
+| `description` | 필수 또는 optional 도메인별 결정, 최대 5000자 권장 |
+| `pointCost`, `price`, `deposit` | 0 이상 정수 |
+| `deadline` | `YYYY-MM-DD`, 과거 날짜는 생성 시 거부 권장 |
+| `coord.lat` | -90~90 |
+| `coord.lng` | -180~180 |
+| `category` | 위 enum 중 하나 권장. 기존 데이터 호환을 위해 string fallback 가능 |
+| `maxParticipants` | 1 이상 정수 |
+| `progressPercent` | 0~100 |
+| `views`, `likes`, `partnerCount`, `applicantCount` | 0 이상 정수 |
+
+#### Schedule / Vote / Checklist
+
+| field | rule |
+|---|---|
+| `ScheduleSlot.date` | `YYYY-MM-DD` |
+| `ScheduleSlot.hour` | 0~23 정수 |
+| `availableUserIds` | 참여자 user id만 허용 권장, 중복 제거 |
+| `VoteOption.label` | 1~60자 |
+| `CreateVotePayload.options` | 최소 2개, 최대 10개 권장 |
+| `multiSelect` | 기본값 false |
+| `ChecklistItem.text` | 1~120자 |
+| `ChecklistItem.completed` | boolean |
+
+#### Chat
+
+| field | rule |
+|---|---|
+| `content` | 1~2000자, trim 후 빈 문자열 거부 |
+| `roomId` | 사용자가 멤버인 방만 조회/전송 가능 |
+| `cursor` | 서버가 발급한 opaque string 권장 |
+| `messages` | `createdAt` 오름차순 또는 내림차순을 API별로 고정. 이 문서는 채팅방 화면에서 오래된→최신 오름차순 권장 |
+| `ChatMessage.kind` | kind별 payload 필수. 예: `kind='vote'`면 `vote` 필수 |
+
+#### Pay
+
+| field | rule |
+|---|---|
+| `amount` | 1 이상 정수 |
+| `charge.amount` | 최소 충전 금액 정책 필요. 예: 1000 이상 |
+| `withdraw.amount` | 잔액 이하, 최소 출금 금액 정책 필요 |
+| `accountNumber` | 저장 시 암호화/마스킹. 응답에는 가능하면 마스킹된 번호만 반환 |
+
+### 4.3 상태 전이 규칙
+
+#### SpotStatus
+
+```txt
+OPEN -> MATCHED -> CLOSED
+OPEN -> CANCELLED
+MATCHED -> CANCELLED
+```
+
+- `OPEN`: 작성 직후, 참여/신청 가능.
+- `MATCHED`: 참여자가 확정되어 진행 중.
+- `CLOSED`: 활동 완료, 후기/정산 가능.
+- `CANCELLED`: 취소됨. 기본 목록/지도에서는 숨김 권장.
+- 금지: `CLOSED -> OPEN`, `CANCELLED -> OPEN`, `CANCELLED -> MATCHED`.
+
+#### FeedApplicationStatus
+
+```txt
+APPLIED -> ACCEPTED
+APPLIED -> REJECTED
+APPLIED -> CANCELLED
+ACCEPTED -> CANCELLED  # 운영 정책상 허용할지 결정 필요
+```
+
+- `APPLIED`: 사용자가 신청 완료.
+- `ACCEPTED`: 작성자/운영자가 수락.
+- `REJECTED`: 거절.
+- `CANCELLED`: 신청자가 취소.
+- `REJECTED`, `CANCELLED` 이후 재신청 허용 여부는 백엔드 정책으로 결정하되, 허용 시 새 application row 생성을 권장.
+
+#### SupporterRegistrationStatus
+
+```txt
+NOT_SUBMITTED -> PENDING -> VERIFIED
+NOT_SUBMITTED -> PENDING -> REJECTED -> PENDING
+VERIFIED -> PENDING  # 프로필 핵심 정보 재수정 시 재심사 정책이면 허용
+```
+
+- 사용자는 `verificationStatus`를 직접 확정할 수 없다.
+- 사용자 제출/수정 시 보통 `PENDING`으로 전환한다.
+- `VERIFIED`, `REJECTED` 처리는 관리자 권한 API에서 수행한다.
+
+#### PointWithdrawal.status
+
+```txt
+PENDING -> COMPLETED
+PENDING -> REJECTED
+```
+
+- 출금 요청 생성 시 `PENDING`.
+- 완료/거절은 운영자 또는 결제 시스템 callback에서 처리한다.
+
+### 4.4 권한 규칙
+
+| 리소스 | 조회 | 수정/삭제 |
+|---|---|---|
+| `/me/**` | 로그인 사용자 본인 | 본인만 가능 |
+| `SupporterProfile` | 공개 프로필은 로그인 사용자 조회 가능 | 본인 또는 관리자 |
+| `Spot` | 공개 목록/상세는 로그인 사용자 조회 가능 | 작성자 또는 관리자. 참여자 액션은 참여자만 |
+| `SpotSchedule`, `SpotVote`, `SpotChecklist` | 스팟 참여자만 조회 권장 | 스팟 참여자만 수정 가능 |
+| `SharedFile` | 스팟 참여자만 조회 | 업로더/작성자/관리자 삭제 가능 |
+| `ProgressNote` | 스팟 참여자만 조회 | 스팟 참여자 작성 가능 |
+| `SpotReview` | 관련 사용자/공개 정책에 따름 | 활동 완료 후 참여자만 작성 |
+| `ChatRoom` | 방 멤버만 조회 | 방 멤버만 메시지 전송 가능 |
+| `Pay` | 본인만 조회 | 본인만 요청 가능 |
+| `AdminPost` | 공개 조회 | 관리자만 작성/수정/삭제 |
+| `Simulation`, `Locality` | read-only 공개/로그인 조회 | MVP에서는 수정 API 없음 |
+
+### 4.5 API별 백엔드 구현 메모
+
+| API | 백엔드에서 해야 할 핵심 처리 |
+|---|---|
+| `POST /auth/login` | credential 검증, token 발급, cookie 설정 옵션 처리 |
+| `POST /auth/logout` | refresh token/session 무효화, auth cookie 제거 |
+| `POST /auth/refresh` | refresh token 검증, access token 재발급 |
+| `GET /me` | token subject 기준 user 조회, point balance 포함 |
+| `PATCH /me` | 본인 프로필 부분 수정, unique email 충돌 검사 |
+| `PUT /me/persona` | 기존 persona upsert, interests 중복 제거 |
+| `GET /feeds` | feed read model 조회, 내 신청/북마크 상태 조인 |
+| `POST /feeds/{feedId}/applications` | 중복 신청 방지, 포인트/보증금 정책 검증, application 생성 |
+| `DELETE /feeds/{feedId}/applications/me` | 내 active application 조회 후 CANCELLED 전환 |
+| `POST /feeds/{feedId}/bookmark` | `(user_id, feed_id)` unique upsert |
+| `GET /spots/map` | bounds 필터, 경량 필드만 반환, 취소/비공개 제외 |
+| `POST /spots` | spot 생성, author participant 생성, timeline CREATED 생성, feed projection 생성/갱신 |
+| `POST /spots/{spotId}/match` | 권한 확인, 상태 전이 검증, timeline MATCHED 생성 |
+| `POST /spots/{spotId}/cancel` | 권한 확인, 상태 전이 검증, 환불/패널티 정책 hook |
+| `POST /spots/{spotId}/complete` | 권한 확인, 상태 CLOSED 전환, 리뷰/정산 가능 상태 오픈 |
+| `PUT /spots/{spotId}/schedule` | 참여자 권한 확인, slot validation, confirmedSlot이 proposedSlots 중 하나인지 검증 권장 |
+| `POST /spots/{spotId}/votes` | 참여자 권한 확인, option 최소 2개 검증 |
+| `POST /spots/{spotId}/votes/{voteId}/cast` | 참여자 권한 확인, 중복 투표 처리, multiSelect 정책 적용 |
+| `PUT /spots/{spotId}/checklist` | 참여자 권한 확인, 전체 replace 또는 patch 정책 고정 |
+| `POST /spots/{spotId}/files` | 파일 저장/presigned 처리, SharedFile row 생성 |
+| `POST /spots/{spotId}/notes` | 참여자 권한 확인, note 생성, timeline COMMENT 생성 가능 |
+| `POST /spots/{spotId}/reviews` | CLOSED 상태인지 확인, 중복 리뷰 방지 |
+| `POST /spots/{spotId}/settlement` | 작성자/권한 확인, line item 합계 검증, 승인 대기 상태 생성 |
+| `POST /spots/{spotId}/settlement/approve` | 승인 권한 확인, 포인트 정산 transaction 생성 |
+| `GET /chat/rooms` | 내가 속한 방만 조회, latest message/unread count 계산 |
+| `POST /chat/rooms` | personal은 `(userA,userB)` 중복 방지, spot은 `(spotId)` 기준 팀방 반환 |
+| `POST /chat/rooms/{roomId}/messages` | 멤버 권한 확인, message 저장, SSE broadcast |
+| `GET /chat/rooms/{roomId}/stream` | 멤버 권한 확인, SSE 연결 유지, heartbeat 전송 권장 |
+| `GET /pay/history` | 내 point transaction만 조회, 최신순 권장 |
+| `POST /pay/charge` | 결제 승인 전 mock이면 즉시 balance 증가, 실제 PG면 payment intent 생성 |
+| `POST /pay/withdrawals` | 잔액 확인, 출금 요청 생성, balance hold 또는 즉시 차감 정책 결정 |
+| `GET /notifications` | 내 알림만 조회, unreadOnly 필터 적용 |
+| `GET /sim/**` | read-only fixture/published dataset 반환, snake_case 유지 |
+| `GET /locality/regions` | targetCity별 published locality dataset 반환 |
+
+### 4.6 프론트가 기대하는 캐시 무효화 단위
+
+백엔드는 몰라도 되지만, 응답 일관성을 위해 아래 변경이 발생하면 관련 read model을 같이 갱신해야 한다.
+
+| 변경 API | 같이 갱신되어야 하는 데이터 |
+|---|---|
+| `POST /spots` | `/spots`, `/spots/map`, `/feeds`, `/me/participations` |
+| `POST /spots/{id}/match/cancel/complete` | `/spots`, `/spots/{id}`, `/feeds`, `/spots/map`, `/chat/rooms` |
+| `POST /feeds/{id}/applications` | `/feeds`, `/feeds/{id}`, `/me/participations`, `/pay/balance` if deposit used |
+| `POST/DELETE /feeds/{id}/bookmark` | `/feeds`, `/feeds/{id}`, `/me/favorites` |
+| `PUT /spots/{id}/schedule` | `/spots/{id}/schedule`, `/chat/action-items` |
+| `POST /spots/{id}/votes`, `POST /spots/{id}/votes/{voteId}/cast` | `/spots/{id}/votes`, `/chat/action-items` |
+| `POST /spots/{id}/files`, `DELETE /spots/{id}/files/{fileId}` | `/spots/{id}/files`, `/chat/action-items` |
+| `POST /chat/rooms/{id}/messages` | `/chat/rooms`, `/chat/rooms/{id}/messages`, SSE subscribers |
+| `POST /pay/charge`, `POST /pay/withdrawals` | `/pay/balance`, `/pay/history`, `/pay/withdrawals` |
+| `PUT /me/persona` | `/me/persona`, personalized `/feeds` |
+
+### 4.7 누락되면 프론트가 막히는 최소 필드
+
+MVP에서 백엔드가 모든 필드를 완벽히 채우기 어렵다면, 최소한 아래 필드는 반드시 내려줘야 한다.
+
+#### FeedItem minimum
+
+```ts
+type FeedItemMinimum = {
+  id: string;
+  title: string;
+  location: string;
+  authorNickname: string;
+  price: number;
+  type: 'OFFER' | 'REQUEST' | 'RENT';
+  status: 'OPEN' | 'MATCHED' | 'CLOSED';
+  views: number;
+  likes: number;
+};
+```
+
+#### Spot minimum
+
+```ts
+type SpotMinimum = {
+  id: string;
+  type: 'OFFER' | 'REQUEST';
+  status: 'OPEN' | 'MATCHED' | 'CLOSED' | 'CANCELLED';
+  title: string;
+  description: string;
+  pointCost: number;
+  authorId: string;
+  authorNickname: string;
+  createdAt: string;
+  updatedAt: string;
+};
+```
+
+#### SpotMapItem minimum
+
+```ts
+type SpotMapItemMinimum = {
+  id: string;
+  type: 'OFFER' | 'REQUEST';
+  status: 'OPEN' | 'MATCHED' | 'CLOSED' | 'CANCELLED';
+  title: string;
+  coord: { lat: number; lng: number };
+  category: string;
+};
+```
+
+#### ChatRoom minimum
+
+```ts
+type ChatRoomMinimum = {
+  id: string;
+  category: 'personal' | 'spot';
+  currentUserId: string;
+  currentUserName: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  metaLabel: string;
+  updatedAt: string;
+  messages: ChatMessage[];
+};
+```
+
+#### UserProfile minimum
+
+```ts
+type UserProfileMinimum = {
+  id: string;
+  nickname: string;
+  email: string;
+  pointBalance: number;
+  joinedAt: string;
+};
+```
+
+---
+
+## 5. 프론트 구현 우선순위
 
 ### Phase 1 — MVP 연결 필수
 
@@ -1911,7 +2274,7 @@ responses:
 
 ---
 
-## 5. 백엔드와 확정해야 할 결정사항
+## 6. 백엔드와 확정해야 할 결정사항
 
 - `page`를 0-base로 할지 1-base로 할지: 이 문서는 1-base 권장
 - token 저장 방식: Authorization header + refresh cookie 조합 권장
@@ -1923,7 +2286,7 @@ responses:
 
 ---
 
-## 6. 최소 OpenAPI 골격
+## 7. 최소 OpenAPI 골격
 
 ```yaml
 openapi: 3.0.3

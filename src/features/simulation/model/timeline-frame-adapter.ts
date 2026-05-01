@@ -44,8 +44,7 @@ export function timelineFrameToMapEvents(frame: TimelineFrame): MapEvent[] {
 
     for (const live of frame.events_this_tick) {
         switch (live.event_type) {
-            case 'CREATE_TEACH_SPOT':
-            case 'CREATE_SKILL_REQUEST': {
+            case 'CREATE_TEACH_SPOT': {
                 const spotId =
                     (live.payload.spot_id as string | undefined) ??
                     `gen-${live.event_id}`;
@@ -57,12 +56,10 @@ export function timelineFrameToMapEvents(frame: TimelineFrame): MapEvent[] {
                     break;
                 }
                 const skill = (live.payload.skill as string | undefined) ?? '';
+                const intent = live.payload.intent as string | undefined;
                 const spot: SpotMapItem = {
                     id: spotId,
-                    type:
-                        live.event_type === 'CREATE_TEACH_SPOT'
-                            ? 'OFFER'
-                            : 'REQUEST',
+                    type: intent === 'request' ? 'REQUEST' : 'OFFER',
                     status: 'OPEN',
                     title: skill,
                     coord,
@@ -86,14 +83,22 @@ export function timelineFrameToMapEvents(frame: TimelineFrame): MapEvent[] {
                     personaId: agentId,
                     spotId,
                 });
+                const coord = pickLocation(frame, live);
+                if (coord) {
+                    events.push({
+                        type: 'PERSONA_MOVE',
+                        personaId: agentId,
+                        targetCoord: coord,
+                    });
+                }
                 break;
             }
 
-            case 'SPOT_MATCHED': {
+            case 'MATCH_TEACH_SPOT': {
                 const spotId = live.payload.spot_id as string | undefined;
                 if (!spotId) {
                     console.warn(
-                        '[timeline-frame-adapter] SPOT_MATCHED missing spot_id',
+                        '[timeline-frame-adapter] MATCH_TEACH_SPOT missing spot_id',
                     );
                     break;
                 }
@@ -101,35 +106,19 @@ export function timelineFrameToMapEvents(frame: TimelineFrame): MapEvent[] {
                 break;
             }
 
-            case 'CHECK_IN':
-            case 'SUPPORTER_RESPONDED': {
-                const agentId = live.payload.agent_id as string | undefined;
-                if (!agentId) {
-                    console.warn(
-                        `[timeline-frame-adapter] ${live.event_type} missing agent_id`,
-                    );
-                    break;
-                }
-                const coord = pickLocation(frame, live);
-                if (!coord) {
-                    console.warn(
-                        `[timeline-frame-adapter] ${live.event_type} missing location for agent ${agentId}`,
-                    );
-                    break;
-                }
-                events.push({
-                    type: 'PERSONA_MOVE',
-                    personaId: agentId,
-                    targetCoord: coord,
-                });
+            case 'LEAVE_TEACH_SPOT':
+            case 'COUNTER_OFFER':
+            case 'BOND_UPGRADE':
+            case 'CLOSE_TEACH_SPOT':
                 break;
-            }
 
-            default:
+            default: {
+                const _exhaustive: never = live.event_type;
                 console.warn(
-                    `[timeline-frame-adapter] unsupported event_type: ${live.event_type}`,
+                    `[timeline-frame-adapter] unsupported event_type: ${_exhaustive}`,
                 );
                 break;
+            }
         }
     }
 
