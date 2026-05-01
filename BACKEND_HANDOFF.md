@@ -12,6 +12,11 @@
 | UploadFileResponse  | url              |
 | BatchUploadRequest  | files[] (binary) |
 | BatchUploadResponse | urls[]           |
+| ResolvedPlace         | place_id, name, primary_category, role, lat, lng, address, road_address?, confidence |
+| PlanStep              | time, activity, place_id?, intent? |
+| PlanV3                | steps[], total_duration_minutes |
+| PriceBreakdown        | base_fee, included_items[], optional_addons[], refund_policy?, summary_line? |
+| Preparation           | host_provides[], partner_brings[], weather_contingency?, safety_notes[], host_tip? |
 
 ### Queries
 
@@ -53,10 +58,13 @@
 
 | Name         | Method | Route                        | Request DTO         | Response DTO       |
 | ------------ | ------ | ---------------------------- | ------------------- | ------------------ |
-| Login        | POST   | /auth/login                  | LoginRequest        | LoginResult        |
-| RefreshToken | POST   | /auth/refresh                | RefreshTokenRequest | TokenRefreshResult |
-| OAuthStart   | GET    | /auth/oauth/{provider}/start | OAuthStartQuery     | -                  |
-| Logout       | POST   | /auth/logout                 | LogoutRequest       | LogoutResult       |
+| Login        | POST   | /api/auth/login              | LoginRequest        | LoginResult        |
+| DummyLogin   | POST   | /api/auth/login/dummy        | { next? }           | LoginResult        |
+| RefreshToken | POST   | /api/auth/refresh            | RefreshTokenRequest | TokenRefreshResult |
+| OAuthStart   | GET    | /api/auth/oauth/{provider}/start | OAuthStartQuery | -                  |
+| Logout       | POST   | /api/auth/logout             | LogoutRequest       | LogoutResult       |
+
+> Auth 는 프론트 Next.js BFF 공개 계약이다. FE 는 `/api/auth/*` 를 호출하고, BFF 가 실제 BE auth upstream 을 프록시하거나 mock dev login 을 처리한다. 나머지 도메인 API 는 `NEXT_PUBLIC_API_BASE_URL` 기준 공개 API 로 호출한다.
 
 ## Feed
 
@@ -65,9 +73,10 @@
 | Entity                 | Fields                                                                                                                                                                                                                                                           |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | FeedAuthorProfile      | id, nickname, avatarUrl?, role ('SUPPORTER'\|'PARTNER'), rating? (SUPPORTER only), field? (SUPPORTER only)                                                                                                                                                       |
-| FeedItem               | id, title, description?, location, authorNickname, authorProfile?, price, type, status, progressPercent?, imageUrl?, views, likes, partnerCount? (OFFER), applicantCount? (REQUEST), category?, deadline?, maxParticipants?, isBookmarked?, myApplicationStatus? |
+| FeedItem               | id, title, description?, location, authorNickname, authorProfile?, price, type, status, progressPercent?, imageUrl?, views, likes, partnerCount? (OFFER), applicantCount? (REQUEST), category?, deadline?, maxParticipants?, isBookmarked?, myApplicationStatus?, isAi? (boolean, 2026-04-30 — AI 합성 피드 마커), plan? (PlanV3, 2026-04-30), priceBreakdown? (2026-04-30), preparation? (2026-04-30), venueAnchors? (2026-04-30), primaryPin? (2026-04-30) |
 | SupporterItem          | id, nickname, avatarUrl?, category, tagline, tags[], completedCount, rating, location, relatedOfferId?                                                                                                                                                           |
 | SupporterApplication   | id, nickname, avatarUrl?, category, tagline, tags[], completedCount, rating, location, relatedOfferId?, relatedRequestId?, proposal, competitionScore, status                                                                                                    |
+| FeedApplication        | id, feedId, userId, proposal, status, appliedRole, deposit, createdAt, plan?, preparation?                                                                                                                |
 | FeedParticipantProfile | id, nickname, avatarUrl?                                                                                                                                                                                                                                         |
 | FeedDemandSnapshot     | fundingGoal, fundedAmount, requiredPartners, confirmedPartners, confirmedPartnerProfiles[], partnerSlotLabels?, deadlineLabel, hostNote, currentAmountLabel?, targetAmountLabel?, progressLabel?                                                                 |
 | FeedCompetitionInsight | label, value, tone?                                                                                                                                                                                                                                              |
@@ -77,11 +86,12 @@
 
 | DTO                      | Fields                                               |
 | ------------------------ | ---------------------------------------------------- |
-| FeedListQuery            | tab?, type?, status?, category?, sort?, page?, size? |
-| FeedBookmarkRequest      | -                                                    |
-| FeedApplyRequest         | proposal                                             |
-| FeedApplicationListQuery | status?, page?, size?                                |
-| FeedManagementFlowQuery  | -                                                    |
+| FeedListQuery            | tab?, type?, status?, category?, sort?, page?, size?         |
+| FeedBookmarkRequest      | -                                                            |
+| FeedApplyRequest         | proposal, role, deposit, plan? (PlanV3), preparation? (Preparation) |
+| UpdateFeedDetailsRequest | plan? (PlanV3), preparation? (Preparation)                   |
+| FeedApplicationListQuery | status?, page?, size?                                        |
+| FeedManagementFlowQuery  | -                                                            |
 
 ### Response DTO
 
@@ -103,6 +113,7 @@
 | RemoveFeedBookmark    | DELETE | /feeds/{feedId}/bookmark                            | -                        | -                           |
 | ApplyFeed             | POST   | /feeds/{feedId}/apply                               | FeedApplyRequest         | FeedApplyResponse           |
 | CancelFeedApply       | DELETE | /feeds/{feedId}/apply                               | -                        | -                           |
+| UpdateFeedDetails     | PATCH  | /feeds/{feedId}                                     | UpdateFeedDetailsRequest | FeedDetailResponse          |
 | AcceptFeedApplication | PATCH  | /feeds/{feedId}/applications/{applicationId}/accept | -                        | FeedApplyResponse           |
 | RejectFeedApplication | PATCH  | /feeds/{feedId}/applications/{applicationId}/reject | -                        | FeedApplyResponse           |
 | AddFeedLike           | POST   | /feeds/{feedId}/like                                | -                        | -                           |
@@ -113,6 +124,12 @@
 ## Spot
 
 > **Frontend loading note:** On SpotDetail page entry, votes, checklist, files, and notes are fetched in parallel via `Promise.all`. Each section handles its own loading/skeleton state independently. The `GET /spots/{spotId}` response intentionally excludes these sub-resources.
+>
+> **Mock-to-BE implementation guide (2026-05-01 share):** Treat `src/entities/spot/types.ts` plus `src/features/spot/model/mock.ts` as the latest frontend source of truth. The backend should persist the normalized resources separately (`spots`, `spot_participants`, `spot_schedule_slots`, `spot_votes/options/voters`, `spot_checklist_items`, `spot_files`, `spot_notes`, `spot_reviews`, `spot_settlements`) and expose them through the endpoints below. Response wrappers are `ApiResponse<T>` / `PagedResponse<T>`; `GET /spots/{spotId}` returns `SpotDetail` + `timeline`, while heavy/detail widgets are fetched by their own endpoints.
+>
+> **2026-04-30 디테일 페이지 통합:** FE 의 `/feed/[id]` 디테일 페이지가 contextBuilder `PlanV3` / `PriceBreakdown` / `Preparation` / `ResolvedPlace[]` 를 그대로 렌더한다. 같은 객체 정의가 `Shared` 의 contextBuilder value object 로 관리되며 `FeedItem` / `CreateSpotRequest` / `FeedApplyRequest` / `UpdateFeedDetailsRequest` 에서 재사용된다. OFFER 는 작성 시 채우는 게 정책, REQUEST 는 비워서 만들 수 있고 매칭된 서포터가 `FeedApplyRequest.plan`/`preparation` 으로 채우거나 작성자/매칭 서포터가 `PATCH /feeds/{feedId}` 로 수정한다.
+>
+> **현재 FE 신청 계약:** `src/features/feed/api/feed-api.ts` 기준 `POST /feeds/{feedId}/apply` 는 `{ proposal, role, deposit }` 를 필수로 보낸다. `role` 은 신청자가 어떤 역할로 참여하는지 결정하고, `deposit` 은 FE 가 현재 UI 미리보기/포인트 차감에 사용한 보증금이다. BE 는 보안상 deposit 을 신뢰하지 말고 동일 공식으로 재계산·검증한 뒤 authoritative 값을 저장/응답해야 한다. `plan` / `preparation` 은 REQUEST 상세를 신청자가 보강하는 경우에만 optional 로 받는다.
 
 ### Entities
 
@@ -133,7 +150,6 @@
 | SharedFile             | id, spotId, uploaderNickname, name, url, sizeBytes, uploadedAt                                                      |
 | ProgressNote           | id, spotId, authorNickname, content, createdAt                                                                      |
 | SpotReview             | id, spotId, reviewerNickname, targetNickname, rating, comment?, createdAt                                           |
-| SpotWorkflow           | spotId, progressLabel, voteSummary?, finalApproval?, settlementApproval?                                            |
 | SpotSettlementApproval | status, requestedAmount, approvedAmount, summary, lineItems[], submittedBy?, submittedAt?, approvedBy?, approvedAt? |
 | SpotSettlementLineItem | label, amount                                                                                                       |
 
@@ -142,7 +158,7 @@
 | DTO                     | Fields                                       |
 | ----------------------- | -------------------------------------------- |
 | SpotListQuery           | type?, status?, participating?, page?, size? |
-| CreateSpotRequest       | type, title, description, pointCost          |
+| CreateSpotRequest       | type, title, description, pointCost, plan? (PlanV3, 2026-04-30), priceBreakdown? (2026-04-30), preparation? (2026-04-30) |
 | UpsertScheduleRequest   | slots[]                                      |
 | CreateVoteRequest       | question, options[], multiSelect?            |
 | CastVoteRequest         | optionIds[]                                  |
@@ -170,13 +186,12 @@
 | SpotNoteResponse         | data                                   |
 | SpotReviewsResponse      | data[]                                 |
 | SpotReviewResponse       | data                                   |
-| SpotWorkflowResponse     | data                                   |
 | SpotSettlementResponse   | data                                   |
 
 ### Queries
 
 | Name                  | Method | Route                               | Request DTO             | Response DTO             |
-| --------------------- | ------ | ----------------------------------- | ----------------------- | ------------------------ | ---------------------------------- |
+| --------------------- | ------ | ----------------------------------- | ----------------------- | ------------------------ |
 | GetSpotList           | GET    | /spots                              | SpotListQuery           | SpotListResponse         |
 | GetSpotDetail         | GET    | /spots/{spotId}                     | -                       | SpotDetailResponse       |
 | CreateSpot            | POST   | /spots                              | CreateSpotRequest       | SpotResponse             |
@@ -192,15 +207,16 @@
 | GetSpotChecklist      | GET    | /spots/{spotId}/checklist           | -                       | SpotChecklistResponse    |
 | UpsertSpotChecklist   | PUT    | /spots/{spotId}/checklist           | UpsertChecklistRequest  | SpotChecklistResponse    |
 | GetSpotFiles          | GET    | /spots/{spotId}/files               | -                       | SpotFilesResponse        |
-| UploadSpotFiles       | POST   | /spots/{spotId}/files               | UploadSpotFilesRequest  | SpotFileUploadResponse   | delegates to `POST /uploads/batch` |
+| UploadSpotFiles       | POST   | /spots/{spotId}/files               | UploadSpotFilesRequest  | SpotFileUploadResponse   |
 | DeleteSpotFile        | DELETE | /spots/{spotId}/files/{fileId}      | -                       | -                        |
 | GetSpotNotes          | GET    | /spots/{spotId}/notes               | -                       | SpotNotesResponse        |
 | CreateSpotNote        | POST   | /spots/{spotId}/notes               | CreateNoteRequest       | SpotNoteResponse         |
 | GetSpotReviews        | GET    | /spots/{spotId}/reviews             | -                       | SpotReviewsResponse      |
 | CreateSpotReview      | POST   | /spots/{spotId}/reviews             | CreateReviewRequest     | SpotReviewResponse       |
-| GetSpotWorkflow       | GET    | /spots/{spotId}/workflow            | -                       | SpotWorkflowResponse     |
 | SubmitSpotSettlement  | POST   | /spots/{spotId}/settlement          | SubmitSettlementRequest | SpotSettlementResponse   |
 | ApproveSpotSettlement | POST   | /spots/{spotId}/settlement/approve  | -                       | SpotSettlementResponse   |
+
+> `UploadSpotFiles` delegates raw upload to `POST /uploads/batch`, then associates the returned URLs with the spot as `SharedFile[]`.
 
 ## Post
 
@@ -373,7 +389,6 @@
 | ChatMessageReverseOffer           | id, kind ('reverse-offer'), authorId, authorName, reverseOffer, createdAt                                                                                                                                  |
 | PersonalChatRoom                  | id, category, currentUserId, currentUserName, title, subtitle, description, metaLabel, updatedAt, messages[], partnerId, partnerName, presenceLabel, unreadCount, counterpartRole ('SUPPORTER'\|'PARTNER') |
 | SpotChatRoom                      | id, category, currentUserId, currentUserName, title, subtitle, description, metaLabel, updatedAt, messages[], spot, reverseOffer?, sourceFeedId?, participationRole ('SUPPORTER'\|'PARTNER')               |
-| ChatSSEEvent                      | type ('message'\|'read'\|'typing'), data                                                                                                                                                                   |
 
 ### Request DTO
 
@@ -384,6 +399,7 @@
 | CreateChatRoomRequest  | category, userId?, spotId?                                                                         |
 | SendChatMessageRequest | kind (includes 'reverse-offer'), content?, voteId?, scheduleId?, fileId?, proposal?, reverseOffer? |
 | MarkChatReadRequest    | -                                                                                                  |
+| ChatSSEEvent                      | type ('message'|'read'|'typing'), data                                                                                                                                                                   |                                                                                                  |
 
 ### Response DTO
 
@@ -403,10 +419,15 @@
 | GetChatRoom       | GET    | /chat/rooms/{roomId}          | -                      | ChatRoomResponse     |
 | GetChatMessages   | GET    | /chat/rooms/{roomId}/messages | ChatMessagesQuery      | ChatMessagesResponse |
 | SendChatMessage   | POST   | /chat/rooms/{roomId}/messages | SendChatMessageRequest | ChatMessageResponse  |
-| MarkChatRoomRead  | POST   | /chat/rooms/{roomId}/read     | MarkChatReadRequest    | -                    |
+| MarkChatRoomRead  | POST   | /chat/rooms/{roomId}/read     | MarkChatReadRequest    | -                                                                                                  |
+| ChatSSEEvent                      | type ('message'|'read'|'typing'), data                                                                                                                                                                   |                    |
 | GetChatRoomBySpot | GET    | /chat/rooms/by-spot/{spotId}  | -                      | ChatRoomResponse     |
 | GetChatRoomByUser | GET    | /chat/rooms/by-user/{userId}  | -                      | ChatRoomResponse     |
 | ConnectChatSSE    | GET    | /chat/connect                 | { roomId? }            | SSE: ChatSSEEvent    |
+
+## Future-needed but not current FE MVP
+
+다음 영역은 현재 프론트 구현/연동이 아직 부족할 수 있지만, 최종 서비스에서 필요한 기능이므로 handoff 에서 삭제하지 않는다. 백엔드 구현 우선순위는 v1 필수보다 낮게 두되, 계약은 유지한다.
 
 ## Search
 
@@ -532,209 +553,12 @@
 | GetAdminPostList   | GET    | /admin-posts               | AdminPostListQuery | AdminPostListResponse |
 | GetAdminPostDetail | GET    | /admin-posts/{adminPostId} | -                  | AdminPostResponse     |
 
-## Simulation (contextBuilder)
+## Removed / discarded scope
 
-> contextBuilder 시뮬레이션 출력을 맵/피드/대시보드에서 소비. 모든 응답은 `ApiResponse<T>` 또는 `PagedResponse<T>` 봉투를 사용한다 (단, SSE 스트림은 봉투 없이 프레임 JSON을 직접 송출).
->
-> **2026-04-24 회의 반영:** SpotLifecycle 스트림 신설, Run 라이프사이클 엔드포인트 3종, ConversionHints spot_id 조회 경로, 모호 필드 5개 enum 확정, `session_context` / `arrived_count` 추가.
+다음 기능은 “아직 미개발”이 아니라 현재 제품 방향에서 제외/폐기된 범위이므로 백엔드 구현 요구사항에서 제외한다.
 
-### Entities
-
-| Entity                   | Fields                                                                                                                                                                                                 |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| SpotCard                 | spot_id, provenance, title, skill_topic, teach_mode, venue_type (enum), fee_per_partner, location, host_preview, person_fitness_score, attractiveness_score                                            |
-| AttractivenessReport     | composite_score, signals (Record<AttractivenessSignal, number>), improvement_hints[], price_benchmark                                                                                                  |
-| AttractivenessSignal     | title_hookiness \| price_reasonableness \| venue_accessibility \| host_reputation_fit \| time_slot_demand \| skill_rarity_bonus \| narrative_authenticity \| bonded_repeat_potential                   |
-| AttractivenessVerdict    | too_cheap \| competitive \| slightly_high \| too_high                                                                                                                                                  |
-| AgentMarker              | agent_id, location, archetype?                                                                                                                                                                         |
-| SpotMarker               | spot_id, location, provenance, status (OPEN \| MATCHED \| CLOSED)                                                                                                                                      |
-| LiveEventType            | CREATE_TEACH_SPOT \| JOIN_TEACH_SPOT \| LEAVE_TEACH_SPOT \| MATCH_TEACH_SPOT \| COUNTER_OFFER \| BOND_UPGRADE \| CLOSE_TEACH_SPOT                                                                      |
-| LiveEvent                | event_id, event_type (LiveEventType), payload (discriminated union, 아래 §LiveEventPayload)                                                                                                            |
-| TimelineFrame            | tick, day_of_week, time_slot (HH:MM, KST), active_agents[], active_spots[], events_this_tick[]                                                                                                         |
-| HighlightClip            | clip_id, title, category, start_tick, end_tick, involved_agents[], narrative                                                                                                                           |
-| ConversionHints          | source_virtual_spot_id, placeholder, pricing_suggestion (fee_breakdown 포함), plan_help, expected_demand, session_context                                                                              |
-| FeeBreakdown             | peer_labor_fee, material_cost, venue_rental, equipment_rental, total, passthrough_total                                                                                                                |
-| ConversionSessionContext | similar_active_count, avg_participants, typical_lifespan_minutes, sample_size, scope (run \| region \| global)                                                                                         |
-| SpotLifecycle            | spot_id, location, category, intent (offer \| request), title, host_persona_id, created_at_ms, expected_closed_at_ms, matched_at_ms?, closed_at_ms?, participants[]                                    |
-| SpotLifecycleParticipant | persona_id, joined_at_ms, left_at_ms?, arrived_at_ms?                                                                                                                                                  |
-| SpotLifecycleEventType   | spot.created \| spot.participant_joined \| spot.participant_left \| spot.matched \| spot.closed \| spot.extended                                                                                       |
-| SpotLifecycleEvent       | discriminated union; payload은 아래 §SpotLifecycle 스트림 참고                                                                                                                                         |
-| SimulationRun            | run_id, variant, status (queued \| running \| completed \| failed), started_at, completed_at?, total_ticks, current_tick?, region (center, bbox, timezone), agent_count, seed, user_agent_id?, streams |
-| SimulationRunVariant     | baseline \| high_engagement \| weekend_peak \| custom                                                                                                                                                  |
-
-### Request DTO
-
-| DTO                        | Fields                                                                        |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| MapSpotsQuery              | mode? ('virtual' \| 'real' \| 'mixed')                                        |
-| TimelineStreamQuery        | speed? ('1x' \| '4x' \| '16x'), start_tick?                                   |
-| MapSpotsLifecyclesQuery    | swLat, swLng, neLat, neLng, run_id?                                           |
-| MapSpotsStreamQuery        | swLat, swLng, neLat, neLng, run_id?                                           |
-| CreateSimulationRunRequest | variant, region_bbox?, duration_ticks?, seed?, user_persona_id?, agent_count? |
-| CurrentSimulationRunQuery  | variant? ('baseline' \| 'high_engagement' \| 'weekend_peak')                  |
-| RecomputeAttractivenessReq | -                                                                             |
-
-### Response DTO
-
-| DTO                             | Fields                                 |
-| ------------------------------- | -------------------------------------- |
-| MapSpotsResponse                | data (SpotCard[])                      |
-| MapSpotsLifecyclesResponse      | data (SpotLifecycle[])                 |
-| HighlightClipsResponse          | data (HighlightClip[])                 |
-| AttractivenessReportResponse    | data (AttractivenessReport)            |
-| ConversionHintsResponse         | data (ConversionHints)                 |
-| SimulationRunResponse           | data (SimulationRun)                   |
-| CreateSimulationRunResponse     | data ({ run_id, status, eta_seconds }) |
-| RecomputeAttractivenessResponse | data ({ job_id, status })              |
-
-### Queries
-
-| Name                        | Method | Route                                                             | Request DTO                | Response DTO                    |
-| --------------------------- | ------ | ----------------------------------------------------------------- | -------------------------- | ------------------------------- |
-| GetMapSpots                 | GET    | /api/v1/map/spots                                                 | MapSpotsQuery              | MapSpotsResponse                |
-| GetMapSpotLifecycles        | GET    | /api/v1/map/spots/lifecycles                                      | MapSpotsLifecyclesQuery    | MapSpotsLifecyclesResponse      |
-| StreamMapSpots              | GET    | /api/v1/map/spots/stream                                          | MapSpotsStreamQuery        | SSE: SpotLifecycleEvent         |
-| StreamSimulationTimeline    | GET    | /api/v1/simulation/runs/{run_id}/timeline/stream                  | TimelineStreamQuery        | SSE: TimelineFrame              |
-| GetSimulationHighlights     | GET    | /api/v1/simulation/runs/{run_id}/highlights                       | -                          | HighlightClipsResponse          |
-| CreateSimulationRun         | POST   | /api/v1/simulation/runs                                           | CreateSimulationRunRequest | CreateSimulationRunResponse     |
-| GetCurrentSimulationRun     | GET    | /api/v1/simulation/runs/current                                   | CurrentSimulationRunQuery  | SimulationRunResponse           |
-| GetSimulationRun            | GET    | /api/v1/simulation/runs/{run_id}                                  | -                          | SimulationRunResponse           |
-| GetRunSpotConversionHints   | GET    | /api/v1/simulation/runs/{run_id}/spots/{spot_id}/conversion-hints | -                          | ConversionHintsResponse         |
-| GetFeedAttractiveness       | GET    | /api/v1/feed/{feed_id}/attractiveness                             | -                          | AttractivenessReportResponse    |
-| RecomputeFeedAttractiveness | POST   | /api/v1/feed/{feed_id}/attractiveness/recompute                   | RecomputeAttractivenessReq | RecomputeAttractivenessResponse |
-| GetFeedConversionHints      | GET    | /api/v1/feed/{feed_id}/conversion-hints                           | -                          | ConversionHintsResponse         |
-
-> `StreamSimulationTimeline` / `StreamMapSpots`는 `text/event-stream`으로 프레임/이벤트 JSON을 단위 송출. 연결 유지 ping은 주석 라인(`: keepalive`)으로만 보내고 데이터 프레임에는 포함하지 않는다.
-
-### SpotLifecycle 스트림 동작 요구사항 (BE 구현 시 반드시 준수)
-
-맵 페르소나 스트림과 **형제 계약**. `Map Personas` 섹션의 동작요구사항을 그대로 따르되, 추가로:
-
-1. **초기 상태는 `GetMapSpotLifecycles` 스냅샷으로만 제공**. 스트림은 delta-only.
-2. **`spot.created` 이벤트에 `expected_closed_at_ms`를 반드시 포함**한다. FE의 birth pulse / dying 애니 타이밍이 결정론적으로 맞춰짐. FE가 수명을 랜덤 계산하지 않는다.
-3. **`spot.extended`** — counter_offer 등으로 수명이 연장되면 `{ spot_id, new_expected_closed_at_ms }`를 송출. `expected_closed_at_ms`의 유일한 합법적 변경 경로.
-4. **`spot.matched.arrived_count`** — FE가 좌표 임계값으로 도착 판정하지 않는다. BE가 엔진 상태머신으로 판정한 값을 싣는다.
-5. **시각은 시뮬 가상시간(ms)** — wall clock 아님. `GET /runs/{run_id}` 응답의 `region.timezone` + run start 기준.
-6. **Bbox 서버 필터링 필수** (Map Personas 동작요구사항 1번과 동일).
-
-### LiveEventPayload (discriminated union by `event_type`)
-
-```
-CREATE_TEACH_SPOT    → { spot_id, host_persona_id, skill_topic, teach_mode, venue_type, fee_per_partner, location }
-JOIN_TEACH_SPOT      → { spot_id, persona_id, joined_at_ms }
-LEAVE_TEACH_SPOT     → { spot_id, persona_id, left_at_ms, reason }
-MATCH_TEACH_SPOT     → { spot_id, matched_at_ms, arrived_count, participants[] }
-COUNTER_OFFER        → { spot_id, from_persona_id, new_fee_per_partner, extension_ms }
-BOND_UPGRADE         → { spot_id, persona_ids[], new_bond_level }
-CLOSE_TEACH_SPOT     → { spot_id, closed_at_ms, outcome (MATCHED | CANCELED | TIMEOUT) }
-```
-
-### 모호했던 필드 확정 (2026-04-24)
-
-| 필드                                               | 확정값                                                                                                    |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `SpotCard.venue_type`                              | `Literal["cafe","home","studio","park","gym"]` (enum)                                                     |
-| `AttractivenessReport.price_benchmark.verdict`     | `AttractivenessVerdict` enum (`too_cheap`/`competitive`/`slightly_high`/`too_high`)                       |
-| `ConversionHints.pricing_suggestion.fee_breakdown` | `FeeBreakdown` 구조체(peer_labor_fee/material_cost/venue_rental/equipment_rental/total/passthrough_total) |
-| `LiveEvent.event_type`                             | 위 `LiveEventType` enum. `payload`는 discriminated union                                                  |
-| `TimelineFrame.time_slot`                          | `"HH:MM"` 24h, **KST 고정**. 타임존은 `SimulationRun.region.timezone` (`"Asia/Seoul"`)에도 명시           |
-
-### Attractiveness 재계산 정책
-
-- `GetFeedAttractiveness`는 기본적으로 `attractiveness_report_cache`의 캐시값을 반환.
-- `RecomputeFeedAttractiveness`는 202 + `job_id` 반환 후 비동기 재계산. 완료 후 FE가 `GetFeedAttractiveness`를 다시 호출해 최신값을 받는다.
-- Rate limit: 인증 사용자당 **분당 3회**.
-
-### Highlight 생성 시점
-
-- run 종료 후 **일괄 생성**. 스트리밍 prepend 모델은 v1 제외.
-- 각 clip의 `narrative`는 Codex 브리지로 클립당 1회 LLM 호출(캐시됨). 나머지는 결정론적.
-
-### Run 라이프사이클 & 재생 속도
-
-- `CreateSimulationRun`은 인증 사용자당 **분당 1회, 동시 running 1개** 제한(v1). 초과 시 `429`.
-- `GetCurrentSimulationRun`은 anonymous 접근 허용. BE가 매일 00:00 KST에 variant별 데모 run을 프리빌드한다.
-- `StreamSimulationTimeline`의 `speed`는 `1x|4x|16x`. 서버가 프리빌드 캐시를 읽어 송출하므로 backpressure 없음.
-- run `failed` 시 스트림은 `event: run.error\ndata: { code, message }` 송출 후 연결 종료.
-
-## Map Personas (live stream)
-
-> **2026-04 신규:** 맵의 AI 페르소나를 실시간으로 표시하고 위치 이동 시 클러스터 생성/소멸을 시각화하기 위한 엔드포인트. FE 는 viewport bbox 기반 스냅샷 1회 + SSE 델타 스트림 구독을 조합해 `Map<personaId, coord>` 를 유지한다. 클러스터링은 FE 파생 연산(`useActivityClusters`, 100m radius + category/intent 그룹핑).
-
-### Entities
-
-| Entity                | Fields                                                                                                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| MapPersona            | id, name, emoji, archetype (explorer\|helper\|creator\|connector\|learner), category (SpotCategory), intent (offer\|request), location (GeoCoord), interestItemIds? |
-| MapPersonaBbox        | swLat, swLng, neLat, neLng                                                                                                                                          |
-| MapPersonaStreamEvent | discriminated union: `persona.join` \| `persona.leave` \| `persona.move`                                                                                            |
-| MapPersonaJoinEvent   | type='persona.join', persona (MapPersona)                                                                                                                           |
-| MapPersonaLeaveEvent  | type='persona.leave', personaId                                                                                                                                     |
-| MapPersonaMoveEvent   | type='persona.move', personaId, location (GeoCoord)                                                                                                                 |
-
-### Request DTO
-
-| DTO                      | Fields                     |
-| ------------------------ | -------------------------- |
-| MapPersonasSnapshotQuery | swLat, swLng, neLat, neLng |
-| MapPersonasStreamQuery   | swLat, swLng, neLat, neLng |
-
-### Response DTO
-
-| DTO                         | Fields              |
-| --------------------------- | ------------------- |
-| MapPersonasSnapshotResponse | data (MapPersona[]) |
-
-### Queries
-
-| Name                   | Method | Route                       | Request DTO              | Response DTO                |
-| ---------------------- | ------ | --------------------------- | ------------------------ | --------------------------- |
-| GetMapPersonasSnapshot | GET    | /api/v1/map/personas        | MapPersonasSnapshotQuery | MapPersonasSnapshotResponse |
-| StreamMapPersonas      | GET    | /api/v1/map/personas/stream | MapPersonasStreamQuery   | SSE: MapPersonaStreamEvent  |
-
-### 동작 요구사항 (BE 구현 시 반드시 준수)
-
-1. **Bbox 서버 필터링** — 요청한 bbox 밖 페르소나는 스냅샷/스트림 어디에서도 송출하지 않는다. FE 에서 필터링하지 않음을 전제로 한다 (오프스크린 페르소나가 많을수록 클러스터링 비용이 선형 증가).
-2. **Delta-only 스트림** — `StreamMapPersonas` 는 전체 스냅샷을 주기적으로 재전송하지 말 것. 변경된 개체만 `persona.join`/`persona.leave`/`persona.move` 이벤트로 송출한다. 초기 상태는 `GetMapPersonasSnapshot` 으로만 받는다.
-3. **Move 이벤트 throttle** — 개별 페르소나당 최대 1 Hz (초당 1 이벤트) 를 권장. FE 는 `useAnimatedCoords` 로 2.4초 보간하여 부드럽게 렌더링한다. 초당 10+ 이벤트는 대역폭 낭비 + 클러스터 재계산 과다.
-4. **Id 안정성** — `MapPersona.id` 는 동일 페르소나의 leave→join 사이클 내에서 동일해야 한다 (FE 캐시·팔로우 상태와 연결됨). 매 session 마다 id 재생성 금지.
-5. **Bbox 변경 계약** — 클라이언트가 pan/zoom 으로 bbox 를 바꾸면 기존 stream 을 끊고 새 snapshot + 새 stream 을 재구독한다. BE 는 단일 연결에서 bbox 가 바뀌는 경우는 가정하지 않아도 된다.
-6. **연결 유지** — SSE ping 은 주석 라인(`: keepalive`) 으로만 보낸다. 15~30초 간격 권장.
-7. **Leave 이벤트 필수** — 페르소나가 bbox 를 떠났거나 세션 종료된 경우, 반드시 `persona.leave` 를 송출한다. FE 는 누락 시 마커가 영구히 남아 pulse 애니가 계속 돌게 됨.
-
-### 이벤트 페이로드 예시
-
-```json
-// GET /api/v1/map/personas?swLat=37.25&swLng=127.01&neLat=37.28&neLng=127.04
-{
-    "status": 200,
-    "data": [
-        {
-            "id": "persona-001",
-            "name": "민지",
-            "emoji": "🧘",
-            "archetype": "helper",
-            "category": "요가",
-            "intent": "offer",
-            "location": { "lat": 37.2636, "lng": 127.0286 }
-        }
-    ]
-}
-```
-
-```
-// SSE: /api/v1/map/personas/stream?swLat=...
-
-event: persona.join
-data: {"type":"persona.join","persona":{"id":"persona-042",...}}
-
-event: persona.move
-data: {"type":"persona.move","personaId":"persona-001","location":{"lat":37.2640,"lng":127.0291}}
-
-event: persona.leave
-data: {"type":"persona.leave","personaId":"persona-042"}
-
-: keepalive
-```
-
-> FE 참고: `src/features/simulation/model/use-mock-persona-swarm.ts` 가 위 계약을 그대로 mock 으로 구현한다 (join/leave/move 를 setInterval 로 생성). BE 연동 시 이 훅을 `useMapPersonaStream` 으로 교체하면 나머지 로직은 그대로 재사용.
+| Removed area | Reason |
+| ------------ | ------ |
+| Locality / zoom-out region API (`/api/locality/regions`) | 예전 줌아웃 지역 특성 기능. leftover hook/mock/type 만 있고 실제 제품 기능에서 제거됨. |
+| Simulation/contextBuilder runtime APIs | 현재 spot 백엔드 회의 범위에서 제외. Map persona stream, timeline stream, highlights, sim run/chunk API 등 구현하지 않음. |
+| Spot workflow concept/API | 예전 prototype workflow UI/API 범위. 별도 workflow 리소스는 구현하지 않고, 필요한 정산은 settlement endpoints 로만 처리. |

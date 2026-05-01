@@ -63,6 +63,88 @@
 | ----- | ------- | -------- | ----- |
 | ok    | boolean | required |       |
 
+## Shared contextBuilder value object entities
+
+> Simulation runtime API 는 제거됐지만, contextBuilder 가 만든 계획/가격/준비물 값 객체는 Feed/Post/Spot 현재 스펙에서 계속 사용한다.
+
+### ResolvedPlace
+
+| Field            | Type   | Required | Notes |
+| ---------------- | ------ | -------- | ----- |
+| place_id         | string | required |       |
+| name             | string | required |       |
+| primary_category | string | required |       |
+| role             | meetup \| main \| secondary \| wrapup | required | |
+| lat              | number | required |       |
+| lng              | number | required |       |
+| address          | string | required |       |
+| road_address     | string | optional |       |
+| confidence       | number | required | 0~1   |
+
+### PlanStep
+
+| Field    | Type          | Required | Notes |
+| -------- | ------------- | -------- | ----- |
+| time     | string        | required | HH:MM or +Nm |
+| activity | string        | required |       |
+| place_id | string \| null | required |       |
+| intent   | string \| null | required |       |
+
+### PlanV3
+
+| Field                  | Type       | Required | Notes |
+| ---------------------- | ---------- | -------- | ----- |
+| steps                  | PlanStep[] | required | 3~7 recommended |
+| total_duration_minutes | number     | required | 60~360 |
+
+### AddOnMechanism (enum)
+
+`"fixed" | "funding" | "realcost"`
+
+### IncludedItem
+
+| Field | Type   | Required | Notes |
+| ----- | ------ | -------- | ----- |
+| name  | string | required |       |
+| value | string | required | natural language OK |
+
+### AddOn
+
+| Field       | Type           | Required | Notes |
+| ----------- | -------------- | -------- | ----- |
+| name        | string         | required |       |
+| price       | number         | required |       |
+| mechanism   | AddOnMechanism | required |       |
+| explanation | string \| null | required |       |
+
+### RefundPolicy
+
+| Field             | Type           | Required | Notes |
+| ----------------- | -------------- | -------- | ----- |
+| cutoff_hours      | number         | required |       |
+| full_refund_until | string \| null | required |       |
+| note              | string \| null | required |       |
+
+### PriceBreakdown
+
+| Field           | Type                 | Required | Notes |
+| --------------- | -------------------- | -------- | ----- |
+| base_fee        | number               | required |       |
+| included_items  | IncludedItem[]       | required |       |
+| optional_addons | AddOn[]              | required |       |
+| refund_policy   | RefundPolicy \| null | required |       |
+| summary_line    | string \| null       | required |       |
+
+### Preparation
+
+| Field               | Type           | Required | Notes |
+| ------------------- | -------------- | -------- | ----- |
+| host_provides       | string[]       | required |       |
+| partner_brings      | string[]       | required |       |
+| weather_contingency | string \| null | required |       |
+| safety_notes        | string[]       | required |       |
+| host_tip            | string \| null | required |       |
+
 ## Spot
 
 ### SpotType (enum)
@@ -90,18 +172,26 @@
 
 ### Spot
 
-| Field          | Type       | Required | Notes    |
-| -------------- | ---------- | -------- | -------- |
-| id             | string     | required |          |
-| type           | SpotType   | required |          |
-| status         | SpotStatus | required |          |
-| title          | string     | required |          |
-| description    | string     | required |          |
-| pointCost      | number     | required |          |
-| authorId       | string     | required |          |
-| authorNickname | string     | required |          |
-| createdAt      | string     | required | ISO 8601 |
-| updatedAt      | string     | required | ISO 8601 |
+| Field          | Type            | Required | Notes                                             |
+| -------------- | --------------- | -------- | ------------------------------------------------- |
+| id             | string          | required |                                                   |
+| type           | SpotType        | required |                                                   |
+| status         | SpotStatus      | required |                                                   |
+| title          | string          | required |                                                   |
+| description    | string          | required |                                                   |
+| pointCost      | number          | required |                                                   |
+| authorId       | string          | required |                                                   |
+| authorNickname | string          | required |                                                   |
+| createdAt      | string          | required | ISO 8601                                          |
+| updatedAt      | string          | required | ISO 8601                                          |
+| forfeitPool    | SpotForfeitPool | optional | 누락 시 `{toPool:0, toPlatformFee:0}`으로 간주    |
+
+### SpotForfeitPool
+
+| Field         | Type   | Required | Notes                              |
+| ------------- | ------ | -------- | ---------------------------------- |
+| toPool        | number | required | 정산 풀로 편입되는 몰수 금액 누적  |
+| toPlatformFee | number | required | 플랫폼 수수료로 분기되는 금액 누적 |
 
 ### TimelineEventKind (enum)
 
@@ -112,6 +202,8 @@
 | COMPLETED |       |
 | CANCELLED |       |
 | COMMENT   |       |
+| SETTLEMENT_REQUESTED | 정산 요청 타임라인 이벤트 |
+| SETTLEMENT_APPROVED  | 정산 승인 타임라인 이벤트 |
 
 ### TimelineEvent
 
@@ -138,6 +230,7 @@
 | authorNickname | string          | required |          |
 | createdAt      | string          | required | ISO 8601 |
 | updatedAt      | string          | required | ISO 8601 |
+| forfeitPool    | SpotForfeitPool | optional |          |
 | timeline       | TimelineEvent[] | required |          |
 
 ### SpotParticipant
@@ -237,12 +330,15 @@
 
 ### CreateSpotRequest
 
-| Field       | Type     | Required | Notes |
-| ----------- | -------- | -------- | ----- |
-| type        | SpotType | required |       |
-| title       | string   | required |       |
-| description | string   | required |       |
-| pointCost   | number   | required |       |
+| Field           | Type           | Required | Notes |
+| --------------- | -------------- | -------- | ----- |
+| type            | SpotType       | required |       |
+| title           | string         | required |       |
+| description     | string         | required |       |
+| pointCost       | number         | required |       |
+| plan            | PlanV3         | optional | OFFER 는 폼에서 필수 입력, REQUEST 는 옵션. BE 는 둘 다 옵셔널로 받는다 (2026-04-30) |
+| priceBreakdown  | PriceBreakdown | optional | OFFER 폼 필수, REQUEST 옵션 (2026-04-30)        |
+| preparation     | Preparation    | optional | OFFER 폼 필수, REQUEST 옵션 (2026-04-30)        |
 
 ### UpsertSpotScheduleRequest
 
@@ -682,6 +778,14 @@ My spot list card entity for the My page. `role=AUTHOR` means the authenticated 
 | isBookmarked             | boolean                  | optional |                                                |
 | myApplicationStatus      | FeedApplicationStatus    | optional | 인증된 사용자의 신청 상태. 미신청 시 omitted   |
 | spotId                   | string                   | optional | 연결된 Spot id. 있으면 맵 프리뷰/점수 조회 키  |
+| isAi                     | boolean                  | optional | contextBuilder 시뮬레이션이 합성한 AI 피드. true 면 실제 호스트가 없으므로 참여 액션 대신 "리퀘스트 열기" 안내 (2026-04-30) |
+| plan                     | PlanV3                   | optional | contextBuilder 활동 계획. OFFER 는 작성 시 채워지고, REQUEST 는 매칭된 서포터가 채울 수 있음 (2026-04-30) |
+| priceBreakdown           | PriceBreakdown           | optional | contextBuilder 가격 분해. OFFER 작성 시 필수, REQUEST 옵션 (2026-04-30) |
+| preparation              | Preparation              | optional | contextBuilder 준비물/안전 가이드. OFFER 작성 시 필수, REQUEST 옵션 (2026-04-30) |
+| venueAnchors             | ResolvedPlace[]          | optional | 활동 장소 후보. routing 결과로 BE 가 채움 (2026-04-30) |
+| primaryPin               | ResolvedPlace            | optional | 카드 핀 정밀 좌표 (2026-04-30)                 |
+
+> `PlanV3` / `PriceBreakdown` / `Preparation` / `ResolvedPlace` 의 정의는 `Shared contextBuilder value objects` 절을 참조한다.
 
 ### SupporterItem
 
@@ -707,16 +811,38 @@ My spot list card entity for the My page. `role=AUTHOR` means the authenticated 
 | REJECTED  | 호스트가 거절                  |
 | CANCELLED | 신청자가 직접 취소             |
 
+### FeedApplicationRole (enum)
+
+| Value     | Notes                    |
+| --------- | ------------------------ |
+| SUPPORTER | 서포터 역할로 신청/참여  |
+| PARTNER   | 파트너 역할로 신청/참여  |
+
 ### FeedApplication
 
-| Field     | Type                  | Required | Notes        |
-| --------- | --------------------- | -------- | ------------ |
-| id        | string                | required |              |
-| feedId    | string                | required |              |
-| userId    | string                | required |              |
-| proposal  | string                | required | 신청 메시지  |
-| status    | FeedApplicationStatus | required |              |
-| createdAt | string                | required | ISO datetime |
+| Field        | Type                  | Required | Notes                                                                  |
+| ------------ | --------------------- | -------- | ---------------------------------------------------------------------- |
+| id           | string                | required |                                                                        |
+| feedId       | string                | required |                                                                        |
+| userId       | string                | required |                                                                        |
+| proposal     | string                | required | 신청 메시지                                                            |
+| status       | FeedApplicationStatus | required |                                                                        |
+| appliedRole  | FeedApplicationRole   | required | 신청자가 선택한 참여 역할                                              |
+| deposit      | number                | required | BE 재계산/검증 후 확정한 신청 시점 보증금                              |
+| createdAt    | string                | required | ISO datetime                                                           |
+| plan         | PlanV3                | optional | 서포터가 REQUEST 에 신청하면서 채우는 활동 계획. 호스트 미입력 시 필수 (2026-04-30) |
+| preparation  | Preparation           | optional | 서포터가 REQUEST 에 신청하면서 채우는 준비물. 호스트 미입력 시 필수 (2026-04-30) |
+
+> 신청 페이로드는 현재 FE 기준 `{ proposal, role, deposit, plan?, preparation? }` 이다. 응답/저장 모델에서는 `role` 을 `appliedRole` 로 내려준다. `deposit` 은 FE 가 보낸 값을 그대로 신뢰하지 말고 BE 가 동일 공식으로 재계산·검증해야 한다. 신청 페이로드에 `plan` / `preparation` 가 포함되면 BE 는 해당 Feed 의 본문 필드를 함께 update 한다 (서포터가 매칭과 동시에 비어있던 정보를 채우는 흐름).
+
+### UpdateFeedDetailsRequest (2026-04-30)
+
+| Field       | Type        | Required | Notes                                  |
+| ----------- | ----------- | -------- | -------------------------------------- |
+| plan        | PlanV3      | optional | 부분 업데이트. omit 시 변경 없음       |
+| preparation | Preparation | optional | 부분 업데이트. omit 시 변경 없음       |
+
+> 디테일 페이지에서 작성자 또는 매칭된 서포터가 plan/preparation 을 수정할 때 사용.
 
 ### SupporterApplicationStatus (enum)
 
@@ -797,9 +923,13 @@ My spot list card entity for the My page. `role=AUTHOR` means the authenticated 
 
 ### FeedApplyRequest
 
-| Field    | Type   | Required | Notes       |
-| -------- | ------ | -------- | ----------- |
-| proposal | string | required | 신청 메시지 |
+| Field       | Type                | Required | Notes                                                                  |
+| ----------- | ------------------- | -------- | ---------------------------------------------------------------------- |
+| proposal    | string              | required | 신청 메시지                                                            |
+| role        | FeedApplicationRole | required | 현재 FE 가 전송하는 참여 역할                                          |
+| deposit     | number              | required | FE 미리보기 보증금. BE 는 동일 공식으로 재계산·검증 후 authoritative 저장 |
+| plan        | PlanV3              | optional | REQUEST 가 비어있을 때 신청자가 보강 가능                              |
+| preparation | Preparation         | optional | REQUEST 가 비어있을 때 신청자가 보강 가능                              |
 
 ### FeedApplyResponse
 
@@ -1380,21 +1510,46 @@ No body returned (204).
 
 | forfeitPool | SpotForfeitPool | optional | 누락 시 `{toPool:0, toPlatformFee:0}`으로 간주 |
 
-### SpotWorkflow
+### SettlementApprovalStatus (enum)
 
-| Field              | Type                   | Required | Notes |
-| ------------------ | ---------------------- | -------- | ----- |
-| spotId             | string                 | required |       |
-| progressLabel      | string                 | required |       |
-| voteSummary        | SpotPartnerVoteSummary | optional |       |
-| finalApproval      | SpotFinalApproval      | optional |       |
-| settlementApproval | SpotSettlementApproval | optional |       |
+| Value    | Notes |
+| -------- | ----- |
+| PENDING  |       |
+| APPROVED |       |
+
+### SpotVoteSummaryOption
+
+| Field    | Type    | Required | Notes |
+| -------- | ------- | -------- | ----- |
+| label    | string  | required |       |
+| count    | number  | required |       |
+| isWinner | boolean | optional |       |
+
+### SpotPartnerVoteSummary
+
+| Field         | Type                    | Required | Notes |
+| ------------- | ----------------------- | -------- | ----- |
+| question      | string                  | required |       |
+| totalVotes    | number                  | required |       |
+| consensusRate | number                  | required | 0-100 |
+| decidedLabel  | string                  | required |       |
+| summary       | string                  | required |       |
+| options       | SpotVoteSummaryOption[] | required |       |
+
+### SpotFinalApproval
+
+| Field            | Type                   | Required | Notes        |
+| ---------------- | ---------------------- | -------- | ------------ |
+| status           | SettlementApprovalStatus | required |              |
+| approverNickname | string                 | required |              |
+| note             | string                 | required |              |
+| approvedAt       | string                 | optional | ISO datetime |
 
 ### SpotSettlementApproval (확장)
 
 | Field           | Type                     | Required | Notes                                          |
 | --------------- | ------------------------ | -------- | ---------------------------------------------- |
-| status          | WorkflowApprovalStatus   | required | PENDING \| APPROVED                            |
+| status          | SettlementApprovalStatus   | required | PENDING \| APPROVED                            |
 | requestedAmount | number                   | required | 호스트가 제출한 line items의 합                |
 | approvedAmount  | number                   | required | 승인 시 `requestedAmount + forfeitPool.toPool` |
 | summary         | string                   | required |                                                |
@@ -1441,396 +1596,6 @@ No body returned (204).
 | deposit     | number                | required | 신청 시점의 보증금 스냅샷                    |
 | createdAt   | string                | required | ISO datetime                                 |
 
-## Simulation (contextBuilder 응답, 2026-04 추가)
+## Removed / discarded entities
 
-> contextBuilder가 생산하는 시뮬레이션 결과를 프론트가 그대로 소비한다. 프론트 클라이언트 계산 없음 — BE가 산출한 점수/힌트/프레임을 그대로 렌더.
-
-### GeoCoord
-
-| Field | Type   | Required | Notes |
-| ----- | ------ | -------- | ----- |
-| lat   | number | required |       |
-| lng   | number | required |       |
-
-### SpotProvenance (enum)
-
-| Value   | Notes                     |
-| ------- | ------------------------- |
-| virtual | 시뮬레이션 생성 가상 스팟 |
-| real    | 실제 서포터가 게시한 스팟 |
-| mixed   | 가상→실제 전환 중인 스팟  |
-
-### SpotTeachMode (enum)
-
-`"1:1" | "small_group" | "workshop"`
-
-### SpotStatusLite (enum)
-
-`"OPEN" | "MATCHED" | "CLOSED"` — `TimelineFrame.SpotMarker.status`에 사용. `CANCELLED`는 포함하지 않음.
-
-### PersonaArchetype (enum)
-
-`"explorer" | "helper" | "creator" | "connector" | "learner"` — 기존 `entities/persona/types.ts`와 동일.
-
-### SpotVenueType (enum, 2026-04-24 확정)
-
-`"cafe" | "home" | "studio" | "park" | "gym"` — `SpotCard.venue_type` 전용.
-
-### AttractivenessVerdict (enum, 2026-04-24 확정)
-
-`"too_cheap" | "competitive" | "slightly_high" | "too_high"` — FE는 4단계 칩 색상으로 매핑.
-
-### LiveEventType (enum, 2026-04-24 확정)
-
-`"CREATE_TEACH_SPOT" | "JOIN_TEACH_SPOT" | "LEAVE_TEACH_SPOT" | "MATCH_TEACH_SPOT" | "COUNTER_OFFER" | "BOND_UPGRADE" | "CLOSE_TEACH_SPOT"`.
-
-### SpotIntent (enum)
-
-`"offer" | "request"` — `SpotLifecycle.intent`에서 사용.
-
-### SpotCard
-
-| Field                | Type           | Required | Notes                                                        |
-| -------------------- | -------------- | -------- | ------------------------------------------------------------ |
-| spot_id              | string         | required |                                                              |
-| provenance           | SpotProvenance | required | virtual \| real \| mixed                                     |
-| title                | string         | required | LLM 생성 제목                                                |
-| skill_topic          | string         | required | 카테고리/주제 라벨                                           |
-| teach_mode           | SpotTeachMode  | required | 1:1 \| small_group \| workshop                               |
-| venue_type           | SpotVenueType  | required | cafe \| home \| studio \| park \| gym (2026-04-24 enum 확정) |
-| fee_per_partner      | number         | required | 파트너 1인당 원화 기준 요금                                  |
-| location             | GeoCoord       | required |                                                              |
-| host_preview         | string         | required | 호스트 소개 한 문장                                          |
-| person_fitness_score | number         | required | 0–1, 파트너 개인 적합도                                      |
-| attractiveness_score | number         | required | 0–1, 피드 품질 종합 점수                                     |
-
-### AttractivenessSignal (enum)
-
-`"title_hookiness" | "price_reasonableness" | "venue_accessibility" | "host_reputation_fit" | "time_slot_demand" | "skill_rarity_bonus" | "narrative_authenticity" | "bonded_repeat_potential"`
-
-### AttractivenessPriceBenchmark
-
-| Field   | Type                  | Required | Notes                                                                   |
-| ------- | --------------------- | -------- | ----------------------------------------------------------------------- |
-| p25     | number                | required |                                                                         |
-| p50     | number                | required |                                                                         |
-| p75     | number                | required |                                                                         |
-| p90     | number                | required |                                                                         |
-| verdict | AttractivenessVerdict | required | too_cheap \| competitive \| slightly_high \| too_high (2026-04-24 확정) |
-
-### AttractivenessReport
-
-| Field             | Type                                 | Required | Notes                           |
-| ----------------- | ------------------------------------ | -------- | ------------------------------- |
-| composite_score   | number                               | required | 0–1                             |
-| signals           | Record<AttractivenessSignal, number> | required | 8개 시그널 모두 0–1 값으로 포함 |
-| improvement_hints | string[]                             | required | LLM이 생성한 개선 힌트 문장     |
-| price_benchmark   | AttractivenessPriceBenchmark         | required |                                 |
-
-### AgentMarker
-
-| Field     | Type             | Required | Notes                  |
-| --------- | ---------------- | -------- | ---------------------- |
-| agent_id  | string           | required |                        |
-| location  | GeoCoord         | required |                        |
-| archetype | PersonaArchetype | optional | 알 수 없으면 생략 가능 |
-
-### SpotMarker (Simulation)
-
-| Field      | Type           | Required | Notes                     |
-| ---------- | -------------- | -------- | ------------------------- |
-| spot_id    | string         | required |                           |
-| location   | GeoCoord       | required |                           |
-| provenance | SpotProvenance | required | virtual \| real \| mixed  |
-| status     | SpotStatusLite | required | OPEN \| MATCHED \| CLOSED |
-
-> 맵 UI 컴포넌트 이름과 충돌하므로, 프론트 엔티티 파일에서는 `SpotMarker` 타입으로, 맵 컴포넌트는 `SpotMarker` 컴포넌트로 분리 import 한다.
-
-### LiveEvent
-
-| Field      | Type             | Required | Notes                                                                |
-| ---------- | ---------------- | -------- | -------------------------------------------------------------------- |
-| event_id   | string           | required |                                                                      |
-| event_type | LiveEventType    | required | 2026-04-24 enum 확정 (7종)                                           |
-| payload    | LiveEventPayload | required | `event_type`에 따른 discriminated union. 아래 §LiveEventPayload 참고 |
-
-### LiveEventPayload (discriminated union, 2026-04-24 확정)
-
-`event_type` → payload 스키마 대응:
-
-| event_type        | payload 필드                                                                             |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| CREATE_TEACH_SPOT | spot_id, host_persona_id, skill_topic, teach_mode, venue_type, fee_per_partner, location |
-| JOIN_TEACH_SPOT   | spot_id, persona_id, joined_at_ms                                                        |
-| LEAVE_TEACH_SPOT  | spot_id, persona_id, left_at_ms, reason                                                  |
-| MATCH_TEACH_SPOT  | spot_id, matched_at_ms, arrived_count, participants[] (persona_id, arrived_at_ms)        |
-| COUNTER_OFFER     | spot_id, from_persona_id, new_fee_per_partner, extension_ms                              |
-| BOND_UPGRADE      | spot_id, persona_ids[], new_bond_level                                                   |
-| CLOSE_TEACH_SPOT  | spot_id, closed_at_ms, outcome (MATCHED \| CANCELED \| TIMEOUT)                          |
-
-### TimelineFrame
-
-| Field            | Type          | Required | Notes                                    |
-| ---------------- | ------------- | -------- | ---------------------------------------- |
-| tick             | number        | required | 0–47 (한 day 내 half-hour 슬롯)          |
-| day_of_week      | string        | required | 예: `MON`, `TUE`, … `SUN`                |
-| time_slot        | string        | required | `"HH:MM"` 24h, **KST 고정** (2026-04-24) |
-| active_agents    | AgentMarker[] | required | 해당 틱에 맵에 렌더할 에이전트 집합      |
-| active_spots     | SpotMarker[]  | required | 해당 틱에 활성인 스팟 집합               |
-| events_this_tick | LiveEvent[]   | required | 이 틱에 발생한 이벤트. 순서대로 방출.    |
-
-### HighlightCategory (enum)
-
-`"first_success" | "bond_upgrade" | "counter_offer" | "referral" | "unexpected_match"`
-
-### HighlightClip
-
-| Field           | Type              | Required | Notes             |
-| --------------- | ----------------- | -------- | ----------------- |
-| clip_id         | string            | required |                   |
-| title           | string            | required |                   |
-| category        | HighlightCategory | required |                   |
-| start_tick      | number            | required |                   |
-| end_tick        | number            | required | inclusive         |
-| involved_agents | string[]          | required | agent_id 배열     |
-| narrative       | string            | required | LLM 생성 내러티브 |
-
-### ConversionHintsPlaceholder
-
-| Field       | Type   | Required | Notes               |
-| ----------- | ------ | -------- | ------------------- |
-| title       | string | required | 전환 피드 제목 초안 |
-| intro       | string | required | 소개 문구 초안      |
-| skill_topic | string | required |                     |
-
-### FeeBreakdown (2026-04-24 확정)
-
-| Field             | Type   | Required | Notes                                |
-| ----------------- | ------ | -------- | ------------------------------------ |
-| peer_labor_fee    | number | required | 원화, 파트너 1인당 노동료            |
-| material_cost     | number | required | 재료비 1인분                         |
-| venue_rental      | number | required | 1인분 안분                           |
-| equipment_rental  | number | required | 1인분 안분                           |
-| total             | number | required | 위 4개 합계                          |
-| passthrough_total | number | required | 플랫폼 수수료 제외 pass-through 합계 |
-
-### ConversionHintsPricing
-
-| Field         | Type         | Required | Notes                  |
-| ------------- | ------------ | -------- | ---------------------- |
-| fee_breakdown | FeeBreakdown | required | 구조 확정 (2026-04-24) |
-| rationale     | string       | required |                        |
-
-### ConversionSessionContext (2026-04-24 추가)
-
-> FE가 `simulation-conversion-context.ts`에서 직접 집계하던 통계를 BE가 run 전체 기반으로 산출해 대체.
-
-| Field                    | Type   | Required | Notes                                             |
-| ------------------------ | ------ | -------- | ------------------------------------------------- | -------- | -------------------------------------- |
-| similar_active_count     | number | required | 같은 skill_topic의 활성(OPEN/MATCHED) 스팟 수     |
-| avg_participants         | number | required | 같은 skill_topic의 평균 참여자 수(종료된 건 포함) |
-| typical_lifespan_minutes | number | required | 중앙값, 분 단위                                   |
-| sample_size              | number | required | 집계 모수. FE가 신뢰도 표시에 사용                |
-| scope                    | string | required | `"run"                                            | "region" | "global"` — 모수 부족 시 fallback 레벨 |
-
-### ConversionHintsPlan
-
-| Field         | Type     | Required | Notes |
-| ------------- | -------- | -------- | ----- |
-| warmup_block  | string   | required |       |
-| main_block    | string   | required |       |
-| closing_block | string   | required |       |
-| host_tips     | string[] | required |       |
-
-### ConversionHintsDemand
-
-| Field                   | Type   | Required | Notes |
-| ----------------------- | ------ | -------- | ----- |
-| forecast_join_count_p50 | number | required |       |
-| forecast_join_count_p90 | number | required |       |
-
-### ConversionHints
-
-| Field                  | Type                       | Required | Notes                                         |
-| ---------------------- | -------------------------- | -------- | --------------------------------------------- |
-| source_virtual_spot_id | string                     | required | 전환 기반이 되는 가상 spot_id                 |
-| placeholder            | ConversionHintsPlaceholder | required |                                               |
-| pricing_suggestion     | ConversionHintsPricing     | required |                                               |
-| plan_help              | ConversionHintsPlan        | required |                                               |
-| expected_demand        | ConversionHintsDemand      | required |                                               |
-| session_context        | ConversionSessionContext   | required | 2026-04-24 추가. FE가 직접 집계하던 통계 대체 |
-
-### SpotLifecycle (2026-04-24 신규)
-
-> `GET /api/v1/map/spots/lifecycles` 스냅샷 + `GET /api/v1/map/spots/stream` 델타의 기반 엔티티.
-> FE의 `use-mock-spot-lifecycles.ts` 참조 구현을 실제 계약으로 승격.
-
-| Field                 | Type                       | Required | Notes                                                             |
-| --------------------- | -------------------------- | -------- | ----------------------------------------------------------------- |
-| spot_id               | string                     | required |                                                                   |
-| location              | GeoCoord                   | required |                                                                   |
-| category              | string                     | required | `SpotCategory` enum (FE와 공유)                                   |
-| intent                | SpotIntent                 | required | offer \| request                                                  |
-| title                 | string                     | required |                                                                   |
-| host_persona_id       | string                     | required |                                                                   |
-| created_at_ms         | number                     | required | 시뮬 가상시간(ms)                                                 |
-| expected_closed_at_ms | number                     | required | **`spot.created` 시점에 결정론적 예측값 포함** (birth/dying 애니) |
-| matched_at_ms         | number                     | optional | null 가능(아직 매칭 전)                                           |
-| closed_at_ms          | number                     | optional | null 가능(아직 종료 전)                                           |
-| participants          | SpotLifecycleParticipant[] | required |                                                                   |
-
-### SpotLifecycleParticipant
-
-| Field         | Type   | Required | Notes                                              |
-| ------------- | ------ | -------- | -------------------------------------------------- |
-| persona_id    | string | required |                                                    |
-| joined_at_ms  | number | required |                                                    |
-| left_at_ms    | number | optional | null 가능                                          |
-| arrived_at_ms | number | optional | BE가 엔진 상태머신으로 판정. FE의 좌표 임계값 제거 |
-
-### SpotLifecycleEventType (enum)
-
-`"spot.created" | "spot.participant_joined" | "spot.participant_left" | "spot.matched" | "spot.closed" | "spot.extended"`
-
-### SpotLifecycleEvent (discriminated union)
-
-| type                    | payload                                                                                           |
-| ----------------------- | ------------------------------------------------------------------------------------------------- |
-| spot.created            | SpotLifecycle (participants=[])                                                                   |
-| spot.participant_joined | { spot_id, persona_id, joined_at_ms }                                                             |
-| spot.participant_left   | { spot_id, persona_id, left_at_ms, reason }                                                       |
-| spot.matched            | { spot_id, matched_at_ms, arrived_count, participants (SpotLifecycleParticipant[]) }              |
-| spot.closed             | { spot_id, closed_at_ms, outcome (MATCHED \| CANCELED \| TIMEOUT) }                               |
-| spot.extended           | { spot_id, new_expected_closed_at_ms } — counter_offer 등 수명 연장의 **유일한 합법적 변경 경로** |
-
-### SimulationRunVariant (enum)
-
-`"baseline" | "high_engagement" | "weekend_peak" | "custom"`
-
-### SimulationRunStatus (enum)
-
-`"queued" | "running" | "completed" | "failed"`
-
-### SimulationRunRegion
-
-| Field    | Type           | Required | Notes                     |
-| -------- | -------------- | -------- | ------------------------- |
-| center   | GeoCoord       | required | FE `initialCenter`가 파생 |
-| bbox     | MapPersonaBbox | required | swLat/swLng/neLat/neLng   |
-| timezone | string         | required | 고정 `"Asia/Seoul"`       |
-
-### SimulationRunStreams
-
-| Field          | Type   | Required | Notes                                              |
-| -------------- | ------ | -------- | -------------------------------------------------- |
-| timeline_url   | string | required | `/api/v1/simulation/runs/{run_id}/timeline/stream` |
-| spots_url      | string | required | `/api/v1/map/spots/stream?run_id={run_id}`         |
-| personas_url   | string | required | `/api/v1/map/personas/stream?run_id={run_id}`      |
-| highlights_url | string | required | `/api/v1/simulation/runs/{run_id}/highlights`      |
-
-### SimulationRun (2026-04-24 신규)
-
-| Field         | Type                 | Required | Notes                                                                            |
-| ------------- | -------------------- | -------- | -------------------------------------------------------------------------------- |
-| run_id        | string               | required |                                                                                  |
-| variant       | SimulationRunVariant | required |                                                                                  |
-| status        | SimulationRunStatus  | required |                                                                                  |
-| started_at    | string (ISO)         | required |                                                                                  |
-| completed_at  | string (ISO)         | optional | status=completed\|failed 때만                                                    |
-| total_ticks   | number               | required | 기본 48                                                                          |
-| current_tick  | number               | optional | status=running 때만                                                              |
-| region        | SimulationRunRegion  | required |                                                                                  |
-| agent_count   | number               | required | 기본 500, 범위 50–1000                                                           |
-| seed          | number               | required | 재현성                                                                           |
-| user_agent_id | string               | optional | `POST /runs`에 `user_persona_id`가 주어졌을 때만. FE `followingPersonaId` 기본값 |
-| streams       | SimulationRunStreams | required | FE가 구독해야 할 SSE 엔드포인트 모음                                             |
-
-### CreateSimulationRunRequest
-
-| Field           | Type                 | Required | Notes                                                  |
-| --------------- | -------------------- | -------- | ------------------------------------------------------ |
-| variant         | SimulationRunVariant | required | `custom`이면 `region_bbox` 필수                        |
-| region_bbox     | MapPersonaBbox       | optional | variant 기본값 덮어쓰기                                |
-| duration_ticks  | number               | optional | 기본 48                                                |
-| seed            | number               | optional |                                                        |
-| user_persona_id | string               | optional | 관찰자 모드(미지정)가 기본. 지정 시 에이전트 풀에 주입 |
-| agent_count     | number               | optional | 기본 500, 50–1000 범위                                 |
-
-> **제한**: 인증 사용자당 분당 1회, 동시 running 1개. 초과 시 `429`.
-
-## Map Personas (2026-04 추가)
-
-> 맵 실시간 페르소나 스트림. FE 는 `useActivityClusters` 로 클러스터를 파생 계산한다.
-
-### PersonaArchetype (enum)
-
-| Value     | Notes |
-| --------- | ----- |
-| explorer  |       |
-| helper    |       |
-| creator   |       |
-| connector |       |
-| learner   |       |
-
-### PersonaIntent (enum)
-
-| Value   | Notes       |
-| ------- | ----------- |
-| offer   | 호스트 모집 |
-| request | 사용자 영청 |
-
-### MapPersona
-
-| Field           | Type             | Required | Notes                                    |
-| --------------- | ---------------- | -------- | ---------------------------------------- |
-| id              | string           | required | leave→join 사이클 내에서 안정적이어야 함 |
-| name            | string           | required |                                          |
-| emoji           | string           | required | 단일 이모지, 페르소나 시각 대표          |
-| archetype       | PersonaArchetype | required |                                          |
-| category        | SpotCategory     | required | 클러스터 그룹핑 키                       |
-| intent          | PersonaIntent    | required | 클러스터 그룹핑 키                       |
-| location        | GeoCoord         | required | {lat, lng}                               |
-| interestItemIds | string[]         | optional | 관심 아이템 id — 없어도 됨               |
-
-### MapPersonaBbox
-
-| Field | Type   | Required | Notes                |
-| ----- | ------ | -------- | -------------------- |
-| swLat | number | required | south-west latitude  |
-| swLng | number | required | south-west longitude |
-| neLat | number | required | north-east latitude  |
-| neLng | number | required | north-east longitude |
-
-### MapPersonaStreamEventType (enum)
-
-| Value         | Notes                                 |
-| ------------- | ------------------------------------- |
-| persona.join  | 새 페르소나가 bbox 안에 등장          |
-| persona.leave | 기존 페르소나가 bbox 를 떠나거나 종료 |
-| persona.move  | 기존 페르소나 위치 갱신               |
-
-### MapPersonaJoinEvent
-
-| Field   | Type           | Required | Notes |
-| ------- | -------------- | -------- | ----- |
-| type    | 'persona.join' | required |       |
-| persona | MapPersona     | required |       |
-
-### MapPersonaLeaveEvent
-
-| Field     | Type            | Required | Notes |
-| --------- | --------------- | -------- | ----- |
-| type      | 'persona.leave' | required |       |
-| personaId | string          | required |       |
-
-### MapPersonaMoveEvent
-
-| Field     | Type           | Required | Notes                  |
-| --------- | -------------- | -------- | ---------------------- |
-| type      | 'persona.move' | required |                        |
-| personaId | string         | required |                        |
-| location  | GeoCoord       | required | 페르소나 당 ≤ 1Hz 권장 |
-
-### MapPersonaStreamEvent
-
-MapPersonaJoinEvent | MapPersonaLeaveEvent | MapPersonaMoveEvent (discriminated union on `type`)
+Locality/zoom-out and simulation/contextBuilder runtime entities are intentionally excluded from the current backend handoff because those product scopes were removed, not merely delayed.

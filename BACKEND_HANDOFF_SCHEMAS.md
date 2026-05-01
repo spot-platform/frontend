@@ -80,6 +80,88 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ---
 
+## Shared contextBuilder value object schemas
+
+> Simulation runtime API 는 제거됐지만, contextBuilder 가 만든 계획/가격/준비물 값 객체는 Feed/Post/Spot 현재 스펙에서 계속 사용한다.
+
+### ResolvedPlace
+
+| Field            | Type   | Required | Notes |
+| ---------------- | ------ | -------- | ----- |
+| place_id         | string | required |       |
+| name             | string | required |       |
+| primary_category | string | required |       |
+| role             | meetup \| main \| secondary \| wrapup | required | |
+| lat              | number | required |       |
+| lng              | number | required |       |
+| address          | string | required |       |
+| road_address     | string | optional |       |
+| confidence       | number | required | 0~1   |
+
+### PlanStep
+
+| Field    | Type          | Required | Notes |
+| -------- | ------------- | -------- | ----- |
+| time     | string        | required | HH:MM or +Nm |
+| activity | string        | required |       |
+| place_id | string \| null | required |       |
+| intent   | string \| null | required |       |
+
+### PlanV3
+
+| Field                  | Type       | Required | Notes |
+| ---------------------- | ---------- | -------- | ----- |
+| steps                  | PlanStep[] | required | 3~7 recommended |
+| total_duration_minutes | number     | required | 60~360 |
+
+### AddOnMechanism (enum)
+
+`"fixed" | "funding" | "realcost"`
+
+### IncludedItem
+
+| Field | Type   | Required | Notes |
+| ----- | ------ | -------- | ----- |
+| name  | string | required |       |
+| value | string | required | natural language OK |
+
+### AddOn
+
+| Field       | Type           | Required | Notes |
+| ----------- | -------------- | -------- | ----- |
+| name        | string         | required |       |
+| price       | number         | required |       |
+| mechanism   | AddOnMechanism | required |       |
+| explanation | string \| null | required |       |
+
+### RefundPolicy
+
+| Field             | Type           | Required | Notes |
+| ----------------- | -------------- | -------- | ----- |
+| cutoff_hours      | number         | required |       |
+| full_refund_until | string \| null | required |       |
+| note              | string \| null | required |       |
+
+### PriceBreakdown
+
+| Field           | Type                 | Required | Notes |
+| --------------- | -------------------- | -------- | ----- |
+| base_fee        | number               | required |       |
+| included_items  | IncludedItem[]       | required |       |
+| optional_addons | AddOn[]              | required |       |
+| refund_policy   | RefundPolicy \| null | required |       |
+| summary_line    | string \| null       | required |       |
+
+### Preparation
+
+| Field               | Type           | Required | Notes |
+| ------------------- | -------------- | -------- | ----- |
+| host_provides       | string[]       | required |       |
+| partner_brings      | string[]       | required |       |
+| weather_contingency | string \| null | required |       |
+| safety_notes        | string[]       | required |       |
+| host_tip            | string \| null | required |       |
+
 ## Spot schemas
 
 ### SpotType (enum)
@@ -96,22 +178,30 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### Spot
 
-| Field          | Type       | Required | Notes    |
-| -------------- | ---------- | -------- | -------- |
-| id             | string     | required |          |
-| type           | SpotType   | required |          |
-| status         | SpotStatus | required |          |
-| title          | string     | required |          |
-| description    | string     | required |          |
-| pointCost      | number     | required |          |
-| authorId       | string     | required |          |
-| authorNickname | string     | required |          |
-| createdAt      | string     | required | ISO 8601 |
-| updatedAt      | string     | required | ISO 8601 |
+| Field          | Type            | Required | Notes                                          |
+| -------------- | --------------- | -------- | ---------------------------------------------- |
+| id             | string          | required |                                                |
+| type           | SpotType        | required |                                                |
+| status         | SpotStatus      | required |                                                |
+| title          | string          | required |                                                |
+| description    | string          | required |                                                |
+| pointCost      | number          | required |                                                |
+| authorId       | string          | required |                                                |
+| authorNickname | string          | required |                                                |
+| createdAt      | string          | required | ISO 8601                                       |
+| updatedAt      | string          | required | ISO 8601                                       |
+| forfeitPool    | SpotForfeitPool | optional | Omitted means `{toPool:0, toPlatformFee:0}`    |
+
+### SpotForfeitPool
+
+| Field         | Type   | Required | Notes                             |
+| ------------- | ------ | -------- | --------------------------------- |
+| toPool        | number | required | Forfeited amount added to payout  |
+| toPlatformFee | number | required | Forfeited amount kept as platform |
 
 ### TimelineEventKind (enum)
 
-`"CREATED" | "MATCHED" | "COMPLETED" | "CANCELLED" | "COMMENT"`
+`"CREATED" | "MATCHED" | "COMPLETED" | "CANCELLED" | "COMMENT" | "SETTLEMENT_REQUESTED" | "SETTLEMENT_APPROVED"`
 
 ### TimelineEvent
 
@@ -225,7 +315,65 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 | comment          | string | optional |          |
 | createdAt        | string | required | ISO 8601 |
 
----
+### SettlementApprovalStatus (enum)
+
+`"PENDING" | "APPROVED"`
+
+### SpotVoteSummaryOption
+
+| Field    | Type    | Required | Notes |
+| -------- | ------- | -------- | ----- |
+| label    | string  | required |       |
+| count    | number  | required |       |
+| isWinner | boolean | optional |       |
+
+### SpotPartnerVoteSummary
+
+| Field         | Type                      | Required | Notes |
+| ------------- | ------------------------- | -------- | ----- |
+| question      | string                    | required |       |
+| totalVotes    | number                    | required |       |
+| consensusRate | number                    | required | 0-100 |
+| decidedLabel  | string                    | required |       |
+| summary       | string                    | required |       |
+| options       | SpotVoteSummaryOption[]   | required |       |
+
+### SpotFinalApproval
+
+| Field            | Type                   | Required | Notes       |
+| ---------------- | ---------------------- | -------- | ----------- |
+| status           | SettlementApprovalStatus | required |             |
+| approverNickname | string                 | required |             |
+| note             | string                 | required |             |
+| approvedAt       | string                 | optional | ISO 8601    |
+
+### SpotSettlementLineItem
+
+| Field  | Type   | Required | Notes |
+| ------ | ------ | -------- | ----- |
+| label  | string | required |       |
+| amount | number | required |       |
+
+### SpotSettlementApproval
+
+| Field           | Type                     | Required | Notes                                          |
+| --------------- | ------------------------ | -------- | ---------------------------------------------- |
+| status          | SettlementApprovalStatus   | required | PENDING or APPROVED                            |
+| requestedAmount | number                   | required | Sum of submitted line items                    |
+| approvedAmount  | number                   | required | On approval: `requestedAmount + forfeitPool.toPool` |
+| summary         | string                   | required |                                                |
+| lineItems       | SpotSettlementLineItem[] | required |                                                |
+| submittedBy     | string                   | optional | User id                                        |
+| submittedAt     | string                   | optional | ISO 8601                                       |
+| approvedBy      | string                   | optional | User id                                        |
+| approvedAt      | string                   | optional | ISO 8601                                       |
+
+### SubmitSettlementPayload
+
+| Field     | Type                     | Required | Notes |
+| --------- | ------------------------ | -------- | ----- |
+| lineItems | SpotSettlementLineItem[] | required |       |
+| summary   | string                   | required |       |
 
 ## My and User schemas
 
@@ -499,6 +647,12 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 | deadline                 | string                   | optional | ISO date                                   |
 | isBookmarked             | boolean                  | optional |                                            |
 | myApplicationStatus      | FeedApplicationStatus    | optional | 인증 사용자의 신청 상태, 미신청 시 omitted |
+| isAi                     | boolean                  | optional | 2026-04-30 — contextBuilder 합성 피드 마커. true 면 FE 가 참여 액션 대신 "리퀘스트 열기"를 노출 |
+| plan                     | PlanV3                   | optional | 2026-04-30 — Shared contextBuilder PlanV3 와 동일 객체 |
+| priceBreakdown           | PriceBreakdown           | optional | 2026-04-30                                 |
+| preparation              | Preparation              | optional | 2026-04-30                                 |
+| venueAnchors             | ResolvedPlace[]          | optional | 2026-04-30                                 |
+| primaryPin               | ResolvedPlace            | optional | 2026-04-30                                 |
 
 ### FeedAuthorProfile
 
@@ -530,16 +684,31 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 `"APPLIED" | "ACCEPTED" | "REJECTED" | "CANCELLED"`
 
+### FeedApplicationRole (enum)
+
+`"SUPPORTER" | "PARTNER"`
+
 ### FeedApplication
 
-| Field     | Type                  | Required | Notes        |
-| --------- | --------------------- | -------- | ------------ |
-| id        | string                | required |              |
-| feedId    | string                | required |              |
-| userId    | string                | required |              |
-| proposal  | string                | required | 신청 메시지  |
-| status    | FeedApplicationStatus | required |              |
-| createdAt | string                | required | ISO datetime |
+| Field        | Type                  | Required | Notes                                                                  |
+| ------------ | --------------------- | -------- | ---------------------------------------------------------------------- |
+| id           | string                | required |                                                                        |
+| feedId       | string                | required |                                                                        |
+| userId       | string                | required |                                                                        |
+| proposal     | string                | required | 신청 메시지                                                            |
+| status       | FeedApplicationStatus | required |                                                                        |
+| appliedRole  | FeedApplicationRole   | required | 신청자가 선택한 참여 역할                                              |
+| deposit      | number                | required | BE 재계산/검증 후 확정한 신청 시점 보증금                              |
+| createdAt    | string                | required | ISO datetime                                                           |
+| plan         | PlanV3                | optional | 2026-04-30 — REQUEST 가 비워둔 활동 계획을 서포터가 신청 시 채워 보냄 |
+| preparation  | Preparation           | optional | 2026-04-30                                                             |
+
+### UpdateFeedDetailsRequest (2026-04-30)
+
+| Field       | Type        | Required | Notes                            |
+| ----------- | ----------- | -------- | -------------------------------- |
+| plan        | PlanV3      | optional | 부분 업데이트. omit 시 변경 없음 |
+| preparation | Preparation | optional | 부분 업데이트. omit 시 변경 없음 |
 
 ### SupporterApplicationStatus (enum)
 
@@ -1076,12 +1245,15 @@ All message variants share:
 
 #### CreateSpotRequest
 
-| Field       | Type     | Required | Notes |
-| ----------- | -------- | -------- | ----- |
-| type        | SpotType | required |       |
-| title       | string   | required |       |
-| description | string   | required |       |
-| pointCost   | number   | required |       |
+| Field           | Type           | Required | Notes |
+| --------------- | -------------- | -------- | ----- |
+| type            | SpotType       | required |       |
+| title           | string         | required |       |
+| description     | string         | required |       |
+| pointCost       | number         | required |       |
+| plan            | PlanV3         | optional | 2026-04-30 — OFFER 폼 필수, REQUEST 옵션 |
+| priceBreakdown  | PriceBreakdown | optional | 2026-04-30                              |
+| preparation     | Preparation    | optional | 2026-04-30                              |
 
 #### UpsertSpotScheduleRequest
 
@@ -1221,9 +1393,20 @@ All message variants share:
 
 #### FeedApplyRequest
 
-| Field    | Type   | Required | Notes       |
-| -------- | ------ | -------- | ----------- |
-| proposal | string | required | 신청 메시지 |
+| Field        | Type        | Required | Notes                                                          |
+| ------------ | ----------- | -------- | -------------------------------------------------------------- |
+| proposal     | string      | required | 신청 메시지                                                    |
+| role         | FeedApplicationRole | required | 신청자가 참여할 역할. 현재 FE 는 `SUPPORTER` 또는 `PARTNER` 를 전송 |
+| deposit      | number      | required | FE 미리보기/포인트 차감 기준 보증금. BE 는 동일 공식으로 재계산·검증 후 저장 |
+| plan         | PlanV3      | optional | 2026-04-30 — REQUEST 가 비어있을 때 서포터가 채워서 보냄       |
+| preparation  | Preparation | optional | 2026-04-30 — REQUEST 가 비어있을 때 서포터가 채워서 보냄       |
+
+#### UpdateFeedDetailsRequest (2026-04-30)
+
+| Field       | Type        | Required | Notes                            |
+| ----------- | ----------- | -------- | -------------------------------- |
+| plan        | PlanV3      | optional | 부분 업데이트. omit 시 변경 없음 |
+| preparation | Preparation | optional | 부분 업데이트. omit 시 변경 없음 |
 
 #### FeedApplyResponse
 
@@ -1404,12 +1587,6 @@ All message variants share:
 }
 ```
 
-#### SpotWorkflowResponse
-
-| Field | Type         | Required |
-| ----- | ------------ | -------- |
-| data  | SpotWorkflow | required |
-
 #### SpotSettlementResponse
 
 | Field | Type                   | Required |
@@ -1432,423 +1609,6 @@ All message variants share:
 
 몰수분 분할: `toPlatformFee = round(forfeit * 0.2)`, `toPool = forfeit - toPlatformFee` (잔여 계산). Feed 단계에서 발생한 서포터 몰수분은 연결된 Spot이 없으므로 플랫폼 풀에 누적(MVP). Spot 몰수분은 `spot.forfeitPool.toPool`에 누적되며 정산 승인 시 `approvedAmount = requestedAmount + forfeitPool.toPool` 공식으로 합산된다. 환불은 `PointTransaction.type = 'REFUND'`로 즉시 발행한다.
 
-## Simulation schemas (contextBuilder, 2026-04 추가)
+## Removed / discarded schemas
 
-### MapSpotsQuery
-
-| Field | Type   | Required | Notes                          |
-| ----- | ------ | -------- | ------------------------------ |
-| mode  | string | optional | `virtual` \| `real` \| `mixed` |
-
-### MapSpotsResponse
-
-```json
-{
-    "data": [
-        {
-            "spot_id": "spot-v-001",
-            "provenance": "virtual",
-            "title": "연무동 저녁 라떼아트 실습",
-            "skill_topic": "바리스타",
-            "teach_mode": "small_group",
-            "venue_type": "cafe",
-            "fee_per_partner": 18000,
-            "location": { "lat": 37.2636, "lng": 127.0286 },
-            "host_preview": "5년차 바리스타 민지의 핸드드립+라떼아트 2시간 클래스",
-            "person_fitness_score": 0.82,
-            "attractiveness_score": 0.74
-        }
-    ]
-}
-```
-
-### TimelineFrame (SSE frame payload)
-
-단일 SSE `message` 이벤트의 `data` 필드에 아래 JSON을 문자열로 실어 보낸다.
-
-```json
-{
-    "tick": 2,
-    "day_of_week": "SAT",
-    "time_slot": "10:00",
-    "active_agents": [
-        {
-            "agent_id": "A_80381",
-            "location": { "lat": 37.2636, "lng": 127.0286 },
-            "archetype": "explorer"
-        }
-    ],
-    "active_spots": [
-        {
-            "spot_id": "spot-v-001",
-            "location": { "lat": 37.2636, "lng": 127.0286 },
-            "provenance": "virtual",
-            "status": "OPEN"
-        }
-    ],
-    "events_this_tick": [
-        {
-            "event_id": "evt-2-1",
-            "event_type": "JOIN_TEACH_SPOT",
-            "payload": {
-                "agent_id": "A_80381",
-                "spot_id": "spot-v-001"
-            }
-        }
-    ]
-}
-```
-
-### HighlightClipsResponse
-
-```json
-{
-    "data": [
-        {
-            "clip_id": "clip-001",
-            "title": "첫 매칭 성사: 라떼아트 클래스",
-            "category": "first_success",
-            "start_tick": 0,
-            "end_tick": 3,
-            "involved_agents": ["A_11504", "A_80381"],
-            "narrative": "호스트 지훈이 연무동 카페에서 라떼아트 클래스를 열자 탐험형 민지가 바로 합류해 첫 매칭이 성사됐다."
-        }
-    ]
-}
-```
-
-### AttractivenessReportResponse
-
-```json
-{
-    "data": {
-        "composite_score": 0.74,
-        "signals": {
-            "title_hookiness": 0.82,
-            "price_reasonableness": 0.68,
-            "venue_accessibility": 0.77,
-            "host_reputation_fit": 0.71,
-            "time_slot_demand": 0.62,
-            "skill_rarity_bonus": 0.55,
-            "narrative_authenticity": 0.88,
-            "bonded_repeat_potential": 0.79
-        },
-        "improvement_hints": [
-            "제목에 \"2시간\" 같은 러닝타임을 넣으면 클릭률이 오릅니다.",
-            "현재 가격은 p50보다 살짝 높습니다. 재료비를 분리 표기해 체감 가격을 낮춰보세요."
-        ],
-        "price_benchmark": {
-            "p25": 12000,
-            "p50": 16000,
-            "p75": 22000,
-            "p90": 30000,
-            "verdict": "slightly_high"
-        }
-    }
-}
-```
-
-> `verdict`은 2026-04-24 회의에서 `AttractivenessVerdict` enum 4종(`too_cheap` / `competitive` / `slightly_high` / `too_high`)으로 확정. 기존 예시의 `slightly_above_p50` 는 폐기.
-
-### ConversionHintsResponse
-
-```json
-{
-    "data": {
-        "source_virtual_spot_id": "spot-v-001",
-        "placeholder": {
-            "title": "연무동 저녁 라떼아트 2시간 실습",
-            "intro": "카페에서 바로 해보는 핸드드립 + 라떼아트. 원두와 우유 재료 포함.",
-            "skill_topic": "바리스타"
-        },
-        "pricing_suggestion": {
-            "fee_breakdown": {
-                "peer_labor_fee": 12000,
-                "material_cost": 4000,
-                "venue_rental": 2000,
-                "equipment_rental": 0,
-                "total": 18000,
-                "passthrough_total": 6000
-            },
-            "rationale": "비슷한 워크숍 p50(16,000원) 대비 경쟁력 있는 세팅. 재료비·장소비를 분리 표기해 신뢰도 확보."
-        },
-        "plan_help": {
-            "warmup_block": "원두 소개와 추출 원리 5분 데모 (0–15분)",
-            "main_block": "핸드드립 2회 + 라떼아트 하트/로제타 각 3회 (15–90분)",
-            "closing_block": "각자 메뉴 한 잔 완성 + 피드백 (90–120분)",
-            "host_tips": [
-                "재료는 인원수+1 분량 준비",
-                "초보자 카메라 각도 교정 스크립트 미리 준비"
-            ]
-        },
-        "expected_demand": {
-            "forecast_join_count_p50": 3,
-            "forecast_join_count_p90": 6
-        },
-        "session_context": {
-            "similar_active_count": 4,
-            "avg_participants": 2.3,
-            "typical_lifespan_minutes": 110,
-            "sample_size": 27,
-            "scope": "run"
-        }
-    }
-}
-```
-
-> `fee_breakdown`은 2026-04-24 회의에서 `FeeBreakdown` 스키마로 확정 (peer_labor_fee/material_cost/venue_rental/equipment_rental/total/passthrough_total). 기존의 `{ tuition, materials, venue_share }`는 폐기.
->
-> `session_context`는 2026-04-24 추가. FE가 직접 집계하던 통계를 BE가 run 전체 기반으로 대체. `scope`는 모수 부족 시 `run` → `region` → `global` 순 fallback.
-
-### SpotLifecycle schemas (2026-04-24 신규)
-
-#### MapSpotsLifecyclesQuery (query string)
-
-| Field  | Type   | Required | Notes                               |
-| ------ | ------ | -------- | ----------------------------------- |
-| swLat  | number | required | bbox south-west 위도                |
-| swLng  | number | required | bbox south-west 경도                |
-| neLat  | number | required | bbox north-east 위도                |
-| neLng  | number | required | bbox north-east 경도                |
-| run_id | string | optional | 미지정 시 `GetCurrentSimulationRun` |
-
-#### MapSpotsLifecyclesResponse
-
-```json
-{
-    "status": 200,
-    "data": [
-        {
-            "spot_id": "spot-v-001",
-            "location": { "lat": 37.2636, "lng": 127.0286 },
-            "category": "바리스타",
-            "intent": "offer",
-            "title": "연무동 저녁 라떼아트 실습",
-            "host_persona_id": "persona-042",
-            "created_at_ms": 172800000,
-            "expected_closed_at_ms": 179800000,
-            "matched_at_ms": 174500000,
-            "closed_at_ms": null,
-            "participants": [
-                {
-                    "persona_id": "persona-108",
-                    "joined_at_ms": 173200000,
-                    "left_at_ms": null,
-                    "arrived_at_ms": 174100000
-                }
-            ]
-        }
-    ]
-}
-```
-
-#### SpotLifecycleEvent (SSE `text/event-stream`)
-
-```
-event: spot.created
-data: {"type":"spot.created","spot_id":"spot-v-002","location":{"lat":37.2640,"lng":127.0291},"category":"요가","intent":"offer","title":"성수 모닝 요가","host_persona_id":"persona-015","created_at_ms":172800000,"expected_closed_at_ms":179800000,"participants":[]}
-
-event: spot.participant_joined
-data: {"type":"spot.participant_joined","spot_id":"spot-v-001","persona_id":"persona-108","joined_at_ms":173200000}
-
-event: spot.participant_left
-data: {"type":"spot.participant_left","spot_id":"spot-v-001","persona_id":"persona-200","left_at_ms":173900000,"reason":"conflict"}
-
-event: spot.matched
-data: {"type":"spot.matched","spot_id":"spot-v-001","matched_at_ms":174500000,"arrived_count":3,"participants":[{"persona_id":"persona-108","arrived_at_ms":174100000}]}
-
-event: spot.extended
-data: {"type":"spot.extended","spot_id":"spot-v-001","new_expected_closed_at_ms":181000000}
-
-event: spot.closed
-data: {"type":"spot.closed","spot_id":"spot-v-001","closed_at_ms":181000000,"outcome":"MATCHED"}
-
-: keepalive
-```
-
-### SimulationRun schemas (2026-04-24 신규)
-
-#### CreateSimulationRunRequest
-
-```json
-{
-    "variant": "weekend_peak",
-    "region_bbox": {
-        "swLat": 37.25,
-        "swLng": 127.01,
-        "neLat": 37.28,
-        "neLng": 127.04
-    },
-    "duration_ticks": 48,
-    "seed": 42,
-    "user_persona_id": "user-persona-777",
-    "agent_count": 500
-}
-```
-
-#### CreateSimulationRunResponse (202 Accepted)
-
-```json
-{
-    "status": 202,
-    "data": {
-        "run_id": "run-2026-04-24-weekend-01",
-        "status": "queued",
-        "eta_seconds": 6
-    }
-}
-```
-
-#### SimulationRunResponse
-
-```json
-{
-    "status": 200,
-    "data": {
-        "run_id": "run-2026-04-24-weekend-01",
-        "variant": "weekend_peak",
-        "status": "running",
-        "started_at": "2026-04-24T00:00:00+09:00",
-        "completed_at": null,
-        "total_ticks": 48,
-        "current_tick": 12,
-        "region": {
-            "center": { "lat": 37.2636, "lng": 127.0286 },
-            "bbox": {
-                "swLat": 37.25,
-                "swLng": 127.01,
-                "neLat": 37.28,
-                "neLng": 127.04
-            },
-            "timezone": "Asia/Seoul"
-        },
-        "agent_count": 500,
-        "seed": 42,
-        "user_agent_id": "A_77700",
-        "streams": {
-            "timeline_url": "/api/v1/simulation/runs/run-2026-04-24-weekend-01/timeline/stream",
-            "spots_url": "/api/v1/map/spots/stream?run_id=run-2026-04-24-weekend-01",
-            "personas_url": "/api/v1/map/personas/stream?run_id=run-2026-04-24-weekend-01",
-            "highlights_url": "/api/v1/simulation/runs/run-2026-04-24-weekend-01/highlights"
-        }
-    }
-}
-```
-
-### RecomputeAttractivenessResponse (202 Accepted)
-
-```json
-{
-    "status": 202,
-    "data": {
-        "job_id": "recompute-7f1e",
-        "status": "queued"
-    }
-}
-```
-
-> Rate limit: 인증 사용자당 분당 3회. 완료 후 FE가 기존 `GET /api/v1/feed/{feed_id}/attractiveness` 를 재호출해 최신 리포트를 받는다.
-
-## Map Personas schemas (2026-04 추가)
-
-> 맵 실시간 페르소나 스트림. 스냅샷은 `ApiResponse<MapPersona[]>` 봉투, 스트림은 `text/event-stream` 으로 봉투 없이 이벤트 JSON 만 전송.
-
-### MapPersonasSnapshotQuery (query string)
-
-| Field | Type   | Required | Notes |
-| ----- | ------ | -------- | ----- |
-| swLat | number | required |       |
-| swLng | number | required |       |
-| neLat | number | required |       |
-| neLng | number | required |       |
-
-### MapPersonasSnapshotResponse
-
-```typescript
-ApiResponse<MapPersona[]>;
-```
-
-### MapPersonasStreamQuery (query string)
-
-| Field | Type   | Required | Notes |
-| ----- | ------ | -------- | ----- |
-| swLat | number | required |       |
-| swLng | number | required |       |
-| neLat | number | required |       |
-| neLng | number | required |       |
-
-### Stream 출력 포맷 (`text/event-stream`)
-
-각 이벤트는 SSE `event:` 헤더 + `data:` JSON 으로 송출. 연결 유지는 주석 라인 `: keepalive` 만 허용.
-
-```
-event: persona.join
-data: {"type":"persona.join","persona":{...MapPersona}}
-
-event: persona.leave
-data: {"type":"persona.leave","personaId":"persona-042"}
-
-event: persona.move
-data: {"type":"persona.move","personaId":"persona-001","location":{"lat":37.2640,"lng":127.0291}}
-```
-
-### 예시 — MapPersonasSnapshotResponse
-
-```json
-{
-    "status": 200,
-    "data": [
-        {
-            "id": "persona-001",
-            "name": "민지",
-            "emoji": "🧘",
-            "archetype": "helper",
-            "category": "요가",
-            "intent": "offer",
-            "location": { "lat": 37.2636, "lng": 127.0286 }
-        },
-        {
-            "id": "persona-002",
-            "name": "지훈",
-            "emoji": "💻",
-            "archetype": "creator",
-            "category": "코딩",
-            "intent": "request",
-            "location": { "lat": 37.2641, "lng": 127.0291 },
-            "interestItemIds": ["item-abc", "item-def"]
-        }
-    ]
-}
-```
-
-### 예시 — stream event payloads (각 이벤트의 `data:` JSON)
-
-```json
-// persona.join
-{
-    "type": "persona.join",
-    "persona": {
-        "id": "persona-042",
-        "name": "서연",
-        "emoji": "🎨",
-        "archetype": "creator",
-        "category": "미술",
-        "intent": "offer",
-        "location": { "lat": 37.27, "lng": 127.03 }
-    }
-}
-```
-
-```json
-// persona.leave
-{ "type": "persona.leave", "personaId": "persona-042" }
-```
-
-```json
-// persona.move
-{
-    "type": "persona.move",
-    "personaId": "persona-001",
-    "location": { "lat": 37.264, "lng": 127.0291 }
-}
-```
+Locality/zoom-out and simulation/contextBuilder runtime schemas are intentionally excluded from the current backend handoff because those product scopes were removed, not merely delayed.

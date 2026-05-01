@@ -259,7 +259,7 @@ files[]: <binary>
 
 Frontend loading note: On SpotDetail page entry, `GET /spots/{spotId}/votes`, `/checklist`, `/files`, and `/notes` are fetched in parallel (`Promise.all`). Each section handles its own loading/skeleton state independently. The `GET /spots/{spotId}` response intentionally excludes these sub-resources.
 
-Wired via `src/features/spot/api/spot-api.ts`.
+Wired/mock-backed via `src/features/spot/api/spot-api.ts` and `src/features/spot/model/mock.ts`. For backend implementation, model the mock objects as normalized resources and return the same envelopes (`ApiResponse<T>` / `PagedResponse<T>`). Prototype workflow data currently lives in `MOCK_SPOT_WORKFLOWS`, but the workflow concept/API is removed from the backend contract. Keep settlement mutation endpoints below only if settlement is needed.
 
 ### GET /spots
 
@@ -357,7 +357,9 @@ Wired via `src/features/spot/api/spot-api.ts`.
 - Query params: none
 - Request body: `CreateSpotRequest`
 - Response body (200): `ApiResponse<Spot>`
-- Referenced schemas: `Spot`, `SpotType`
+- Referenced schemas: `Spot`, `SpotType`, `PlanV3`, `PriceBreakdown`, `Preparation`
+
+> **2026-04-30**: `CreateSpotRequest` 에 `plan?` / `priceBreakdown?` / `preparation?` 옵셔널 필드 추가. OFFER 폼은 셋 다 채워서 보내고, REQUEST 폼은 비워서 보낼 수 있다 (매칭된 서포터가 `POST /feeds/{feedId}/apply` 페이로드 또는 `PATCH /feeds/{feedId}` 로 채운다). 객체 정의는 Shared contextBuilder value object schema 와 동일.
 
 **Request**
 
@@ -366,7 +368,36 @@ Wired via `src/features/spot/api/spot-api.ts`.
     "type": "OFFER",
     "title": "홈카페 클래스 — 핸드드립부터 라떼아트까지",
     "description": "원두 샘플 증정, 초보 환영",
-    "pointCost": 25000
+    "pointCost": 25000,
+    "plan": {
+        "steps": [
+            {
+                "time": "19:00",
+                "activity": "원두 소개와 추출 원리 5분 데모",
+                "place_id": null,
+                "intent": "도구에 친숙해지는 시간"
+            }
+        ],
+        "total_duration_minutes": 120
+    },
+    "priceBreakdown": {
+        "base_fee": 25000,
+        "included_items": [{ "name": "원두/우유", "value": "1인 분량 포함" }],
+        "optional_addons": [],
+        "refund_policy": {
+            "cutoff_hours": 24,
+            "full_refund_until": null,
+            "note": "24시간 전 환불 가능"
+        },
+        "summary_line": "참가비 25,000원에 원두/우유 포함"
+    },
+    "preparation": {
+        "host_provides": ["핸드드립 키트"],
+        "partner_brings": ["편한 옷차림"],
+        "weather_contingency": null,
+        "safety_notes": ["뜨거운 도구 주의"],
+        "host_tip": null
+    }
 }
 ```
 
@@ -1390,30 +1421,6 @@ Current repo status: UI contract only. The public user profile route is currentl
 }
 ```
 
-### POST /users/{userId}/follow
-
-- Purpose: Follow a user (add as friend).
-- Auth: Required (Bearer)
-- Path params: `userId: string`
-- Query params: none
-- Request body: none
-- Response body: empty (204)
-- Referenced schemas: none
-
----
-
-### DELETE /users/{userId}/follow
-
-- Purpose: Unfollow a user (remove from friends).
-- Auth: Required (Bearer)
-- Path params: `userId: string`
-- Query params: none
-- Request body: none
-- Response body: empty (204)
-- Referenced schemas: none
-
----
-
 ### GET /users/me/feed-applications
 
 - Purpose: Get the authenticated user's feed application history.
@@ -1824,13 +1831,37 @@ Not currently wired in this repo, but the UI expects these endpoints and payload
 - Query params: none
 - Request body: `FeedApplyRequest`
 - Response body (200): `ApiResponse<FeedApplication>`
-- Referenced schemas: `FeedApplication`, `FeedApplicationStatus`
+- Referenced schemas: `FeedApplication`, `FeedApplicationStatus`, `FeedApplicationRole`, `PlanV3`, `Preparation`
+
+> **Current FE contract**: `src/features/feed/api/feed-api.ts` sends `{ proposal, role, deposit }` as required fields. `deposit` is used by the FE for point preview/optimistic deduction, but BE must recalculate and validate it before persisting. `plan` / `preparation` remain optional REQUEST-detail enrichment fields.
+>
+> **2026-04-30**: REQUEST 가 plan/preparation 비워두고 만들어진 경우, 서포터가 신청과 동시에 `plan` / `preparation` 필드로 채워서 보낼 수 있다. BE 는 응답 객체에 동일 필드를 echo 하고, 해당 Feed 의 본문 필드(`FeedItem.plan` / `preparation`) 도 같은 값으로 update 한다.
 
 **Request**
 
 ```json
 {
-    "proposal": "저는 공예 경험이 5년 있고, 이 활동에 꼭 참여하고 싶습니다."
+    "proposal": "저는 공예 경험이 5년 있고, 이 활동에 꼭 참여하고 싶습니다.",
+    "role": "SUPPORTER",
+    "deposit": 10500,
+    "plan": {
+        "steps": [
+            {
+                "time": "토 10:00",
+                "activity": "공방에서 만나 재료 점검",
+                "place_id": null,
+                "intent": "오전 햇빛이 좋을 때 시작해 시간 여유 확보"
+            }
+        ],
+        "total_duration_minutes": 150
+    },
+    "preparation": {
+        "host_provides": ["기본 도구"],
+        "partner_brings": ["앞치마"],
+        "weather_contingency": null,
+        "safety_notes": [],
+        "host_tip": null
+    }
 }
 ```
 
@@ -1843,6 +1874,8 @@ Not currently wired in this repo, but the UI expects these endpoints and payload
         "feedId": "feed-001",
         "userId": "user-me",
         "proposal": "저는 공예 경험이 5년 있고, 이 활동에 꼭 참여하고 싶습니다.",
+        "appliedRole": "SUPPORTER",
+        "deposit": 10500,
         "status": "APPLIED",
         "createdAt": "2026-04-11T10:00:00Z"
     }
@@ -1860,6 +1893,43 @@ Not currently wired in this repo, but the UI expects these endpoints and payload
 - Request body: none
 - Response body: empty (204)
 - Referenced schemas: none
+
+---
+
+### PATCH /feeds/{feedId} (2026-04-30)
+
+- Purpose: Partial update of feed body fields. 현재는 `plan` / `preparation` 만 받는다.
+- Auth: Required (Bearer). 작성자 본인 또는 매칭이 확정된 서포터만 허용.
+- Path params: `feedId: string`
+- Query params: none
+- Request body: `UpdateFeedDetailsRequest`
+- Response body (200): `ApiResponse<FeedItem>`
+- Referenced schemas: `FeedItem`, `PlanV3`, `Preparation`
+
+**Request**
+
+```json
+{
+    "plan": {
+        "steps": [
+            {
+                "time": "11:00",
+                "activity": "재료 손질 시연",
+                "place_id": null,
+                "intent": "오전 햇살이 들어오는 자리에서 시작"
+            }
+        ],
+        "total_duration_minutes": 120
+    },
+    "preparation": {
+        "host_provides": ["요리 도구"],
+        "partner_brings": ["앞치마"],
+        "weather_contingency": null,
+        "safety_notes": [],
+        "host_tip": null
+    }
+}
+```
 
 ---
 
@@ -2445,6 +2515,30 @@ Not currently wired in this repo, but types are defined in `src/features/chat/mo
 
 ---
 
+### POST /users/{userId}/follow
+
+- Purpose: Follow a user (add as friend).
+- Auth: Required (Bearer)
+- Path params: `userId: string`
+- Query params: none
+- Request body: none
+- Response body: empty (204)
+- Referenced schemas: none
+
+---
+
+### DELETE /users/{userId}/follow
+
+- Purpose: Unfollow a user (remove from friends).
+- Auth: Required (Bearer)
+- Path params: `userId: string`
+- Query params: none
+- Request body: none
+- Response body: empty (204)
+- Referenced schemas: none
+
+---
+
 ### GET /chat/connect
 
 - Purpose: Open a Server-Sent Events (SSE) stream for real-time chat events — new messages, read receipts, and typing indicators.
@@ -2468,6 +2562,10 @@ data: {"type":"typing","data":{"roomId":"room-001","userId":"user-xyz789"}}
 ```
 
 ---
+
+## Future-needed but not current FE MVP
+
+These contracts may not be wired by the current frontend yet, but they are still part of the final product scope. Keep them in the handoff and prioritize after v1-critical APIs.
 
 ## Search (UI contract)
 
@@ -2803,12 +2901,6 @@ Types are defined in `src/features/admin-post/model/types.ts`.
 
 ## Spot 취소/정산 확장 (2026-04 추가)
 
-### GET /spots/{spotId}/workflow
-
-- Purpose: 스팟의 워크플로우 스냅샷(투표 요약, 최종 승인, 정산 승인) 조회.
-- Path params: `spotId`
-- Response 200: `ApiResponse<SpotWorkflow>`
-
 ### POST /spots/{spotId}/settlement
 
 - Purpose: 호스트(AUTHOR)가 정산 line items와 summary를 제출. `spot.status === 'CLOSED'` 이고 `settlementApproval.status !== 'APPROVED'`일 때만 허용.
@@ -2826,197 +2918,10 @@ Types are defined in `src/features/admin-post/model/types.ts`.
 
 - 기존 엔드포인트. 서버가 본 요청 처리 시 환불/몰수 정책에 따라 `PointTransaction.type = 'REFUND'`을 즉시 발행하고, 연결된 Spot이 있으면 `spot.forfeitPool`을 업데이트한다. 규칙은 BACKEND_HANDOFF_SCHEMAS.md의 "Deposit refund/forfeit policy" 참조.
 
-## Simulation (contextBuilder, 2026-04 추가)
+## Removed / discarded scope
 
-> contextBuilder 시뮬레이션 결과 소비 엔드포인트. 모든 경로는 `${NEXT_PUBLIC_API_BASE_URL}` 기준이며, 프론트는 클라이언트 계산 없이 응답을 그대로 렌더한다.
+These were removed from the backend handoff because they are discarded product scope, not merely missing frontend work:
 
-### GET /api/v1/map/spots
-
-- Purpose: 맵에 표시할 SpotCard 리스트 조회. `mode` 쿼리로 virtual/real/mixed 필터.
-- Auth: Optional (Bearer). 로그인된 파트너/서포터는 `person_fitness_score`가 본인 archetype 기준으로 산출된다.
-- Query params:
-    - `mode?`: `"virtual" | "real" | "mixed"` — 생략 시 전체.
-- Request body: none
-- Response body (200): `ApiResponse<SpotCard[]>`
-- Referenced schemas: `SpotCard`
-
-**Response 200**
-
-```json
-{
-    "data": [
-        {
-            "spot_id": "spot-v-001",
-            "provenance": "virtual",
-            "title": "연무동 저녁 라떼아트 실습",
-            "skill_topic": "바리스타",
-            "teach_mode": "small_group",
-            "venue_type": "cafe",
-            "fee_per_partner": 18000,
-            "location": { "lat": 37.2636, "lng": 127.0286 },
-            "host_preview": "5년차 바리스타 민지의 핸드드립+라떼아트 2시간 클래스",
-            "person_fitness_score": 0.82,
-            "attractiveness_score": 0.74
-        }
-    ]
-}
-```
-
-### GET /api/v1/simulation/runs/{run_id}/timeline/stream
-
-- Purpose: 시뮬레이션 실행의 틱별 `TimelineFrame`을 SSE로 실시간 송출.
-- Auth: Optional (Bearer)
-- Path params: `run_id: string`
-- Query params:
-    - `speed?`: `"1x" | "4x" | "16x"` — FE 재생 속도 제어 (2026-04-24 추가). 서버 프리빌드 캐시라 backpressure 무관. 기본 `"1x"`.
-    - `start_tick?`: `number` — 중간부터 재생 시작.
-- Protocol: `text/event-stream` (SSE). 프론트는 `EventSource`로 구독.
-- Event format:
-    - 각 틱마다 `message` 이벤트 1건. `data:` 필드에 `TimelineFrame` JSON 문자열.
-    - keep-alive는 주석 라인(`: keepalive\n\n`)으로만 송출.
-    - run `failed` 시 `event: run.error\ndata: { code, message }` 송출 후 연결 종료.
-- Response body: 아래와 같은 프레임이 반복된다.
-
-```
-data: {"tick":0,"day_of_week":"SAT","time_slot":"09:00","active_agents":[...],"active_spots":[...],"events_this_tick":[...]}
-
-data: {"tick":1,"day_of_week":"SAT","time_slot":"09:30", ...}
-```
-
-- Referenced schemas: `TimelineFrame`, `AgentMarker`, `SpotMarker`, `LiveEvent`
-
-> `LiveEvent.event_type`은 2026-04-24 회의에서 `LiveEventType` enum 7종으로 확정, `payload`는 discriminated union(`LiveEventPayload`)로 확정. BACKEND_HANDOFF_ENTITIES.md §LiveEventPayload 참고.
-> `TimelineFrame.time_slot`은 `"HH:MM"` 24h **KST 고정**.
-
-### GET /api/v1/simulation/runs/{run_id}/highlights
-
-- Purpose: 시뮬레이션 실행의 내러티브 하이라이트 클립 리스트.
-- Auth: Optional (Bearer)
-- Path params: `run_id: string`
-- Query params: none
-- Response body (200): `ApiResponse<HighlightClip[]>`
-- Referenced schemas: `HighlightClip`
-
-**Response 200**
-
-```json
-{
-    "data": [
-        {
-            "clip_id": "clip-001",
-            "title": "첫 매칭 성사: 라떼아트 클래스",
-            "category": "first_success",
-            "start_tick": 0,
-            "end_tick": 3,
-            "involved_agents": ["A_11504", "A_80381"],
-            "narrative": "호스트 지훈이 연무동 카페에서 라떼아트 클래스를 열자 탐험형 민지가 바로 합류해 첫 매칭이 성사됐다."
-        }
-    ]
-}
-```
-
-### GET /api/v1/feed/{feed_id}/attractiveness
-
-- Purpose: 특정 피드의 Attractiveness 점수/시그널/개선 힌트 조회 (서포터 대시보드).
-- Auth: Required (Bearer) — 피드 소유 서포터만 호출 가능.
-- Path params: `feed_id: string`
-- Query params: none
-- Response body (200): `ApiResponse<AttractivenessReport>`
-- Referenced schemas: `AttractivenessReport`, `AttractivenessSignal`
-
-### GET /api/v1/feed/{feed_id}/conversion-hints
-
-- Purpose: 가상 스팟 → 실제 스팟 전환 가이드 (가격/플랜/수요 예측). 피드 작성 보조용.
-- Auth: Required (Bearer)
-- Path params: `feed_id: string`
-- Query params: none
-- Response body (200): `ApiResponse<ConversionHints>`
-- Referenced schemas: `ConversionHints`
-
-> 2026-04-24 회의 반영: `ConversionHints.session_context`, `pricing_suggestion.fee_breakdown` 구조 확정. BACKEND_HANDOFF_SCHEMAS.md §ConversionHintsResponse 예시 참고.
-
----
-
-## Simulation 신규 엔드포인트 (2026-04-24 추가)
-
-### POST /api/v1/simulation/runs
-
-- Purpose: 새 시뮬레이션 실행을 큐에 등록 (FE "시뮬 시작" 버튼).
-- Auth: Required (Bearer). anonymous 는 허용하지 않는다.
-- Rate limit: 인증 사용자당 **분당 1회**, 동시 running **1개**. 초과 시 `429`.
-- Request body (`CreateSimulationRunRequest`):
-    - `variant`: `"baseline" | "high_engagement" | "weekend_peak" | "custom"` — `custom` 일 때 `region_bbox` 필수.
-    - `region_bbox?`: `MapPersonaBbox`
-    - `duration_ticks?`: number (기본 48)
-    - `seed?`: number
-    - `user_persona_id?`: string — 관찰자 모드(미지정)가 기본. 지정 시 `user_agent_id`가 응답에 포함.
-    - `agent_count?`: number (기본 500, 50–1000 범위)
-- Response (202 Accepted): `ApiResponse<{ run_id, status: "queued", eta_seconds }>`
-
-### GET /api/v1/simulation/runs/current
-
-- Purpose: 현재 표시용(공개 데모) run 조회. BE가 매일 00:00 KST variant별 프리빌드.
-- Auth: Optional (anonymous 허용). `/map` 공개 진입점이 이 엔드포인트를 호출한다.
-- Query params:
-    - `variant?`: `"baseline" | "high_engagement" | "weekend_peak"` — 미지정 시 서버 기본값.
-- Response (200): `ApiResponse<SimulationRun>`
-
-### GET /api/v1/simulation/runs/{run_id}
-
-- Purpose: 특정 run의 상태·지역·스트림 URL 조회.
-- Auth: Optional (Bearer).
-- Path params: `run_id: string`
-- Response (200): `ApiResponse<SimulationRun>`
-    - `status`: `"queued" | "running" | "completed" | "failed"`
-    - `region.timezone`: 항상 `"Asia/Seoul"`
-    - `streams`: `{ timeline_url, spots_url, personas_url, highlights_url }` — FE 가 이 URL들을 그대로 구독.
-- `404` 조건: 존재하지 않는 run_id.
-
-### GET /api/v1/map/spots/lifecycles
-
-- Purpose: bbox 내 `SpotLifecycle` 스냅샷. `StreamMapSpots` 초기 상태로 사용.
-- Auth: Optional (Bearer).
-- Query params (`MapSpotsLifecyclesQuery`):
-    - `swLat`, `swLng`, `neLat`, `neLng`: required
-    - `run_id?`: 미지정 시 current run
-- Response (200): `ApiResponse<SpotLifecycle[]>`
-- BE 요구사항: **bbox 서버 필터링 필수** (Map Personas §동작요구사항 1번과 동일). 오프스크린 lifecycle 송출 금지.
-
-### GET /api/v1/map/spots/stream
-
-- Purpose: `SpotLifecycle`의 delta-only SSE 스트림. 맵 UI의 스팟 birth/dying/participant 애니메이션 소스.
-- Auth: Optional (Bearer).
-- Query params: `swLat`, `swLng`, `neLat`, `neLng` (required), `run_id?`
-- Protocol: `text/event-stream`. 이벤트 타입은 `event: ` 필드로 분기 (SSE named event).
-- 이벤트 6종 (discriminated union `SpotLifecycleEvent`):
-    - `spot.created` — **`expected_closed_at_ms`를 반드시 포함**. FE가 수명을 랜덤 계산하지 않는다.
-    - `spot.participant_joined`
-    - `spot.participant_left`
-    - `spot.matched` — `arrived_count`는 BE 엔진 상태머신이 판정 (FE의 좌표 임계값 제거)
-    - `spot.extended` — `new_expected_closed_at_ms` 전달. **수명 변경의 유일한 합법적 경로**.
-    - `spot.closed` — `outcome: MATCHED | CANCELED | TIMEOUT`
-- BE 요구사항:
-    1. **bbox 서버 필터링 필수**
-    2. **delta-only** (스냅샷 재송출 금지, 초기는 `GetMapSpotLifecycles`)
-    3. 시각은 **시뮬 가상시간(ms)** (wall clock 아님)
-    4. `: keepalive` 15~30s 간격
-    5. bbox 변경 시 FE가 스트림 끊고 재구독 (단일 연결 bbox 변경 없음)
-- 예시 frame payload는 BACKEND_HANDOFF_SCHEMAS.md §SpotLifecycleEvent 참고.
-
-### GET /api/v1/simulation/runs/{run_id}/spots/{spot_id}/conversion-hints
-
-- Purpose: **가상 spot_id 기반** ConversionHints 조회. 가상 스팟 → post 폼 전환 전 단계에서 사용 (feed_id 발급 전).
-- Auth: Required (Bearer).
-- Path params: `run_id: string`, `spot_id: string`
-- Response (200): `ApiResponse<ConversionHints>`
-- 내부적으로 spot_id → source_virtual_spot_id 룩업 후 `GetFeedConversionHints` 와 동일 핸들러 공유. LLM 호출 없음(캐시).
-
-### POST /api/v1/feed/{feed_id}/attractiveness/recompute
-
-- Purpose: Attractiveness 리포트를 강제 재계산. "적용 후 재측정" UX.
-- Auth: Required (Bearer) — 피드 소유 서포터만.
-- Rate limit: 인증 사용자당 **분당 3회**.
-- Path params: `feed_id: string`
-- Request body: none
-- Response (202 Accepted): `ApiResponse<{ job_id: string, status: "queued" | "running" }>`
-- 완료 후 FE 는 기존 `GET /api/v1/feed/{feed_id}/attractiveness` 를 재호출해 최신 리포트를 수신.
+- Locality / zoom-out region API (`/api/locality/regions`)
+- Simulation/contextBuilder runtime APIs: map personas, timeline stream, highlights, sim run/chunk APIs, spot lifecycle stream
+- Spot workflow concept/API (`GET /spots/{spotId}/workflow` and `SpotWorkflow` resource)
