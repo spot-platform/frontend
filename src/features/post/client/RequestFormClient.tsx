@@ -8,15 +8,23 @@ import { readSimulationConversionContext } from '@/features/simulation/model/sim
 import { SimulationInsightCard } from '@/features/simulation/ui/SimulationInsightCard';
 import type { SimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
 import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
+import { PlanInputSection } from '../ui/post-form/PlanInputSection';
 import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
 import { PostSubmitBar } from '../ui/post-form/PostSubmitBar';
+import { PreparationInputSection } from '../ui/post-form/PreparationInputSection';
+import { PriceInputSection } from '../ui/post-form/PriceInputSection';
 import { PostStepIndicator } from '../ui/PostStepIndicator';
 import { ReceiptCard } from '../ui/ReceiptCard';
 import { RequestDetailsSection } from '../ui/post-form/RequestDetailsSection';
 import { DetailPageShell } from '@/shared/ui';
+import type {
+    PlanV3,
+    Preparation,
+    PriceBreakdown,
+} from '@/entities/spot/simulation-types';
 
 const POINT_COST = 15000;
-const STEPS = ['기본 정보', 'Request 상세', '가격 설정'];
+const STEPS = ['기본 정보', 'Request 상세', '플랜·준비물 (선택)', '가격 설정'];
 
 export function RequestFormClient() {
     const router = useRouter();
@@ -56,6 +64,14 @@ export function RequestFormClient() {
     const [preferredSchedule, setPreferredSchedule] = useState('');
     const [maxPartnerCount, setMaxPartnerCount] = useState('');
     const [priceCapPerPerson, setPriceCapPerPerson] = useState('');
+    // 2026-04-30 contextBuilder 통합: REQUEST 는 모두 선택. 비우면 매칭된 서포터가 채울 수 있음.
+    const [plan, setPlan] = useState<PlanV3 | undefined>(undefined);
+    const [preparation, setPreparation] = useState<Preparation | undefined>(
+        undefined,
+    );
+    const [priceBreakdown, setPriceBreakdown] = useState<
+        PriceBreakdown | undefined
+    >(undefined);
 
     const isStep0Valid =
         spotName.trim() !== '' &&
@@ -63,10 +79,18 @@ export function RequestFormClient() {
         location.trim() !== '' &&
         deadline !== '';
     const isStep1Valid = detailDescription.trim() !== '';
-    const isStep2Valid = maxPartnerCount !== '' && priceCapPerPerson !== '';
+    // step 2 (플랜·준비물) 는 선택. 항상 다음 진행 가능.
+    const isStep2Valid = true;
+    const isStep3Valid = maxPartnerCount !== '' && priceCapPerPerson !== '';
 
     const canNext =
-        step === 0 ? isStep0Valid : step === 1 ? isStep1Valid : isStep2Valid;
+        step === 0
+            ? isStep0Valid
+            : step === 1
+              ? isStep1Valid
+              : step === 2
+                ? isStep2Valid
+                : isStep3Valid;
 
     const addMySpot = useMySpotsStore((s) => s.addSpot);
 
@@ -163,15 +187,41 @@ export function RequestFormClient() {
                 )}
 
                 {step === 2 && (
-                    <ReceiptCard
-                        type="REQUEST"
-                        spotName={spotName}
-                        pointCost={POINT_COST}
-                        maxPartnerCount={maxPartnerCount}
-                        priceCapPerPerson={priceCapPerPerson}
-                        onMaxPartnerCountChange={setMaxPartnerCount}
-                        onPriceCapPerPersonChange={setPriceCapPerPerson}
-                    />
+                    <div className="flex flex-col gap-6">
+                        <p className="text-xs text-gray-500">
+                            플랜과 준비물은 선택 입력이에요. 비워두면 매칭된
+                            서포터가 함께 채울 수 있어요.
+                        </p>
+                        <PlanInputSection
+                            value={plan}
+                            onChange={setPlan}
+                            optional
+                        />
+                        <PreparationInputSection
+                            value={preparation}
+                            onChange={setPreparation}
+                            optional
+                        />
+                    </div>
+                )}
+
+                {step === 3 && (
+                    <div className="flex flex-col gap-6">
+                        <ReceiptCard
+                            type="REQUEST"
+                            spotName={spotName}
+                            pointCost={POINT_COST}
+                            maxPartnerCount={maxPartnerCount}
+                            priceCapPerPerson={priceCapPerPerson}
+                            onMaxPartnerCountChange={setMaxPartnerCount}
+                            onPriceCapPerPersonChange={setPriceCapPerPerson}
+                        />
+                        <PriceInputSection
+                            value={priceBreakdown}
+                            onChange={setPriceBreakdown}
+                            optional
+                        />
+                    </div>
                 )}
             </div>
 

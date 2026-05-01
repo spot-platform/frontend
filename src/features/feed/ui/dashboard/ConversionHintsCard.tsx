@@ -3,12 +3,32 @@
 // 가상 스팟 → 실제 피드 전환 가이드. placeholder + pricing + plan_help + expected_demand 블록을 순차 렌더.
 
 import { useState } from 'react';
-import type { ConversionHints } from '@/entities/spot/simulation-types';
+import type {
+    ConversionHints,
+    ConversionSessionContext,
+    FeeBreakdown,
+} from '@/entities/spot/simulation-types';
 import { cn } from '@/shared/lib/cn';
 
 type ConversionHintsCardProps = {
     hints: ConversionHints;
     defaultExpanded?: boolean;
+};
+
+const FEE_LABEL: Record<
+    'peer_labor_fee' | 'material_cost' | 'venue_rental' | 'equipment_rental',
+    string
+> = {
+    peer_labor_fee: '또래 진행비',
+    material_cost: '재료비',
+    venue_rental: '장소 대여',
+    equipment_rental: '장비 대여',
+};
+
+const SCOPE_LABEL: Record<ConversionSessionContext['scope'], string> = {
+    run: '이번 시뮬',
+    region: '지역',
+    global: '전체',
 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -19,34 +39,56 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     );
 }
 
-function FeeBreakdown({ breakdown }: { breakdown: unknown }) {
-    if (
-        breakdown === null ||
-        breakdown === undefined ||
-        typeof breakdown !== 'object'
-    ) {
-        return null;
-    }
-
-    const entries = Object.entries(breakdown as Record<string, unknown>);
-    if (entries.length === 0) return null;
-
+function FeeBreakdownTable({ breakdown }: { breakdown: FeeBreakdown }) {
+    const won = (n: number) => `${n.toLocaleString('ko-KR')}원`;
     return (
-        <dl className="mt-3 grid grid-cols-1 gap-1 rounded-lg bg-muted p-3 text-sm">
-            {entries.map(([key, value]) => (
-                <div
-                    key={key}
-                    className="flex items-center justify-between gap-2"
-                >
-                    <dt className="text-muted-foreground">{key}</dt>
-                    <dd className="font-semibold tabular-nums text-text-secondary">
-                        {typeof value === 'number'
-                            ? `${value.toLocaleString('ko-KR')}원`
-                            : String(value)}
-                    </dd>
-                </div>
-            ))}
+        <dl className="mt-3 flex flex-col gap-1 rounded-lg bg-muted p-3 text-sm">
+            {(Object.keys(FEE_LABEL) as Array<keyof typeof FEE_LABEL>).map(
+                (key) => (
+                    <div
+                        key={key}
+                        className="flex items-center justify-between gap-2"
+                    >
+                        <dt className="text-muted-foreground">
+                            {FEE_LABEL[key]}
+                        </dt>
+                        <dd className="font-semibold tabular-nums text-text-secondary">
+                            {won(breakdown[key])}
+                        </dd>
+                    </div>
+                ),
+            )}
+            <div className="mt-1 flex items-center justify-between gap-2 border-t border-border-soft pt-2">
+                <dt className="font-semibold text-foreground">합계</dt>
+                <dd className="font-bold tabular-nums text-foreground">
+                    {won(breakdown.total)}
+                </dd>
+            </div>
+            <div className="flex items-center justify-between gap-2 text-[12px]">
+                <dt className="text-muted-foreground">실비 합계</dt>
+                <dd className="font-semibold tabular-nums text-text-secondary">
+                    {won(breakdown.passthrough_total)}
+                </dd>
+            </div>
         </dl>
+    );
+}
+
+function SessionContextRow({ ctx }: { ctx: ConversionSessionContext }) {
+    return (
+        <div className="flex items-start justify-between gap-2 rounded-lg border border-border-soft bg-muted px-3 py-2">
+            <p className="text-[12px] leading-5 text-text-secondary">
+                유사 모임 {ctx.similar_active_count}개 진행 중 · 평균{' '}
+                {ctx.avg_participants.toFixed(1)}명 · 평균{' '}
+                {ctx.typical_lifespan_minutes}분
+                <span className="ml-1 text-muted-foreground">
+                    (표본 {ctx.sample_size})
+                </span>
+            </p>
+            <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
+                {SCOPE_LABEL[ctx.scope]}
+            </span>
+        </div>
     );
 }
 
@@ -94,9 +136,16 @@ export function ConversionHintsCard({
                         <p className="mt-2 text-sm leading-6 text-text-secondary">
                             {hints.pricing_suggestion.rationale}
                         </p>
-                        <FeeBreakdown
+                        <FeeBreakdownTable
                             breakdown={hints.pricing_suggestion.fee_breakdown}
                         />
+                    </div>
+
+                    <div>
+                        <SectionLabel>유사 모임 컨텍스트</SectionLabel>
+                        <div className="mt-2">
+                            <SessionContextRow ctx={hints.session_context} />
+                        </div>
                     </div>
 
                     <div>

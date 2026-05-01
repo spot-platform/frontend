@@ -11,6 +11,11 @@ import { notFound } from 'next/navigation';
 import { MOCK_FEED, MOCK_FEED_MANAGEMENT } from '@/features/feed/model/mock';
 import { FeedManagementPanel } from '@/features/feed/ui/detail/FeedManagementPanel';
 import { FeedParticipationActions } from '@/features/feed/ui/detail/FeedParticipationActions';
+import { EditPlanPreparationCard } from '@/features/feed/ui/detail/EditPlanPreparationCard';
+import { PlanSection } from '@/features/feed/ui/detail/PlanSection';
+import { PriceSection } from '@/features/feed/ui/detail/PriceSection';
+import { PreparationSection } from '@/features/feed/ui/detail/PreparationSection';
+import { VenueSection } from '@/features/feed/ui/detail/VenueSection';
 import { DetailHeader, DetailPageShell } from '@/shared/ui';
 import type { FeedItem } from '@/features/feed/model/types';
 
@@ -151,20 +156,6 @@ function OfferDetailContent({ item }: { item: FeedItem }) {
                 </div>
             </div>
 
-            {/* 활동 계획 */}
-            <div className="border-b border-gray-200 px-4 py-5">
-                <p className="text-xs font-medium tracking-[0.14em] text-gray-400 uppercase mb-3">
-                    활동 계획
-                </p>
-                <div className="space-y-2 text-sm text-gray-600">
-                    <p>📅 일정 및 장소는 참여 확정 후 안내드립니다.</p>
-                    <p>
-                        활동 내용, 준비물, 진행 방식 등 세부 사항은 참여 후
-                        채팅으로 공유됩니다.
-                    </p>
-                </div>
-            </div>
-
             {/* 본문 */}
             <article className="border-b border-gray-200 px-4 py-7">
                 <div className="max-w-3xl space-y-5">
@@ -197,6 +188,23 @@ function OfferDetailContent({ item }: { item: FeedItem }) {
                     </div>
                 </div>
             </article>
+
+            <VenueSection
+                primaryPin={item.primaryPin}
+                venueAnchors={item.venueAnchors}
+            />
+            <PlanSection
+                plan={item.plan}
+                places={[
+                    ...(item.primaryPin ? [item.primaryPin] : []),
+                    ...(item.venueAnchors ?? []),
+                ]}
+            />
+            <PreparationSection preparation={item.preparation} />
+            <PriceSection
+                priceBreakdown={item.priceBreakdown}
+                fallbackPrice={item.price}
+            />
         </>
     );
 }
@@ -233,17 +241,6 @@ function RequestDetailContent({
                     서포터와 매칭된 후 채팅을 통해 금액과 일정을 함께
                     조율합니다.
                 </p>
-            </div>
-
-            {/* 희망 활동 내용 */}
-            <div className="border-b border-gray-200 px-4 py-5">
-                <p className="text-xs font-medium tracking-[0.14em] text-gray-400 uppercase mb-3">
-                    원하는 활동
-                </p>
-                <div className="space-y-2 text-sm text-gray-600">
-                    <p>희망 일정·장소는 미정이며, 서포터와 함께 정해갑니다.</p>
-                    <p>어떤 활동을 원하는지 본문에서 자세히 확인해보세요.</p>
-                </div>
             </div>
 
             {/* 서포터 지원 현황 */}
@@ -328,6 +325,28 @@ function RequestDetailContent({
                     </div>
                 </div>
             </article>
+
+            <VenueSection
+                primaryPin={item.primaryPin}
+                venueAnchors={item.venueAnchors}
+            />
+            <PlanSection
+                plan={item.plan}
+                places={[
+                    ...(item.primaryPin ? [item.primaryPin] : []),
+                    ...(item.venueAnchors ?? []),
+                ]}
+                emptyHint="활동 계획은 매칭된 서포터가 함께 작성해요. 제안 시 플랜을 같이 보낼 수 있어요."
+            />
+            <PreparationSection
+                preparation={item.preparation}
+                emptyHint="준비물은 매칭된 서포터가 정리해 공유할 예정이에요."
+            />
+            <PriceSection
+                priceBreakdown={item.priceBreakdown}
+                fallbackPrice={undefined}
+                emptyHint="세부 가격은 서포터와 협의 후 확정해요."
+            />
         </>
     );
 }
@@ -379,6 +398,19 @@ export default async function FeedDetailPage({ params }: Props) {
                 {isRequest && (
                     <RequestDetailContent item={item} management={management} />
                 )}
+
+                {/* 매칭된 서포터/작성자가 plan/preparation 을 추가/수정.
+                    AI 피드는 실제 호스트가 없으므로 수정 진입점 숨김. */}
+                {!item.isAi &&
+                ((item.myApplicationStatus === 'APPLIED' &&
+                    item.myApplicationRole === 'SUPPORTER') ||
+                    management) ? (
+                    <EditPlanPreparationCard
+                        feedId={item.id}
+                        initialPlan={item.plan}
+                        initialPreparation={item.preparation}
+                    />
+                ) : null}
 
                 {/* 호스트용 관리 패널 */}
                 {management && (

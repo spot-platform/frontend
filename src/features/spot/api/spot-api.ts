@@ -55,6 +55,10 @@ export type CreateSpotPayload = {
     title: string;
     description: string;
     pointCost: number;
+    // 2026-04-30 contextBuilder 통합. OFFER 는 작성 시 채움, REQUEST 는 옵셔널.
+    plan?: import('@/entities/spot/simulation-types').PlanV3;
+    priceBreakdown?: import('@/entities/spot/simulation-types').PriceBreakdown;
+    preparation?: import('@/entities/spot/simulation-types').Preparation;
 };
 
 export type CreateVotePayload = {

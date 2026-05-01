@@ -29,6 +29,9 @@ import {
     resolveParticipationDeposit,
     resolveParticipationPricing,
 } from '../../model/participation';
+import type { PlanV3, Preparation } from '@/entities/spot/simulation-types';
+import { PlanInputSection } from '@/features/post/ui/post-form/PlanInputSection';
+import { PreparationInputSection } from '@/features/post/ui/post-form/PreparationInputSection';
 import {
     resolveCancellationOutcome,
     type CancellationOutcome,
@@ -103,6 +106,14 @@ export function FeedParticipationActions({
     const [supporterGoalInput, setSupporterGoalInput] = useState('');
     const [cancelOpen, setCancelOpen] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
+    // 2026-04-30: REQUEST 가 plan/preparation 비워둔 채 올라온 경우 서포터가 신청하면서 채워준다.
+    // 기존에 채워져 있으면 빈 입력으로 두고 mutation 안 보내면 됨.
+    const [proposedPlan, setProposedPlan] = useState<PlanV3 | undefined>(
+        undefined,
+    );
+    const [proposedPreparation, setProposedPreparation] = useState<
+        Preparation | undefined
+    >(undefined);
 
     const availability = useMemo(
         () => resolveParticipationAvailability(item, management),
@@ -162,9 +173,38 @@ export function FeedParticipationActions({
         selectedRole === 'SUPPORTER' && supporterGoalAmount == null
             ? '희망 목표 금액을 입력해 주세요.'
             : undefined;
+
+    // REQUEST + SUPPORTER + 호스트가 plan/preparation 안 채운 경우 → 서포터가 채워야 함.
+    const requiresSupporterPlanInput =
+        item.type === 'REQUEST' &&
+        selectedRole === 'SUPPORTER' &&
+        item.plan === undefined;
+    const requiresSupporterPreparationInput =
+        item.type === 'REQUEST' &&
+        selectedRole === 'SUPPORTER' &&
+        item.preparation === undefined;
+
+    const planInputComplete =
+        proposedPlan !== undefined &&
+        proposedPlan.steps.length > 0 &&
+        proposedPlan.steps.every(
+            (s) => s.time.trim() !== '' && s.activity.trim() !== '',
+        );
+    const preparationInputComplete =
+        proposedPreparation !== undefined &&
+        (proposedPreparation.host_provides.length > 0 ||
+            proposedPreparation.partner_brings.length > 0);
+
+    const supporterDetailsError =
+        (requiresSupporterPlanInput && !planInputComplete) ||
+        (requiresSupporterPreparationInput && !preparationInputComplete)
+            ? '활동 계획과 준비물을 채워야 신청할 수 있어요.'
+            : undefined;
+
     const canConfirm =
         selectedRole != null &&
         supporterGoalError == null &&
+        supporterDetailsError == null &&
         hasSufficientBalance &&
         !isSubmitting &&
         !balanceQuery.isLoading;
@@ -212,7 +252,18 @@ export function FeedParticipationActions({
                 proposal: `${getRoleLabel(selectedRole)} 참여 요청`,
                 role: selectedRole as FeedApplicationRole,
                 deposit,
+                plan: requiresSupporterPlanInput ? proposedPlan : undefined,
+                preparation: requiresSupporterPreparationInput
+                    ? proposedPreparation
+                    : undefined,
             });
+            // mock-feed 직접 mutate 했으므로 디테일 페이지가 다음 진입 때 반영됨.
+            if (requiresSupporterPlanInput && proposedPlan) {
+                item.plan = proposedPlan;
+            }
+            if (requiresSupporterPreparationInput && proposedPreparation) {
+                item.preparation = proposedPreparation;
+            }
             item.myApplicationStatus = 'APPLIED';
             item.myApplicationRole = selectedRole as FeedApplicationRole;
             item.myApplicationDeposit = deposit;
@@ -305,6 +356,31 @@ export function FeedParticipationActions({
     })();
 
     const isApplied = item.myApplicationStatus === 'APPLIED';
+
+    // AI 피드(시뮬레이터가 합성한 데이터) 는 실제 호스트가 없으므로 참여가 의미 없음.
+    // 같은 자리에 "이런 리퀘스트 직접 열기" 액션만 보여주고 /post/request 로 prefill 라우팅.
+    if (item.isAi) {
+        return (
+            <div className="fixed right-0 bottom-0 left-0 z-30 border-t border-border-soft bg-card/95 px-4 py-3 backdrop-blur-sm">
+                <p className="mb-2 text-center text-[11px] text-muted-foreground">
+                    AI 가 추천한 모임이에요. 마음에 들면 비슷한 리퀘스트를 직접
+                    열어보세요.
+                </p>
+                <Button
+                    fullWidth
+                    size="lg"
+                    className="rounded-full bg-accent active:translate-y-px active:opacity-90"
+                    onClick={() =>
+                        router.push(
+                            `/post/request?fromSpot=${encodeURIComponent(item.id)}`,
+                        )
+                    }
+                >
+                    리퀘스트 열기
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -563,9 +639,36 @@ export function FeedParticipationActions({
                             </div>
                         </section>
 
+                        {(requiresSupporterPlanInput ||
+                            requiresSupporterPreparationInput) && (
+                            <section className="py-4">
+                                <p className="text-sm font-semibold text-foreground">
+                                    제안서에 활동 계획·준비물 추가
+                                </p>
+                                <p className="mt-1 text-xs text-text-secondary">
+                                    파트너가 비워둔 항목이에요. 서포터로
+                                    참여하려면 이 자리에서 채워서 보내요.
+                                </p>
+                                <div className="mt-4 flex flex-col gap-6">
+                                    {requiresSupporterPlanInput && (
+                                        <PlanInputSection
+                                            value={proposedPlan}
+                                            onChange={setProposedPlan}
+                                        />
+                                    )}
+                                    {requiresSupporterPreparationInput && (
+                                        <PreparationInputSection
+                                            value={proposedPreparation}
+                                            onChange={setProposedPreparation}
+                                        />
+                                    )}
+                                </div>
+                            </section>
+                        )}
+
                         <section className="py-4">
                             <p className="text-sm leading-6 text-text-secondary">
-                                {helperCopy}
+                                {supporterDetailsError ?? helperCopy}
                             </p>
                             {availability.remainingPartnerSlots > 0 && (
                                 <p className="mt-2 text-xs text-muted-foreground">

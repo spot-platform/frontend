@@ -29,12 +29,17 @@ function inferParticipantCount(card: SpotCard): number {
 }
 
 export function spotCardToSpotMapItem(card: SpotCard): SpotMapItem {
+    // 2026-04-27 contextBuilder primary_pin 이 있으면 정밀 좌표를 우선 사용.
+    // 없으면 기존 jitter 기반 location 으로 폴백.
+    const coord = card.primary_pin
+        ? { lat: card.primary_pin.lat, lng: card.primary_pin.lng }
+        : card.location;
     return {
         id: card.spot_id,
         type: inferType(card),
         status: 'OPEN',
         title: card.title,
-        coord: card.location,
+        coord,
         category: inferCategory(card),
         provenance: card.provenance,
         personFitnessScore: card.person_fitness_score,

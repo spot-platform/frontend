@@ -20,6 +20,8 @@ import type {
     MovementChunk,
     SimManifest,
 } from '@/entities/spot/sim-stream-types';
+import type { SimulationSpotDetail } from '@/entities/spot/simulation-types';
+import { MOCK_SIMULATION_SPOT_DETAILS } from '@/features/simulation/model/mock-api-responses';
 
 const SIMULATED_LATENCY_MS = 80;
 const sleep = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
@@ -79,3 +81,12 @@ export async function fetchSimLifecycle(
 
 /** 데모 run 의 id. UI 가 직접 import 해서 useSimRun 에 넘긴다. */
 export const DEMO_RUN_ID = KNOWN_RUN_ID;
+
+// 2026-04-27 contextBuilder 디테일 강화 — GetSimulationSpotDetail mock.
+// 매칭되는 spot_id 가 없으면 null 반환 (404 가 아니라 정상 빈 응답).
+export async function fetchSimulationSpotDetail(
+    spotId: string,
+): Promise<SimulationSpotDetail | null> {
+    await sleep(SIMULATED_LATENCY_MS);
+    return MOCK_SIMULATION_SPOT_DETAILS[spotId] ?? null;
+}

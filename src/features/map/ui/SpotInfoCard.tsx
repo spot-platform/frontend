@@ -1,9 +1,13 @@
 // MapBottomStack 에 쌓이는 Spot 상세 카드. 선택된 클러스터의 SpotLifecycle 을 표현.
 // 진행률 바는 CSS transition 으로 부드럽게 채우고, interval(1s)은 남은 시간 텍스트/상태 변화용.
+//
+// 2026-04-30: contextBuilder PlanV3/PriceBreakdown/Preparation 디테일 섹션을 카드 안에서 펼치던
+// 방식이 레이아웃을 넘쳐 제거. "자세히 보기" 버튼은 /feed/<spotId> 디테일 페이지로 라우팅.
 
 'use client';
 
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@frontend/design-system';
 import { getCategoryMeta } from '@/entities/spot/categories';
@@ -61,6 +65,7 @@ export function SpotInfoCard({
     onCloseAction,
     onCreateSimilarAction,
 }: SpotInfoCardProps) {
+    const router = useRouter();
     const [now, setNow] = useState(() => performance.now());
     useEffect(() => {
         const interval = setInterval(() => setNow(performance.now()), 1000);
@@ -170,11 +175,21 @@ export function SpotInfoCard({
                 </div>
             )}
 
+            <button
+                type="button"
+                onClick={() =>
+                    router.push(`/feed/${encodeURIComponent(lifecycle.spotId)}`)
+                }
+                className="mt-3 w-full rounded-xl border border-border-soft bg-card px-3 py-2 text-[12px] font-semibold text-text-secondary transition-colors hover:bg-muted"
+            >
+                자세히 보기
+            </button>
+
             {onCreateSimilarAction && status !== 'CLOSED' && (
                 <button
                     type="button"
                     onClick={onCreateSimilarAction}
-                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-[12px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
+                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-[12px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
                 >
                     <span aria-hidden>✨</span>
                     <span>나도 이런 모임 열기</span>

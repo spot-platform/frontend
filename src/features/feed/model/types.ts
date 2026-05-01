@@ -1,4 +1,12 @@
 // FeedItem - 피드 목록에 표시되는 아이템 타입
+
+import type {
+    PlanV3,
+    Preparation,
+    PriceBreakdown,
+    ResolvedPlace,
+} from '@/entities/spot/simulation-types';
+
 export type FeedItemType = 'OFFER' | 'REQUEST' | 'RENT';
 export type FeedItemStatus = 'OPEN' | 'MATCHED' | 'CLOSED';
 export type FeedTabType = 'HOME' | 'EXPLORE';
@@ -60,6 +68,18 @@ export interface FeedItem {
     myApplicationRole?: FeedApplicationRole;
     myApplicationDeposit?: number;
     spotId?: string;
+    /**
+     * 2026-04-30 — contextBuilder 시뮬레이션이 합성한 AI 피드 마커.
+     * 실제 호스트가 만든 글이 아니므로 참여 액션 대신 "리퀘스트 열기" 안내로 대체.
+     */
+    isAi?: boolean;
+    // 2026-04-30 contextBuilder PlanV3/PriceBreakdown/Preparation/ResolvedPlace 통합.
+    // OFFER 는 작성 시 보통 채워져 있고, REQUEST 는 매칭된 서포터가 채울 수 있어 옵셔널.
+    plan?: PlanV3;
+    priceBreakdown?: PriceBreakdown;
+    preparation?: Preparation;
+    venueAnchors?: ResolvedPlace[];
+    primaryPin?: ResolvedPlace;
 }
 
 export interface SupporterItem {

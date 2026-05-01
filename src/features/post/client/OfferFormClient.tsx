@@ -9,14 +9,22 @@ import { SimulationInsightCard } from '@/features/simulation/ui/SimulationInsigh
 import type { SimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
 import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
 import { OfferDetailsSection } from '../ui/post-form/OfferDetailsSection';
+import { PlanInputSection } from '../ui/post-form/PlanInputSection';
 import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
 import { PostSubmitBar } from '../ui/post-form/PostSubmitBar';
+import { PreparationInputSection } from '../ui/post-form/PreparationInputSection';
+import { PriceInputSection } from '../ui/post-form/PriceInputSection';
 import { PostStepIndicator } from '../ui/PostStepIndicator';
 import { ReceiptCard } from '../ui/ReceiptCard';
 import { DetailPageShell } from '@/shared/ui';
+import type {
+    PlanV3,
+    Preparation,
+    PriceBreakdown,
+} from '@/entities/spot/simulation-types';
 
 const POINT_COST = 25000;
-const STEPS = ['기본 정보', 'Offer 상세', '가격 설정'];
+const STEPS = ['기본 정보', 'Offer 상세', '플랜·준비물', '가격 설정'];
 
 export function OfferFormClient() {
     const router = useRouter();
@@ -57,6 +65,13 @@ export function OfferFormClient() {
     const [autoClose, setAutoClose] = useState(false);
     const [desiredPrice, setDesiredPrice] = useState('');
     const [maxPartnerCount, setMaxPartnerCount] = useState('');
+    const [plan, setPlan] = useState<PlanV3 | undefined>(undefined);
+    const [preparation, setPreparation] = useState<Preparation | undefined>(
+        undefined,
+    );
+    const [priceBreakdown, setPriceBreakdown] = useState<
+        PriceBreakdown | undefined
+    >(undefined);
 
     const isStep0Valid =
         spotName.trim() !== '' &&
@@ -64,10 +79,29 @@ export function OfferFormClient() {
         location.trim() !== '' &&
         deadline !== '';
     const isStep1Valid = detailDescription.trim() !== '';
-    const isStep2Valid = desiredPrice !== '' && maxPartnerCount !== '';
+    const isStep2Valid =
+        plan !== undefined &&
+        plan.steps.length > 0 &&
+        plan.steps.every(
+            (s) => s.time.trim() !== '' && s.activity.trim() !== '',
+        ) &&
+        preparation !== undefined &&
+        (preparation.host_provides.length > 0 ||
+            preparation.partner_brings.length > 0);
+    const isStep3Valid =
+        desiredPrice !== '' &&
+        maxPartnerCount !== '' &&
+        priceBreakdown !== undefined &&
+        priceBreakdown.base_fee > 0;
 
     const canNext =
-        step === 0 ? isStep0Valid : step === 1 ? isStep1Valid : isStep2Valid;
+        step === 0
+            ? isStep0Valid
+            : step === 1
+              ? isStep1Valid
+              : step === 2
+                ? isStep2Valid
+                : isStep3Valid;
 
     const addMySpot = useMySpotsStore((s) => s.addSpot);
 
@@ -169,15 +203,31 @@ export function OfferFormClient() {
                 )}
 
                 {step === 2 && (
-                    <ReceiptCard
-                        type="OFFER"
-                        spotName={spotName}
-                        pointCost={POINT_COST}
-                        desiredPrice={desiredPrice}
-                        maxPartnerCount={maxPartnerCount}
-                        onDesiredPriceChange={setDesiredPrice}
-                        onMaxPartnerCountChange={setMaxPartnerCount}
-                    />
+                    <div className="flex flex-col gap-6">
+                        <PlanInputSection value={plan} onChange={setPlan} />
+                        <PreparationInputSection
+                            value={preparation}
+                            onChange={setPreparation}
+                        />
+                    </div>
+                )}
+
+                {step === 3 && (
+                    <div className="flex flex-col gap-6">
+                        <ReceiptCard
+                            type="OFFER"
+                            spotName={spotName}
+                            pointCost={POINT_COST}
+                            desiredPrice={desiredPrice}
+                            maxPartnerCount={maxPartnerCount}
+                            onDesiredPriceChange={setDesiredPrice}
+                            onMaxPartnerCountChange={setMaxPartnerCount}
+                        />
+                        <PriceInputSection
+                            value={priceBreakdown}
+                            onChange={setPriceBreakdown}
+                        />
+                    </div>
                 )}
             </div>
 

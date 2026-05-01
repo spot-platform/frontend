@@ -1,5 +1,10 @@
 // 피드 목 데이터 — TODO: API 연동 후 제거
 import type {
+    PlanV3,
+    Preparation,
+    PriceBreakdown,
+} from '@/entities/spot/simulation-types';
+import type {
     FeedApplication,
     FeedApplicationRole,
     FeedApplicationStatus,
@@ -94,6 +99,10 @@ export function applyMockFeedApplication(
         proposal: string;
         role: FeedApplicationRole;
         deposit: number;
+        // 2026-04-30 서포터가 REQUEST 에 매칭하면서 채우는 plan/preparation.
+        // 입력 시 해당 feed 의 mock 항목을 그대로 mutate 하여 디테일 페이지에 즉시 반영.
+        plan?: PlanV3;
+        preparation?: Preparation;
     },
 ): { data: FeedApplication } {
     const createdAt = new Date().toISOString();
@@ -104,6 +113,14 @@ export function applyMockFeedApplication(
         proposal: payload.proposal,
         createdAt,
     });
+
+    if (payload.plan || payload.preparation) {
+        const target = MOCK_FEED.find((f) => f.id === feedId);
+        if (target) {
+            if (payload.plan) target.plan = payload.plan;
+            if (payload.preparation) target.preparation = payload.preparation;
+        }
+    }
 
     return {
         data: {
@@ -117,6 +134,21 @@ export function applyMockFeedApplication(
             createdAt,
         },
     };
+}
+
+// 2026-04-30 디테일 페이지에서 작성자/매칭된 서포터가 plan/preparation 을 수정할 때 호출.
+// MOCK_FEED 항목을 직접 mutate. 서버 적용 후엔 BE PATCH /feed/{id} 로 교체.
+export function updateMockFeedDetails(
+    feedId: string,
+    patch: { plan?: PlanV3; preparation?: Preparation },
+): { data: { feedId: string } } {
+    const target = MOCK_FEED.find((f) => f.id === feedId);
+    if (target) {
+        if (patch.plan !== undefined) target.plan = patch.plan;
+        if (patch.preparation !== undefined)
+            target.preparation = patch.preparation;
+    }
+    return { data: { feedId } };
 }
 
 export function cancelMockFeedApplication(feedId: string): {
@@ -241,6 +273,104 @@ export const MOCK_FEED: FeedItem[] = [
         category: '요리',
         deadline: '2026-04-07',
         spotId: 'spot-v-001',
+        primaryPin: {
+            place_id: 27440700,
+            name: '아롬',
+            primary_category: 'cafe',
+            role: 'main',
+            lat: 37.2636,
+            lng: 127.0286,
+            address: '경기 수원시 장안구 창훈로40번길 9',
+            road_address: '경기 수원시 장안구 창훈로40번길 9',
+            confidence: 1.0,
+        },
+        venueAnchors: [
+            {
+                place_id: 27440700,
+                name: '아롬',
+                primary_category: 'cafe',
+                role: 'meetup',
+                lat: 37.2636,
+                lng: 127.0286,
+                address: '경기 수원시 장안구 창훈로40번길 9',
+                confidence: 1.0,
+            },
+            {
+                place_id: 935519117,
+                name: '커피있는하루',
+                primary_category: 'cafe',
+                role: 'wrapup',
+                lat: 37.2641,
+                lng: 127.0292,
+                address: '경기 수원시 장안구 창훈로46번길 5-10',
+                confidence: 1.0,
+            },
+        ],
+        plan: {
+            steps: [
+                {
+                    time: '19:00',
+                    activity: '아롬에서 인사하고 원두/추출 원리 5분 데모',
+                    place_id: 27440700,
+                    intent: '저녁 시간이라 가볍게 인사부터, 도구 친숙해지는 데 5분만 써요',
+                },
+                {
+                    time: '19:15',
+                    activity: '핸드드립 2회 직접 실습',
+                    place_id: 27440700,
+                    intent: '원두 향과 추출 시간을 몸으로 익히는 게 첫 단계예요',
+                },
+                {
+                    time: '19:55',
+                    activity: '라떼아트 하트/로제타 각 3회 연습',
+                    place_id: 27440700,
+                    intent: '소량 우유로 빠르게 반복해야 손에 익어요',
+                },
+                {
+                    time: '20:35',
+                    activity: '커피있는하루로 이동, 완성 메뉴 한 잔씩 음미',
+                    place_id: 935519117,
+                    intent: '편한 자리에서 오늘 결과를 비교해 보는 마무리',
+                },
+            ],
+            total_duration_minutes: 120,
+        },
+        priceBreakdown: {
+            base_fee: 25000,
+            included_items: [
+                { name: '원두/우유', value: '1인 분량 포함' },
+                { name: '핸드드립 키트 대여', value: '실습용 도구 포함' },
+                { name: '라떼아트 가이드', value: '하트/로제타 단계별 시범' },
+            ],
+            optional_addons: [
+                {
+                    name: '추가 원두 1봉',
+                    price: 8000,
+                    mechanism: 'fixed',
+                    explanation:
+                        '집에서 같은 원두로 연습하고 싶을 때 정액 추가',
+                },
+            ],
+            refund_policy: {
+                cutoff_hours: 24,
+                full_refund_until: '시작 24시간 전까지',
+                note: '24시간 전 환불 가능. 이후엔 다음 회차로 이월해요.',
+            },
+            summary_line:
+                '참가비 25,000원에 원두/우유와 라떼아트 가이드 포함, 원두 추가는 정액 옵션이에요.',
+        },
+        preparation: {
+            host_provides: [
+                '핸드드립 키트',
+                '실습 원두/우유',
+                '라떼아트 가이드 노트',
+            ],
+            partner_brings: ['편한 옷차림', '머리끈(긴 머리일 때)'],
+            weather_contingency: null,
+            safety_notes: ['뜨거운 추출 도구 다룰 때 주의해 주세요.'],
+            host_tip:
+                '시작 10분 전 도착하면 첫 핸드드립부터 같이 해볼 수 있어요.',
+        },
     },
     {
         id: '4',
@@ -878,3 +1008,23 @@ export const MOCK_POLLS: PollItem[] = [
         totalVotes: 131,
     },
 ];
+
+// 2026-04-30 시뮬레이션 lifecycle 픽스처(spotId='S_0001'…)에서 /feed/<id> 진입 시
+// 디테일 페이지가 보이도록, MOCK_FEED 의 풀세트 항목 두 개를 라운드로빈으로 alias.
+// 짝수 = OFFER 풀세트(id '3'), 홀수 = REQUEST 빈세트(id '2') 시연.
+{
+    const FULL_SET = MOCK_FEED.find((f) => f.id === '3');
+    const EMPTY_REQUEST = MOCK_FEED.find((f) => f.id === '2');
+    if (FULL_SET && EMPTY_REQUEST) {
+        for (let i = 1; i <= 10; i += 1) {
+            const aliasId = `S_${String(i).padStart(4, '0')}`;
+            const source = i % 2 === 0 ? FULL_SET : EMPTY_REQUEST;
+            MOCK_FEED.push({
+                ...source,
+                id: aliasId,
+                spotId: aliasId,
+                isAi: true,
+            });
+        }
+    }
+}
