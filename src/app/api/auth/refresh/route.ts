@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-    resolvePostLoginPath,
-    sanitizeNextPath,
-} from '@/features/auth/model/safe-next';
 import { serverApiFetch } from '@/lib/server-api';
-import type { LoginResult } from '@/features/auth/model/types';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -12,8 +7,8 @@ function isRecord(value: unknown): value is JsonRecord {
     return typeof value === 'object' && value !== null;
 }
 
-function getString(value: unknown): string | null {
-    return typeof value === 'string' && value.trim().length > 0 ? value : null;
+function getString(value: unknown): string | undefined {
+    return typeof value === 'string' ? value : undefined;
 }
 
 async function readJsonBody(request: NextRequest): Promise<JsonRecord | null> {
@@ -47,53 +42,38 @@ function appendSetCookieHeaders(response: NextResponse, upstream: Response) {
 
 export async function POST(request: NextRequest) {
     const body = await readJsonBody(request);
-    const email = getString(body?.email)?.trim();
-    const password = getString(body?.password);
-    const redirectTo = resolvePostLoginPath(
-        sanitizeNextPath(getString(body?.next)),
-    );
+    const refreshToken = getString(body?.refreshToken);
 
-    if (!email || !password) {
+    if (!refreshToken) {
         return NextResponse.json(
-            { message: '이메일과 비밀번호를 모두 입력해 주세요.' },
+            { message: 'refreshToken이 필요합니다.' },
             { status: 400 },
         );
     }
 
-    const upstream = await serverApiFetch('/api/auth/login', {
+    const upstream = await serverApiFetch('/api/auth/refresh', {
         method: 'POST',
-        body: JSON.stringify({
-            email,
-            password,
-            next: redirectTo,
-        }),
+        body: JSON.stringify({ refreshToken }),
     });
-
     const payload = await readUpstreamJson(upstream);
 
     if (!upstream.ok) {
         return NextResponse.json(payload, { status: upstream.status });
     }
 
-    const loginResult = (isRecord(payload.data) ? payload.data : payload) as
-        | Partial<LoginResult>
-        | undefined;
+    const tokenResult = isRecord(payload.data) ? payload.data : payload;
+    const accessToken = getString(tokenResult.accessToken);
 
-    if (!loginResult?.accessToken) {
+    if (!accessToken) {
         return NextResponse.json(
-            { message: '로그인 응답에 accessToken이 없습니다.' },
+            { message: '토큰 갱신 응답에 accessToken이 없습니다.' },
             { status: 502 },
         );
     }
 
-    const response = NextResponse.json({
-        ...loginResult,
-        redirectTo: resolvePostLoginPath(
-            sanitizeNextPath(getString(loginResult.redirectTo)) ?? redirectTo,
-        ),
-    });
+    const response = NextResponse.json(tokenResult);
 
-    response.cookies.set('spot-auth-token', loginResult.accessToken, {
+    response.cookies.set('spot-auth-token', accessToken, {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',

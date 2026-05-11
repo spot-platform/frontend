@@ -10,8 +10,8 @@ import type {
     MySupportActivitySummary,
 } from '@/entities/user/types';
 import type { PagedResponse } from '@/entities/spot/types';
+import { clientApiFetch } from '@/lib/client-api';
 import {
-    changeMockPassword,
     clearMockRecentViews,
     getMockFavorites,
     getMockMyProfile,
@@ -24,13 +24,15 @@ import {
     removeMockFavorite,
     removeMockRecentView,
     updateMockNotificationSettings,
-    updateMockProfile,
     updateMockSupporterProfile,
     updateMockSupporterRegistration,
 } from '../model/mock';
 
 export const myApi = {
-    profile: async (): Promise<{ data: UserProfile }> => getMockMyProfile(),
+    profile: async (): Promise<{ data: UserProfile }> =>
+        clientApiFetch<UserProfile>('/users/me')
+            .then((data) => ({ data }))
+            .catch(() => getMockMyProfile()),
 
     notificationSettings: async (): Promise<{ data: NotificationSettings }> =>
         getMockNotificationSettings(),
@@ -65,10 +67,17 @@ export const myApi = {
         nickname?: string;
         email?: string;
         phone?: string;
-    }): Promise<{ data: UserProfile }> => updateMockProfile(payload),
+    }): Promise<{ data: UserProfile }> =>
+        clientApiFetch<UserProfile>('/users/me', {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        }).then((data) => ({ data })),
 
     changePassword: async (payload: PasswordChangePayload): Promise<void> =>
-        changeMockPassword(payload),
+        clientApiFetch<void>('/users/me/password', {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        }),
 
     updateNotificationSettings: async (
         payload: Omit<NotificationSettings, 'updatedAt'>,
