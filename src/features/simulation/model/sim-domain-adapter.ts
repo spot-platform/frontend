@@ -27,7 +27,10 @@ import type {
     SpotParticipantEntry,
 } from '@/features/simulation/model/use-mock-spot-lifecycles';
 
-import { fetchSimMovements } from '@/features/simulation/mock/mock-sim-api';
+import {
+    fetchSimLifecycle,
+    fetchSimMovements,
+} from '@/features/simulation/api/sim-api';
 
 // ─── SimAgent → Persona ────────────────────────────────────────────────────
 // background agent 는 movement 가 없어 시각적으로 home 좌표에 정적으로 박힌다.
@@ -242,8 +245,7 @@ type UseSimDomainOptions = {
  * 좌표 도착 판정 + cluster 빌드는 매 sim emit 마다 갱신(subscribe 경유).
  *
  * 내부 구현:
- *   - manifest 로드되면 모든 lifecycle/movement 청크를 prefetch 해 seed 를 한 번에 빌드.
- *     (mock 환경 한정 — 실제 백엔드 연동 시 청크 단위 로드로 대체 가능.)
+ *   - manifest 로드되면 BE simulation API에서 모든 lifecycle/movement 청크를 prefetch 해 seed 를 한 번에 빌드.
  *   - currentTick 변할 때마다 SpotLifecycle 객체 + cluster 를 다시 만들어 state 로 노출.
  */
 export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
@@ -263,32 +265,22 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         [manifest],
     );
 
-    // mock 환경: 전체 lifecycle/movement 를 한 번에 fetch 해 seed 빌드.
-    // 실제 백엔드에선 useSimRun 의 청크 prefetch 결과를 그대로 받아쓰는 별도 경로가 필요.
+    // 전체 lifecycle/movement 를 BE 청크 API로 fetch 해 seed 빌드.
     const [seeds, setSeeds] = useState<SpotLifecycleSeed[]>([]);
     useEffect(() => {
         if (!manifest || !isReady) return;
         let mounted = true;
         (async () => {
-            // 모든 lifecycle 은 청크 분할되어 있으나 mock 은 동일 JSON 에서 슬라이스만 한다.
-            // 첫 청크 전체 + 나머지 청크들을 직렬 fetch 해서 합친다.
             const allMovements: Movement[] = [];
             const allLifecycle: LifecycleEvent[] = [];
             const chunkSize = manifest.chunk_size_ticks;
             for (let from = 0; from < manifest.total_ticks; from += chunkSize) {
                 const to = Math.min(from + chunkSize, manifest.total_ticks);
-                const moveChunk = await fetchSimMovements(runId, from, to);
+                const [moveChunk, lifeChunk] = await Promise.all([
+                    fetchSimMovements(runId, from, to),
+                    fetchSimLifecycle(runId, from, to),
+                ]);
                 allMovements.push(...moveChunk.movements);
-                // lifecycle 도 같은 청크로 fetch 했지만 useSimRun 이 이미 lifecycleByTickRef 를
-                // 갖고 있으므로 여기선 movement 만 쓰고, lifecycle 은 별도 import 가 필요.
-                // 단순화를 위해 lifecycle 도 직접 fetch.
-            }
-            // lifecycle 은 별도 한 번에.
-            const { fetchSimLifecycle } =
-                await import('@/features/simulation/mock/mock-sim-api');
-            for (let from = 0; from < manifest.total_ticks; from += chunkSize) {
-                const to = Math.min(from + chunkSize, manifest.total_ticks);
-                const lifeChunk = await fetchSimLifecycle(runId, from, to);
                 allLifecycle.push(...lifeChunk.events);
             }
             if (!mounted) return;

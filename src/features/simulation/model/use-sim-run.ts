@@ -3,7 +3,7 @@
 // Sim run 재생 훅.
 //
 // 책임:
-//   1) manifest + movement/lifecycle 청크를 mock-sim-api 로부터 로드(향후 real fetch 교체).
+//   1) manifest + movement/lifecycle 청크를 BE simulation API 로부터 로드.
 //   2) playbackStartMs 기반 tFloat 으로 매 프레임 agent 좌표 산출.
 //   3) positionsRef + subscribe 인터페이스를 useMockPersonaSwarm 과 동일하게 노출.
 //   4) lifecycle 이벤트는 currentLifecycleEvents 로 throttle 단위 push.
@@ -27,7 +27,7 @@ import {
     fetchSimLifecycle,
     fetchSimManifest,
     fetchSimMovements,
-} from '../mock/mock-sim-api';
+} from '../api/sim-api';
 import {
     buildAgentTimelines,
     homePosition,
@@ -36,7 +36,7 @@ import {
 } from './sim-clock';
 
 export type UseSimRunOptions = {
-    /** 재생할 run 식별자. mock 모드에서는 DEMO_RUN_ID 한정. */
+    /** 재생할 run 식별자. 미지정 시 데모 run. */
     runId?: string;
     /** false 면 fetch / rAF 모두 정지. */
     enabled?: boolean;

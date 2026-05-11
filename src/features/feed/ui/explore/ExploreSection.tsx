@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Chip } from '@frontend/design-system';
 import { FeedCard } from '../FeedCard';
 import { CategoryGrid } from '../CategoryGrid';
-import { MOCK_FEED } from '../../model/mock';
+import { useFeedList } from '../../model/use-feed';
 import type { FeedCategory, FeedItem } from '../../model/types';
 
 const SORT_OPTIONS = ['추천순', '마감임박', '인기순', '최신순'] as const;
@@ -57,9 +57,15 @@ export function ExploreSection() {
     >('전체');
     const [sort, setSort] = useState<SortOption>('추천순');
     const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
+    const { data: feedList } = useFeedList({
+        type: typeFilter === 'ALL' ? undefined : typeFilter,
+        category: selectedCategory === '전체' ? undefined : selectedCategory,
+        size: 50,
+    });
+    const feedItems = useMemo(() => feedList?.data ?? [], [feedList?.data]);
 
     const sortedItems = useMemo(() => {
-        const filtered = MOCK_FEED.filter((item) => {
+        const filtered = feedItems.filter((item) => {
             if (
                 selectedCategory !== '전체' &&
                 item.category !== selectedCategory
@@ -72,7 +78,7 @@ export function ExploreSection() {
         });
 
         return sortItems(filtered, sort);
-    }, [selectedCategory, sort, typeFilter]);
+    }, [feedItems, selectedCategory, sort, typeFilter]);
 
     return (
         <div className="flex flex-col gap-8">

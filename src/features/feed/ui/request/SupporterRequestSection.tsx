@@ -7,7 +7,7 @@ import { Chip } from '@frontend/design-system';
 import { IconEye, IconHeart, IconUsers } from '@tabler/icons-react';
 import { cn } from '@/shared/lib/cn';
 import { CategoryGrid } from '../CategoryGrid';
-import { MOCK_FEED } from '../../model/mock';
+import { useFeedList } from '../../model/use-feed';
 import type { FeedCategory, FeedItem } from '../../model/types';
 
 const BUDGET_FILTERS = ['전체', '~1만원', '1~3만원', '3만원~'] as const;
@@ -103,8 +103,14 @@ export function SupporterRequestSection() {
         FeedCategory | '전체'
     >('전체');
     const [selectedBudget, setSelectedBudget] = useState<BudgetFilter>('전체');
+    const { data: feedList } = useFeedList({
+        type: 'REQUEST',
+        category: selectedCategory === '전체' ? undefined : selectedCategory,
+        size: 50,
+    });
+    const feedItems = feedList?.data ?? [];
 
-    const filtered = MOCK_FEED.filter((item) => {
+    const filtered = feedItems.filter((item) => {
         if (item.type !== 'REQUEST') return false;
         if (!matchesBudget(item.price, selectedBudget)) return false;
         if (selectedCategory === '전체') return true;

@@ -6,8 +6,8 @@ import { Chip } from '@frontend/design-system';
 import { IconArrowRight } from '@tabler/icons-react';
 import { FeedCard } from '../FeedCard';
 import { CategoryGrid } from '../CategoryGrid';
-import { MOCK_FEED } from '../../model/mock';
-import type { FeedCategory } from '../../model/types';
+import { useFeedList } from '../../model/use-feed';
+import type { FeedCategory, FeedItem } from '../../model/types';
 
 const BUDGET_FILTERS = ['전체', '~1만원', '1~3만원', '3만원~'] as const;
 type BudgetFilter = (typeof BUDGET_FILTERS)[number];
@@ -24,12 +24,15 @@ function matchesBudget(price: number, budget: BudgetFilter): boolean {
 }
 
 /** 선택된 카테고리(또는 내 희망 카테고리)에서 최근 OFFER 포스트 1개 반환 */
-function getRecommendedOffer(selected: FeedCategory | '전체') {
+function getRecommendedOffer(
+    items: FeedItem[],
+    selected: FeedCategory | '전체',
+) {
     const targetCategories =
         selected === '전체' ? MY_PREFERRED_CATEGORIES : [selected];
 
     return (
-        MOCK_FEED.find(
+        items.find(
             (item) =>
                 item.type === 'OFFER' &&
                 item.status === 'OPEN' &&
@@ -43,10 +46,15 @@ export function RequestSection() {
         FeedCategory | '전체'
     >('전체');
     const [selectedBudget, setSelectedBudget] = useState<BudgetFilter>('전체');
+    const { data: feedList } = useFeedList({
+        category: selectedCategory === '전체' ? undefined : selectedCategory,
+        size: 50,
+    });
+    const feedItems = feedList?.data ?? [];
 
-    const recommended = getRecommendedOffer(selectedCategory);
+    const recommended = getRecommendedOffer(feedItems, selectedCategory);
 
-    const filtered = MOCK_FEED.filter((item) => {
+    const filtered = feedItems.filter((item) => {
         if (item.type !== 'REQUEST') return false;
         if (!matchesBudget(item.price, selectedBudget)) return false;
         if (selectedCategory === '전체') return true;

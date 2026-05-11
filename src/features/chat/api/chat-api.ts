@@ -180,9 +180,12 @@ export const chatApi = {
             throw new Error('BE v1 채팅 전송은 텍스트 메시지만 지원합니다.');
         }
 
-        return clientApiFetch<BackendMessage>(`/chat/rooms/${roomId}/messages`, {
-            method: 'POST',
-            body: JSON.stringify({ content: payload.content ?? '' }),
-        }).then((message) => ({ data: toChatMessage(message) }));
+        return clientApiFetch<BackendMessage>(
+            `/chat/rooms/${roomId}/messages`,
+            {
+                method: 'POST',
+                body: JSON.stringify({ content: payload.content ?? '' }),
+            },
+        ).then((message) => ({ data: toChatMessage(message) }));
     },
 };

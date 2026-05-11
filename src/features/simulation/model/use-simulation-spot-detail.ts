@@ -4,7 +4,7 @@
 // /spots/:id (실제 BE) 와 도메인이 다르므로 useSpotDetail 과 분리.
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchSimulationSpotDetail } from '@/features/simulation/mock/mock-sim-api';
+import { fetchSimulationSpotDetail } from '@/features/simulation/api/sim-api';
 
 export const simulationSpotKeys = {
     all: ['simulation', 'spot'] as const,

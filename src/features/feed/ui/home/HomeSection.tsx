@@ -6,15 +6,18 @@ import { HotSpotBanner } from '../HotSpotBanner';
 import { Notice } from '../Notice';
 import { HomeFeedCard } from '../FeedCard';
 import { SupporterCard } from './SupporterCard';
-import { MOCK_FEED, MOCK_SUPPORTERS } from '../../model/mock';
+import { MOCK_SUPPORTERS } from '../../model/mock';
 import { Section } from '@/shared/ui';
+import { useFeedList } from '../../model/use-feed';
 
 export function HomeSection() {
     const latestNoticeAdminPost = getLatestNoticeAdminPost();
-    const closingSoon = MOCK_FEED.filter(
+    const { data: feedList } = useFeedList({ size: 30 });
+    const feedItems = feedList?.data ?? [];
+    const closingSoon = feedItems.filter(
         (item) => item.type === 'OFFER' && (item.progressPercent ?? 0) >= 70,
     );
-    const bookmarkedFeed = MOCK_FEED.filter(
+    const bookmarkedFeed = feedItems.filter(
         (item) =>
             item.isBookmarked &&
             (item.type === 'OFFER' || item.type === 'REQUEST'),
