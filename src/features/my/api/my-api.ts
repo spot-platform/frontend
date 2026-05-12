@@ -14,7 +14,6 @@ import { clientApiFetch } from '@/lib/client-api';
 import {
     clearMockRecentViews,
     getMockFavorites,
-    getMockMyProfile,
     getMockNotificationSettings,
     getMockParticipations,
     getMockRecentViews,
@@ -30,9 +29,7 @@ import {
 
 export const myApi = {
     profile: async (): Promise<{ data: UserProfile }> =>
-        clientApiFetch<UserProfile>('/users/me')
-            .then((data) => ({ data }))
-            .catch(() => getMockMyProfile()),
+        clientApiFetch<UserProfile>('/users/me').then((data) => ({ data })),
 
     notificationSettings: async (): Promise<{ data: NotificationSettings }> =>
         getMockNotificationSettings(),
