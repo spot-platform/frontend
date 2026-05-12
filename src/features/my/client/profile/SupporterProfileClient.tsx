@@ -135,10 +135,10 @@ function ReviewCard({ review }: { review: ProfileReview }) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-text-secondary">
-                        {review.writerName.slice(0, 1)}
+                        {review.reviewerNickname.slice(0, 1)}
                     </div>
                     <span className="text-sm font-semibold text-text-secondary">
-                        {review.writerName}
+                        {review.reviewerNickname}
                     </span>
                 </div>
                 <StarRating rating={review.rating} size={12} />

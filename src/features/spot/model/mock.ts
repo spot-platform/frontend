@@ -815,7 +815,7 @@ export const MOCK_SPOT_DETAILS: Record<string, SpotDetailFull> = {
             {
                 id: 'review-1',
                 spotId: 'spot-3',
-                writerName: '나',
+                reviewerNickname: '나',
                 targetNickname: '커피러버',
                 rating: 5,
                 comment: '정말 친절하고 꼼꼼하게 도와주셨어요!',
@@ -1414,7 +1414,7 @@ export function submitMockSpotReview(
     const review: SpotReview = {
         id: `review-${Date.now()}`,
         spotId: detail.id,
-        writerName: '나',
+        reviewerNickname: '나',
         targetNickname: payload.targetNickname,
         rating: payload.rating,
         comment: payload.comment,

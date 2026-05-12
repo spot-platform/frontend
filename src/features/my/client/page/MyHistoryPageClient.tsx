@@ -176,7 +176,7 @@ export function MyHistoryPageClient() {
                 ) : supportSummary?.latestReview ? (
                     <MyPageSummaryList>
                         <MyPageSummaryRow
-                            label={supportSummary.latestReview.writerName}
+                            label={supportSummary.latestReview.reviewerNickname}
                             value={`${supportSummary.latestReview.rating}점`}
                             detail={
                                 <>

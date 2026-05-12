@@ -20,7 +20,7 @@ export function ReviewSection({
 
     if (spot.status !== 'CLOSED') return null;
 
-    const myReview = reviews.find((r) => r.writerName === currentUserId);
+    const myReview = reviews.find((r) => r.reviewerNickname === currentUserId);
     const avgRating =
         reviews.length > 0
             ? (
@@ -63,7 +63,7 @@ export function ReviewSection({
                         >
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-text-secondary">
-                                    {review.writerName}
+                                    {review.reviewerNickname}
                                 </span>
                                 <div className="flex">
                                     {Array.from({ length: 5 }).map((_, i) => (
