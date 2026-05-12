@@ -11,7 +11,7 @@ import { IconHeart } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import type { SpotCategory } from '@/entities/spot/categories';
-import { MOCK_FEED } from '@/features/feed/model/mock';
+import { useFeedList } from '@/features/feed/model/use-feed';
 import type { FeedItem } from '@/features/feed/model/types';
 import { FeedCard } from '@/features/feed/ui/FeedCard';
 
@@ -57,9 +57,12 @@ export function MapFeedCardPager({
         dir: ExitDirection;
     } | null>(null);
 
+    const { data: feedData } = useFeedList();
+    const feedItems = feedData?.data ?? [];
+
     const filtered = useMemo(() => {
         const q = searchQuery.trim().toLowerCase();
-        return MOCK_FEED.filter((item) => {
+        return feedItems.filter((item) => {
             if (feedType === 'offer' && item.type !== 'OFFER') return false;
             if (feedType === 'request' && item.type !== 'REQUEST') return false;
             if (
@@ -83,7 +86,7 @@ export function MapFeedCardPager({
             }
             return true;
         });
-    }, [feedType, categoriesSelected, searchQuery]);
+    }, [feedItems, feedType, categoriesSelected, searchQuery]);
 
     const total = filtered.length;
     const safePromoted = Math.min(promotedCount, total);

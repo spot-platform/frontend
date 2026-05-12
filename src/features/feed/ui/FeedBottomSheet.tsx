@@ -1,18 +1,19 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
     type BottomSheetSnapPoint,
     PersistentDrawer,
 } from '@frontend/design-system';
 import { useAuthStore } from '@/shared/model/auth-store';
-import { MOCK_SPOT_CARDS } from '@/features/simulation/model/mock-api-responses';
 import { buildSpotCardLookup } from '@/features/simulation/model/spot-card-adapter';
+import { feedApi } from '../api/feed-api';
+import { feedKeys } from '../model/use-feed';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import type { SpotCategory } from '@/entities/spot/categories';
 import { FeedCard } from './FeedCard';
 import { AttractivenessMiniGauge } from './preference/AttractivenessMiniGauge';
-import { MOCK_FEED } from '../model/mock';
 import type { FeedItem } from '../model/types';
 
 type FeedBottomSheetProps = {
@@ -24,9 +25,14 @@ type FeedBottomSheetProps = {
     categories?: SpotCategory[];
 };
 
+type SpotCardEntry = {
+    person_fitness_score?: number;
+    attractiveness_score?: number;
+};
+
 function getSimulationScore(
     item: FeedItem,
-    lookup: Map<string, (typeof MOCK_SPOT_CARDS)[number]>,
+    lookup: Map<string, SpotCardEntry>,
 ): { fitness?: number; attractiveness?: number } {
     if (!item.spotId) return {};
     const card = lookup.get(item.spotId);
@@ -49,12 +55,14 @@ export function FeedBottomSheet({
     const role = userPersona?.role ?? null;
     const searchQuery = useFilterStore((s) => s.searchQuery);
     const normalizedQuery = searchQuery.trim().toLowerCase();
-    const spotCardLookup = useMemo(
-        () => buildSpotCardLookup(MOCK_SPOT_CARDS),
-        [],
-    );
+    const { data: feedData } = useQuery({
+        queryKey: feedKeys.list(),
+        queryFn: () => feedApi.list(),
+    });
+    const feedItems = feedData?.data ?? [];
+    const spotCardLookup = useMemo(() => buildSpotCardLookup([]), []);
 
-    const filtered = MOCK_FEED.filter((item) => {
+    const filtered = feedItems.filter((item) => {
         if (feedType === 'offer' && item.type !== 'OFFER') return false;
         if (feedType === 'request' && item.type !== 'REQUEST') return false;
         if (
