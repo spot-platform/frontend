@@ -5,9 +5,6 @@ import type {
     PriceBreakdown,
 } from '@/entities/spot/simulation-types';
 import type {
-    FeedApplication,
-    FeedApplicationRole,
-    FeedApplicationStatus,
     FeedCategory,
     FeedItem,
     FeedManagementFlow,
@@ -76,66 +73,6 @@ export function getMockFeedCategoryAveragePricingGuide(
     return MOCK_FEED_CATEGORY_AVERAGE_PRICING_GUIDE[category] ?? null;
 }
 
-type MyFeedApplicationRecord = {
-    status: FeedApplicationStatus;
-    role: FeedApplicationRole;
-    deposit: number;
-    proposal: string;
-    createdAt: string;
-};
-
-const MOCK_MY_FEED_APPLICATIONS = new Map<string, MyFeedApplicationRecord>();
-
-export function getMyFeedApplication(
-    feedId: string,
-): MyFeedApplicationRecord | undefined {
-    const record = MOCK_MY_FEED_APPLICATIONS.get(feedId);
-    return record ? { ...record } : undefined;
-}
-
-export function applyMockFeedApplication(
-    feedId: string,
-    payload: {
-        proposal: string;
-        role: FeedApplicationRole;
-        deposit: number;
-        // 2026-04-30 서포터가 REQUEST 에 매칭하면서 채우는 plan/preparation.
-        // 입력 시 해당 feed 의 mock 항목을 그대로 mutate 하여 디테일 페이지에 즉시 반영.
-        plan?: PlanV3;
-        preparation?: Preparation;
-    },
-): { data: FeedApplication } {
-    const createdAt = new Date().toISOString();
-    MOCK_MY_FEED_APPLICATIONS.set(feedId, {
-        status: 'APPLIED',
-        role: payload.role,
-        deposit: payload.deposit,
-        proposal: payload.proposal,
-        createdAt,
-    });
-
-    if (payload.plan || payload.preparation) {
-        const target = MOCK_FEED.find((f) => f.id === feedId);
-        if (target) {
-            if (payload.plan) target.plan = payload.plan;
-            if (payload.preparation) target.preparation = payload.preparation;
-        }
-    }
-
-    return {
-        data: {
-            id: `feed-app-${feedId}`,
-            feedId,
-            userId: 'user-me',
-            proposal: payload.proposal,
-            status: 'APPLIED',
-            appliedRole: payload.role,
-            deposit: payload.deposit,
-            createdAt,
-        },
-    };
-}
-
 // 2026-04-30 디테일 페이지에서 작성자/매칭된 서포터가 plan/preparation 을 수정할 때 호출.
 // MOCK_FEED 항목을 직접 mutate. 서버 적용 후엔 BE PATCH /feed/{id} 로 교체.
 export function updateMockFeedDetails(
@@ -149,17 +86,6 @@ export function updateMockFeedDetails(
             target.preparation = patch.preparation;
     }
     return { data: { feedId } };
-}
-
-export function cancelMockFeedApplication(feedId: string): {
-    data: { feedId: string; status: 'CANCELLED' };
-} {
-    const current = MOCK_MY_FEED_APPLICATIONS.get(feedId);
-    if (!current) {
-        throw new Error('취소할 신청 내역이 없습니다.');
-    }
-    MOCK_MY_FEED_APPLICATIONS.set(feedId, { ...current, status: 'CANCELLED' });
-    return { data: { feedId, status: 'CANCELLED' } };
 }
 
 export const MOCK_FEED: FeedItem[] = [

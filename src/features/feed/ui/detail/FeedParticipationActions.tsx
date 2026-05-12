@@ -18,10 +18,7 @@ import type {
     FeedItem,
     FeedManagementFlow,
 } from '../../model/types';
-import {
-    applyMockFeedApplication,
-    getMockFeedCategoryAveragePricingGuide,
-} from '../../model/mock';
+import { getMockFeedCategoryAveragePricingGuide } from '../../model/mock';
 import {
     PARTICIPATION_DEPOSIT_RATE,
     type FeedParticipationRole,
@@ -36,7 +33,10 @@ import {
     resolveCancellationOutcome,
     type CancellationOutcome,
 } from '../../model/cancellation-policy';
-import { useCancelFeedApplication } from '../../model/use-feed';
+import {
+    useApplyFeed,
+    useCancelFeedApplication,
+} from '../../model/use-feed';
 
 function formatCurrency(value: number, maximumFractionDigits = 0) {
     return `${value.toLocaleString('ko-KR', {
@@ -99,6 +99,7 @@ export function FeedParticipationActions({
     const showBottomNavMessage = useBottomNavMessageStore(
         (state) => state.showMessage,
     );
+    const applyFeed = useApplyFeed();
     const cancelFeedApplication = useCancelFeedApplication();
     const [selectedRole, setSelectedRole] =
         useState<FeedParticipationRole | null>(null);
@@ -248,16 +249,15 @@ export function FeedParticipationActions({
                 deposit,
                 `${item.title} 참여 보증금`,
             );
-            applyMockFeedApplication(item.id, {
-                proposal: `${getRoleLabel(selectedRole)} 참여 요청`,
-                role: selectedRole as FeedApplicationRole,
-                deposit,
-                plan: requiresSupporterPlanInput ? proposedPlan : undefined,
-                preparation: requiresSupporterPreparationInput
-                    ? proposedPreparation
-                    : undefined,
+            await applyFeed.mutateAsync({
+                feedId: item.id,
+                payload: {
+                    proposal: `${getRoleLabel(selectedRole)} 참여 요청`,
+                    role: selectedRole as FeedApplicationRole,
+                    deposit,
+                },
             });
-            // mock-feed 직접 mutate 했으므로 디테일 페이지가 다음 진입 때 반영됨.
+            // BE 에 plan/preparation PATCH 가 없어 현재 화면 상태만 낙관적으로 반영한다.
             if (requiresSupporterPlanInput && proposedPlan) {
                 item.plan = proposedPlan;
             }
