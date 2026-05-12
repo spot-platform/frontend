@@ -148,7 +148,7 @@ function toScheduleSlot(schedule: BackendSchedule): ScheduleSlot {
         date: Number.isNaN(date.getTime())
             ? schedule.scheduledAt.slice(0, 10)
             : date.toISOString().slice(0, 10),
-        hour: Number.isNaN(date.getTime()) ? 0 : date.getHours(),
+        hour: Number.isNaN(date.getTime()) ? 0 : date.getUTCHours(),
         availableUserIds: [],
     };
 }

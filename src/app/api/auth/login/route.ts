@@ -86,14 +86,16 @@ export async function POST(request: NextRequest) {
         );
     }
 
+    const { accessToken, ...publicLoginResult } = loginResult;
+
     const response = NextResponse.json({
-        ...loginResult,
+        ...publicLoginResult,
         redirectTo: resolvePostLoginPath(
             sanitizeNextPath(getString(loginResult.redirectTo)) ?? redirectTo,
         ),
     });
 
-    response.cookies.set('spot-auth-token', loginResult.accessToken, {
+    response.cookies.set('spot-auth-token', accessToken, {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',

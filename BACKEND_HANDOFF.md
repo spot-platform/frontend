@@ -6,17 +6,17 @@
 
 ### Entities
 
-| Entity              | Fields           |
-| ------------------- | ---------------- |
-| UploadFileRequest   | file (binary)    |
-| UploadFileResponse  | url              |
-| BatchUploadRequest  | files[] (binary) |
-| BatchUploadResponse | urls[]           |
-| ResolvedPlace         | place_id, name, primary_category, role, lat, lng, address, road_address?, confidence |
-| PlanStep              | time, activity, place_id?, intent? |
-| PlanV3                | steps[], total_duration_minutes |
-| PriceBreakdown        | base_fee, included_items[], optional_addons[], refund_policy?, summary_line? |
-| Preparation           | host_provides[], partner_brings[], weather_contingency?, safety_notes[], host_tip? |
+| Entity              | Fields                                                                               |
+| ------------------- | ------------------------------------------------------------------------------------ |
+| UploadFileRequest   | file (binary)                                                                        |
+| UploadFileResponse  | url                                                                                  |
+| BatchUploadRequest  | files[] (binary)                                                                     |
+| BatchUploadResponse | urls[]                                                                               |
+| ResolvedPlace       | place_id, name, primary_category, role, lat, lng, address, road_address?, confidence |
+| PlanStep            | time, activity, place_id?, intent?                                                   |
+| PlanV3              | steps[], total_duration_minutes                                                      |
+| PriceBreakdown      | base_fee, included_items[], optional_addons[], refund_policy?, summary_line?         |
+| Preparation         | host_provides[], partner_brings[], weather_contingency?, safety_notes[], host_tip?   |
 
 ### Queries
 
@@ -56,13 +56,13 @@
 
 ### Queries
 
-| Name         | Method | Route                        | Request DTO         | Response DTO       |
-| ------------ | ------ | ---------------------------- | ------------------- | ------------------ |
-| Login        | POST   | /api/auth/login              | LoginRequest        | LoginResult        |
-| DummyLogin   | POST   | /api/auth/login/dummy        | { next? }           | LoginResult        |
-| RefreshToken | POST   | /api/auth/refresh            | RefreshTokenRequest | TokenRefreshResult |
-| OAuthStart   | GET    | /api/auth/oauth/{provider}/start | OAuthStartQuery | -                  |
-| Logout       | POST   | /api/auth/logout             | LogoutRequest       | LogoutResult       |
+| Name         | Method | Route                            | Request DTO         | Response DTO       |
+| ------------ | ------ | -------------------------------- | ------------------- | ------------------ |
+| Login        | POST   | /api/auth/login                  | LoginRequest        | LoginResult        |
+| DummyLogin   | POST   | /api/auth/login/dummy            | { next? }           | LoginResult        |
+| RefreshToken | POST   | /api/auth/refresh                | RefreshTokenRequest | TokenRefreshResult |
+| OAuthStart   | GET    | /api/auth/oauth/{provider}/start | OAuthStartQuery     | -                  |
+| Logout       | POST   | /api/auth/logout                 | LogoutRequest       | LogoutResult       |
 
 > Auth 는 프론트 Next.js BFF 공개 계약이다. FE 는 `/api/auth/*` 를 호출하고, BFF 가 실제 BE auth upstream 을 프록시하거나 mock dev login 을 처리한다. 나머지 도메인 API 는 `NEXT_PUBLIC_API_BASE_URL` 기준 공개 API 로 호출한다.
 
@@ -70,28 +70,28 @@
 
 ### Entities
 
-| Entity                 | Fields                                                                                                                                                                                                                                                           |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FeedAuthorProfile      | id, nickname, avatarUrl?, role ('SUPPORTER'\|'PARTNER'), rating? (SUPPORTER only), field? (SUPPORTER only)                                                                                                                                                       |
+| Entity                 | Fields                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FeedAuthorProfile      | id, nickname, avatarUrl?, role ('SUPPORTER'\|'PARTNER'), rating? (SUPPORTER only), field? (SUPPORTER only)                                                                                                                                                                                                                                                                                                                                                   |
 | FeedItem               | id, title, description?, location, authorNickname, authorProfile?, price, type, status, progressPercent?, imageUrl?, views, likes, partnerCount? (OFFER), applicantCount? (REQUEST), category?, deadline?, maxParticipants?, isBookmarked?, myApplicationStatus?, isAi? (boolean, 2026-04-30 — AI 합성 피드 마커), plan? (PlanV3, 2026-04-30), priceBreakdown? (2026-04-30), preparation? (2026-04-30), venueAnchors? (2026-04-30), primaryPin? (2026-04-30) |
-| SupporterItem          | id, nickname, avatarUrl?, category, tagline, tags[], completedCount, rating, location, relatedOfferId?                                                                                                                                                           |
-| SupporterApplication   | id, nickname, avatarUrl?, category, tagline, tags[], completedCount, rating, location, relatedOfferId?, relatedRequestId?, proposal, competitionScore, status                                                                                                    |
-| FeedApplication        | id, feedId, userId, proposal, status, appliedRole, deposit, createdAt, plan?, preparation?                                                                                                                |
-| FeedParticipantProfile | id, nickname, avatarUrl?                                                                                                                                                                                                                                         |
-| FeedDemandSnapshot     | fundingGoal, fundedAmount, requiredPartners, confirmedPartners, confirmedPartnerProfiles[], partnerSlotLabels?, deadlineLabel, hostNote, currentAmountLabel?, targetAmountLabel?, progressLabel?                                                                 |
-| FeedCompetitionInsight | label, value, tone?                                                                                                                                                                                                                                              |
-| FeedManagementFlow     | feedId, stageLabel, demand, applications[], insights[]                                                                                                                                                                                                           |
+| SupporterItem          | id, nickname, avatarUrl?, category, tagline, tags[], completedCount, rating, location, relatedOfferId?                                                                                                                                                                                                                                                                                                                                                       |
+| SupporterApplication   | id, nickname, avatarUrl?, category, tagline, tags[], completedCount, rating, location, relatedOfferId?, relatedRequestId?, proposal, competitionScore, status                                                                                                                                                                                                                                                                                                |
+| FeedApplication        | id, feedId, userId, proposal, status, appliedRole, deposit, createdAt, plan?, preparation?                                                                                                                                                                                                                                                                                                                                                                   |
+| FeedParticipantProfile | id, nickname, avatarUrl?                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| FeedDemandSnapshot     | fundingGoal, fundedAmount, requiredPartners, confirmedPartners, confirmedPartnerProfiles[], partnerSlotLabels?, deadlineLabel, hostNote, currentAmountLabel?, targetAmountLabel?, progressLabel?                                                                                                                                                                                                                                                             |
+| FeedCompetitionInsight | label, value, tone?                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| FeedManagementFlow     | feedId, stageLabel, demand, applications[], insights[]                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Request DTO
 
-| DTO                      | Fields                                               |
-| ------------------------ | ---------------------------------------------------- |
-| FeedListQuery            | tab?, type?, status?, category?, sort?, page?, size?         |
-| FeedBookmarkRequest      | -                                                            |
+| DTO                      | Fields                                                              |
+| ------------------------ | ------------------------------------------------------------------- |
+| FeedListQuery            | tab?, type?, status?, category?, sort?, page?, size?                |
+| FeedBookmarkRequest      | -                                                                   |
 | FeedApplyRequest         | proposal, role, deposit, plan? (PlanV3), preparation? (Preparation) |
-| UpdateFeedDetailsRequest | plan? (PlanV3), preparation? (Preparation)                   |
-| FeedApplicationListQuery | status?, page?, size?                                        |
-| FeedManagementFlowQuery  | -                                                            |
+| UpdateFeedDetailsRequest | plan? (PlanV3), preparation? (Preparation)                          |
+| FeedApplicationListQuery | status?, page?, size?                                               |
+| FeedManagementFlowQuery  | -                                                                   |
 
 ### Response DTO
 
@@ -155,18 +155,18 @@
 
 ### Request DTO
 
-| DTO                     | Fields                                       |
-| ----------------------- | -------------------------------------------- |
-| SpotListQuery           | type?, status?, participating?, page?, size? |
+| DTO                     | Fields                                                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| SpotListQuery           | type?, status?, participating?, page?, size?                                                                             |
 | CreateSpotRequest       | type, title, description, pointCost, plan? (PlanV3, 2026-04-30), priceBreakdown? (2026-04-30), preparation? (2026-04-30) |
-| UpsertScheduleRequest   | slots[]                                      |
-| CreateVoteRequest       | question, options[], multiSelect?            |
-| CastVoteRequest         | optionIds[]                                  |
-| UpsertChecklistRequest  | items[]                                      |
-| UploadSpotFilesRequest  | files[]                                      |
-| CreateNoteRequest       | content                                      |
-| CreateReviewRequest     | targetNickname, rating, comment?             |
-| SubmitSettlementRequest | lineItems[], summary                         |
+| UpsertScheduleRequest   | slots[]                                                                                                                  |
+| CreateVoteRequest       | question, options[], multiSelect?                                                                                        |
+| CastVoteRequest         | optionIds[]                                                                                                              |
+| UpsertChecklistRequest  | items[]                                                                                                                  |
+| UploadSpotFilesRequest  | files[]                                                                                                                  |
+| CreateNoteRequest       | content                                                                                                                  |
+| CreateReviewRequest     | targetNickname, rating, comment?                                                                                         |
+| SubmitSettlementRequest | lineItems[], summary                                                                                                     |
 
 ### Response DTO
 
@@ -393,13 +393,13 @@
 ### Request DTO
 
 | DTO                    | Fields                                                                                             |
-| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| ---------------------- | -------------------------------------------------------------------------------------------------- | ------ | --------------- | --- |
 | ChatRoomsQuery         | category?, filter?, page?, size?                                                                   |
 | ChatMessagesQuery      | beforeId?, size?                                                                                   |
 | CreateChatRoomRequest  | category, userId?, spotId?                                                                         |
 | SendChatMessageRequest | kind (includes 'reverse-offer'), content?, voteId?, scheduleId?, fileId?, proposal?, reverseOffer? |
 | MarkChatReadRequest    | -                                                                                                  |
-| ChatSSEEvent                      | type ('message'|'read'|'typing'), data                                                                                                                                                                   |                                                                                                  |
+| ChatSSEEvent           | type ('message'                                                                                    | 'read' | 'typing'), data |     |
 
 ### Response DTO
 
@@ -412,18 +412,18 @@
 
 ### Queries
 
-| Name              | Method | Route                         | Request DTO            | Response DTO         |
-| ----------------- | ------ | ----------------------------- | ---------------------- | -------------------- |
-| GetChatRooms      | GET    | /chat/rooms                   | ChatRoomsQuery         | ChatRoomsResponse    |
-| CreateChatRoom    | POST   | /chat/rooms                   | CreateChatRoomRequest  | ChatRoomResponse     |
-| GetChatRoom       | GET    | /chat/rooms/{roomId}          | -                      | ChatRoomResponse     |
-| GetChatMessages   | GET    | /chat/rooms/{roomId}/messages | ChatMessagesQuery      | ChatMessagesResponse |
-| SendChatMessage   | POST   | /chat/rooms/{roomId}/messages | SendChatMessageRequest | ChatMessageResponse  |
-| MarkChatRoomRead  | POST   | /chat/rooms/{roomId}/read     | MarkChatReadRequest    | -                                                                                                  |
-| ChatSSEEvent                      | type ('message'|'read'|'typing'), data                                                                                                                                                                   |                    |
-| GetChatRoomBySpot | GET    | /chat/rooms/by-spot/{spotId}  | -                      | ChatRoomResponse     |
-| GetChatRoomByUser | GET    | /chat/rooms/by-user/{userId}  | -                      | ChatRoomResponse     |
-| ConnectChatSSE    | GET    | /chat/connect                 | { roomId? }            | SSE: ChatSSEEvent    |
+| Name              | Method          | Route                         | Request DTO            | Response DTO         |
+| ----------------- | --------------- | ----------------------------- | ---------------------- | -------------------- |
+| GetChatRooms      | GET             | /chat/rooms                   | ChatRoomsQuery         | ChatRoomsResponse    |
+| CreateChatRoom    | POST            | /chat/rooms                   | CreateChatRoomRequest  | ChatRoomResponse     |
+| GetChatRoom       | GET             | /chat/rooms/{roomId}          | -                      | ChatRoomResponse     |
+| GetChatMessages   | GET             | /chat/rooms/{roomId}/messages | ChatMessagesQuery      | ChatMessagesResponse |
+| SendChatMessage   | POST            | /chat/rooms/{roomId}/messages | SendChatMessageRequest | ChatMessageResponse  |
+| MarkChatRoomRead  | POST            | /chat/rooms/{roomId}/read     | MarkChatReadRequest    | -                    |
+| ChatSSEEvent      | type ('message' | 'read'                        | 'typing'), data        |                      |
+| GetChatRoomBySpot | GET             | /chat/rooms/by-spot/{spotId}  | -                      | ChatRoomResponse     |
+| GetChatRoomByUser | GET             | /chat/rooms/by-user/{userId}  | -                      | ChatRoomResponse     |
+| ConnectChatSSE    | GET             | /chat/connect                 | { roomId? }            | SSE: ChatSSEEvent    |
 
 ## Future-needed but not current FE MVP
 
@@ -557,8 +557,8 @@
 
 다음 기능은 “아직 미개발”이 아니라 현재 제품 방향에서 제외/폐기된 범위이므로 백엔드 구현 요구사항에서 제외한다.
 
-| Removed area | Reason |
-| ------------ | ------ |
-| Locality / zoom-out region API (`/api/locality/regions`) | 예전 줌아웃 지역 특성 기능. leftover hook/mock/type 만 있고 실제 제품 기능에서 제거됨. |
-| Simulation/contextBuilder runtime APIs | 현재 spot 백엔드 회의 범위에서 제외. Map persona stream, timeline stream, highlights, sim run/chunk API 등 구현하지 않음. |
-| Spot workflow concept/API | 예전 prototype workflow UI/API 범위. 별도 workflow 리소스는 구현하지 않고, 필요한 정산은 settlement endpoints 로만 처리. |
+| Removed area                                             | Reason                                                                                                                    |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Locality / zoom-out region API (`/api/locality/regions`) | 예전 줌아웃 지역 특성 기능. leftover hook/mock/type 만 있고 실제 제품 기능에서 제거됨.                                    |
+| Simulation/contextBuilder runtime APIs                   | 현재 spot 백엔드 회의 범위에서 제외. Map persona stream, timeline stream, highlights, sim run/chunk API 등 구현하지 않음. |
+| Spot workflow concept/API                                | 예전 prototype workflow UI/API 범위. 별도 workflow 리소스는 구현하지 않고, 필요한 정산은 settlement endpoints 로만 처리.  |

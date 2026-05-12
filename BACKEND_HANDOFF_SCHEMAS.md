@@ -86,33 +86,33 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### ResolvedPlace
 
-| Field            | Type   | Required | Notes |
-| ---------------- | ------ | -------- | ----- |
-| place_id         | string | required |       |
-| name             | string | required |       |
-| primary_category | string | required |       |
-| role             | meetup \| main \| secondary \| wrapup | required | |
-| lat              | number | required |       |
-| lng              | number | required |       |
-| address          | string | required |       |
-| road_address     | string | optional |       |
-| confidence       | number | required | 0~1   |
+| Field            | Type                                  | Required | Notes |
+| ---------------- | ------------------------------------- | -------- | ----- |
+| place_id         | string                                | required |       |
+| name             | string                                | required |       |
+| primary_category | string                                | required |       |
+| role             | meetup \| main \| secondary \| wrapup | required |       |
+| lat              | number                                | required |       |
+| lng              | number                                | required |       |
+| address          | string                                | required |       |
+| road_address     | string                                | optional |       |
+| confidence       | number                                | required | 0~1   |
 
 ### PlanStep
 
-| Field    | Type          | Required | Notes |
-| -------- | ------------- | -------- | ----- |
-| time     | string        | required | HH:MM or +Nm |
-| activity | string        | required |       |
-| place_id | string \| null | required |       |
-| intent   | string \| null | required |       |
+| Field    | Type           | Required | Notes        |
+| -------- | -------------- | -------- | ------------ |
+| time     | string         | required | HH:MM or +Nm |
+| activity | string         | required |              |
+| place_id | string \| null | required |              |
+| intent   | string \| null | required |              |
 
 ### PlanV3
 
-| Field                  | Type       | Required | Notes |
-| ---------------------- | ---------- | -------- | ----- |
+| Field                  | Type       | Required | Notes           |
+| ---------------------- | ---------- | -------- | --------------- |
 | steps                  | PlanStep[] | required | 3~7 recommended |
-| total_duration_minutes | number     | required | 60~360 |
+| total_duration_minutes | number     | required | 60~360          |
 
 ### AddOnMechanism (enum)
 
@@ -120,9 +120,9 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### IncludedItem
 
-| Field | Type   | Required | Notes |
-| ----- | ------ | -------- | ----- |
-| name  | string | required |       |
+| Field | Type   | Required | Notes               |
+| ----- | ------ | -------- | ------------------- |
+| name  | string | required |                     |
 | value | string | required | natural language OK |
 
 ### AddOn
@@ -178,19 +178,19 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### Spot
 
-| Field          | Type            | Required | Notes                                          |
-| -------------- | --------------- | -------- | ---------------------------------------------- |
-| id             | string          | required |                                                |
-| type           | SpotType        | required |                                                |
-| status         | SpotStatus      | required |                                                |
-| title          | string          | required |                                                |
-| description    | string          | required |                                                |
-| pointCost      | number          | required |                                                |
-| authorId       | string          | required |                                                |
-| authorNickname | string          | required |                                                |
-| createdAt      | string          | required | ISO 8601                                       |
-| updatedAt      | string          | required | ISO 8601                                       |
-| forfeitPool    | SpotForfeitPool | optional | Omitted means `{toPool:0, toPlatformFee:0}`    |
+| Field          | Type            | Required | Notes                                       |
+| -------------- | --------------- | -------- | ------------------------------------------- |
+| id             | string          | required |                                             |
+| type           | SpotType        | required |                                             |
+| status         | SpotStatus      | required |                                             |
+| title          | string          | required |                                             |
+| description    | string          | required |                                             |
+| pointCost      | number          | required |                                             |
+| authorId       | string          | required |                                             |
+| authorNickname | string          | required |                                             |
+| createdAt      | string          | required | ISO 8601                                    |
+| updatedAt      | string          | required | ISO 8601                                    |
+| forfeitPool    | SpotForfeitPool | optional | Omitted means `{toPool:0, toPlatformFee:0}` |
 
 ### SpotForfeitPool
 
@@ -329,23 +329,23 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### SpotPartnerVoteSummary
 
-| Field         | Type                      | Required | Notes |
-| ------------- | ------------------------- | -------- | ----- |
-| question      | string                    | required |       |
-| totalVotes    | number                    | required |       |
-| consensusRate | number                    | required | 0-100 |
-| decidedLabel  | string                    | required |       |
-| summary       | string                    | required |       |
-| options       | SpotVoteSummaryOption[]   | required |       |
+| Field         | Type                    | Required | Notes |
+| ------------- | ----------------------- | -------- | ----- |
+| question      | string                  | required |       |
+| totalVotes    | number                  | required |       |
+| consensusRate | number                  | required | 0-100 |
+| decidedLabel  | string                  | required |       |
+| summary       | string                  | required |       |
+| options       | SpotVoteSummaryOption[] | required |       |
 
 ### SpotFinalApproval
 
-| Field            | Type                   | Required | Notes       |
-| ---------------- | ---------------------- | -------- | ----------- |
-| status           | SettlementApprovalStatus | required |             |
-| approverNickname | string                 | required |             |
-| note             | string                 | required |             |
-| approvedAt       | string                 | optional | ISO 8601    |
+| Field            | Type                     | Required | Notes    |
+| ---------------- | ------------------------ | -------- | -------- |
+| status           | SettlementApprovalStatus | required |          |
+| approverNickname | string                   | required |          |
+| note             | string                   | required |          |
+| approvedAt       | string                   | optional | ISO 8601 |
 
 ### SpotSettlementLineItem
 
@@ -356,17 +356,17 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### SpotSettlementApproval
 
-| Field           | Type                     | Required | Notes                                          |
-| --------------- | ------------------------ | -------- | ---------------------------------------------- |
-| status          | SettlementApprovalStatus   | required | PENDING or APPROVED                            |
-| requestedAmount | number                   | required | Sum of submitted line items                    |
+| Field           | Type                     | Required | Notes                                               |
+| --------------- | ------------------------ | -------- | --------------------------------------------------- |
+| status          | SettlementApprovalStatus | required | PENDING or APPROVED                                 |
+| requestedAmount | number                   | required | Sum of submitted line items                         |
 | approvedAmount  | number                   | required | On approval: `requestedAmount + forfeitPool.toPool` |
-| summary         | string                   | required |                                                |
-| lineItems       | SpotSettlementLineItem[] | required |                                                |
-| submittedBy     | string                   | optional | User id                                        |
-| submittedAt     | string                   | optional | ISO 8601                                       |
-| approvedBy      | string                   | optional | User id                                        |
-| approvedAt      | string                   | optional | ISO 8601                                       |
+| summary         | string                   | required |                                                     |
+| lineItems       | SpotSettlementLineItem[] | required |                                                     |
+| submittedBy     | string                   | optional | User id                                             |
+| submittedAt     | string                   | optional | ISO 8601                                            |
+| approvedBy      | string                   | optional | User id                                             |
+| approvedAt      | string                   | optional | ISO 8601                                            |
 
 ### SubmitSettlementPayload
 
@@ -624,35 +624,35 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### FeedItem
 
-| Field                    | Type                     | Required | Notes                                      |
-| ------------------------ | ------------------------ | -------- | ------------------------------------------ |
-| id                       | string                   | required |                                            |
-| title                    | string                   | required |                                            |
-| description              | string                   | optional |                                            |
-| location                 | string                   | required |                                            |
-| authorNickname           | string                   | required |                                            |
-| authorProfile            | FeedAuthorProfile        | optional |                                            |
-| price                    | number                   | required |                                            |
-| type                     | FeedItemType             | required |                                            |
-| status                   | FeedItemStatus           | required |                                            |
-| progressPercent          | number                   | optional | 0 to 100                                   |
-| imageUrl                 | string                   | optional |                                            |
-| views                    | number                   | required |                                            |
-| likes                    | number                   | required |                                            |
-| partnerCount             | number                   | optional | OFFER only                                 |
-| applicantCount           | number                   | optional | REQUEST only                               |
-| maxParticipants          | number                   | optional |                                            |
-| confirmedPartnerProfiles | FeedParticipantProfile[] | optional |                                            |
-| category                 | FeedCategory             | optional |                                            |
-| deadline                 | string                   | optional | ISO date                                   |
-| isBookmarked             | boolean                  | optional |                                            |
-| myApplicationStatus      | FeedApplicationStatus    | optional | 인증 사용자의 신청 상태, 미신청 시 omitted |
+| Field                    | Type                     | Required | Notes                                                                                           |
+| ------------------------ | ------------------------ | -------- | ----------------------------------------------------------------------------------------------- |
+| id                       | string                   | required |                                                                                                 |
+| title                    | string                   | required |                                                                                                 |
+| description              | string                   | optional |                                                                                                 |
+| location                 | string                   | required |                                                                                                 |
+| authorNickname           | string                   | required |                                                                                                 |
+| authorProfile            | FeedAuthorProfile        | optional |                                                                                                 |
+| price                    | number                   | required |                                                                                                 |
+| type                     | FeedItemType             | required |                                                                                                 |
+| status                   | FeedItemStatus           | required |                                                                                                 |
+| progressPercent          | number                   | optional | 0 to 100                                                                                        |
+| imageUrl                 | string                   | optional |                                                                                                 |
+| views                    | number                   | required |                                                                                                 |
+| likes                    | number                   | required |                                                                                                 |
+| partnerCount             | number                   | optional | OFFER only                                                                                      |
+| applicantCount           | number                   | optional | REQUEST only                                                                                    |
+| maxParticipants          | number                   | optional |                                                                                                 |
+| confirmedPartnerProfiles | FeedParticipantProfile[] | optional |                                                                                                 |
+| category                 | FeedCategory             | optional |                                                                                                 |
+| deadline                 | string                   | optional | ISO date                                                                                        |
+| isBookmarked             | boolean                  | optional |                                                                                                 |
+| myApplicationStatus      | FeedApplicationStatus    | optional | 인증 사용자의 신청 상태, 미신청 시 omitted                                                      |
 | isAi                     | boolean                  | optional | 2026-04-30 — contextBuilder 합성 피드 마커. true 면 FE 가 참여 액션 대신 "리퀘스트 열기"를 노출 |
-| plan                     | PlanV3                   | optional | 2026-04-30 — Shared contextBuilder PlanV3 와 동일 객체 |
-| priceBreakdown           | PriceBreakdown           | optional | 2026-04-30                                 |
-| preparation              | Preparation              | optional | 2026-04-30                                 |
-| venueAnchors             | ResolvedPlace[]          | optional | 2026-04-30                                 |
-| primaryPin               | ResolvedPlace            | optional | 2026-04-30                                 |
+| plan                     | PlanV3                   | optional | 2026-04-30 — Shared contextBuilder PlanV3 와 동일 객체                                          |
+| priceBreakdown           | PriceBreakdown           | optional | 2026-04-30                                                                                      |
+| preparation              | Preparation              | optional | 2026-04-30                                                                                      |
+| venueAnchors             | ResolvedPlace[]          | optional | 2026-04-30                                                                                      |
+| primaryPin               | ResolvedPlace            | optional | 2026-04-30                                                                                      |
 
 ### FeedAuthorProfile
 
@@ -690,18 +690,18 @@ Types are expressed in table form. `optional` means the key may be omitted. `nul
 
 ### FeedApplication
 
-| Field        | Type                  | Required | Notes                                                                  |
-| ------------ | --------------------- | -------- | ---------------------------------------------------------------------- |
-| id           | string                | required |                                                                        |
-| feedId       | string                | required |                                                                        |
-| userId       | string                | required |                                                                        |
-| proposal     | string                | required | 신청 메시지                                                            |
-| status       | FeedApplicationStatus | required |                                                                        |
-| appliedRole  | FeedApplicationRole   | required | 신청자가 선택한 참여 역할                                              |
-| deposit      | number                | required | BE 재계산/검증 후 확정한 신청 시점 보증금                              |
-| createdAt    | string                | required | ISO datetime                                                           |
-| plan         | PlanV3                | optional | 2026-04-30 — REQUEST 가 비워둔 활동 계획을 서포터가 신청 시 채워 보냄 |
-| preparation  | Preparation           | optional | 2026-04-30                                                             |
+| Field       | Type                  | Required | Notes                                                                 |
+| ----------- | --------------------- | -------- | --------------------------------------------------------------------- |
+| id          | string                | required |                                                                       |
+| feedId      | string                | required |                                                                       |
+| userId      | string                | required |                                                                       |
+| proposal    | string                | required | 신청 메시지                                                           |
+| status      | FeedApplicationStatus | required |                                                                       |
+| appliedRole | FeedApplicationRole   | required | 신청자가 선택한 참여 역할                                             |
+| deposit     | number                | required | BE 재계산/검증 후 확정한 신청 시점 보증금                             |
+| createdAt   | string                | required | ISO datetime                                                          |
+| plan        | PlanV3                | optional | 2026-04-30 — REQUEST 가 비워둔 활동 계획을 서포터가 신청 시 채워 보냄 |
+| preparation | Preparation           | optional | 2026-04-30                                                            |
 
 ### UpdateFeedDetailsRequest (2026-04-30)
 
@@ -1245,15 +1245,15 @@ All message variants share:
 
 #### CreateSpotRequest
 
-| Field           | Type           | Required | Notes |
-| --------------- | -------------- | -------- | ----- |
-| type            | SpotType       | required |       |
-| title           | string         | required |       |
-| description     | string         | required |       |
-| pointCost       | number         | required |       |
-| plan            | PlanV3         | optional | 2026-04-30 — OFFER 폼 필수, REQUEST 옵션 |
-| priceBreakdown  | PriceBreakdown | optional | 2026-04-30                              |
-| preparation     | Preparation    | optional | 2026-04-30                              |
+| Field          | Type           | Required | Notes                                    |
+| -------------- | -------------- | -------- | ---------------------------------------- |
+| type           | SpotType       | required |                                          |
+| title          | string         | required |                                          |
+| description    | string         | required |                                          |
+| pointCost      | number         | required |                                          |
+| plan           | PlanV3         | optional | 2026-04-30 — OFFER 폼 필수, REQUEST 옵션 |
+| priceBreakdown | PriceBreakdown | optional | 2026-04-30                               |
+| preparation    | Preparation    | optional | 2026-04-30                               |
 
 #### UpsertSpotScheduleRequest
 
@@ -1393,13 +1393,13 @@ All message variants share:
 
 #### FeedApplyRequest
 
-| Field        | Type        | Required | Notes                                                          |
-| ------------ | ----------- | -------- | -------------------------------------------------------------- |
-| proposal     | string      | required | 신청 메시지                                                    |
-| role         | FeedApplicationRole | required | 신청자가 참여할 역할. 현재 FE 는 `SUPPORTER` 또는 `PARTNER` 를 전송 |
-| deposit      | number      | required | FE 미리보기/포인트 차감 기준 보증금. BE 는 동일 공식으로 재계산·검증 후 저장 |
-| plan         | PlanV3      | optional | 2026-04-30 — REQUEST 가 비어있을 때 서포터가 채워서 보냄       |
-| preparation  | Preparation | optional | 2026-04-30 — REQUEST 가 비어있을 때 서포터가 채워서 보냄       |
+| Field       | Type                | Required | Notes                                                                        |
+| ----------- | ------------------- | -------- | ---------------------------------------------------------------------------- |
+| proposal    | string              | required | 신청 메시지                                                                  |
+| role        | FeedApplicationRole | required | 신청자가 참여할 역할. 현재 FE 는 `SUPPORTER` 또는 `PARTNER` 를 전송          |
+| deposit     | number              | required | FE 미리보기/포인트 차감 기준 보증금. BE 는 동일 공식으로 재계산·검증 후 저장 |
+| plan        | PlanV3              | optional | 2026-04-30 — REQUEST 가 비어있을 때 서포터가 채워서 보냄                     |
+| preparation | Preparation         | optional | 2026-04-30 — REQUEST 가 비어있을 때 서포터가 채워서 보냄                     |
 
 #### UpdateFeedDetailsRequest (2026-04-30)
 

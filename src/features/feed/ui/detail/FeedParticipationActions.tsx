@@ -33,10 +33,7 @@ import {
     resolveCancellationOutcome,
     type CancellationOutcome,
 } from '../../model/cancellation-policy';
-import {
-    useApplyFeed,
-    useCancelFeedApplication,
-} from '../../model/use-feed';
+import { useApplyFeed, useCancelFeedApplication } from '../../model/use-feed';
 
 function formatCurrency(value: number, maximumFractionDigits = 0) {
     return `${value.toLocaleString('ko-KR', {
