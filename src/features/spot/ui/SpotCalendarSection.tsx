@@ -1,5 +1,3 @@
-import { MOCK_SPOT_DETAILS } from '../model/mock';
-
 const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
 
 function getWeekDates(base: Date): Date[] {
@@ -18,13 +16,8 @@ function toISODate(d: Date): string {
 }
 
 function getMarkedDates(): Set<string> {
-    const marked = new Set<string>();
-    for (const detail of Object.values(MOCK_SPOT_DETAILS)) {
-        if (detail.schedule?.confirmedSlot) {
-            marked.add(detail.schedule.confirmedSlot.date);
-        }
-    }
-    return marked;
+    // GET /api/spots 응답에는 일정 슬롯이 포함되지 않아 mock 표시를 제거한다.
+    return new Set<string>();
 }
 
 export function SpotCalendarSection() {

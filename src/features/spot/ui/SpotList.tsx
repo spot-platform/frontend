@@ -6,7 +6,6 @@ import { SpotTabs } from './SpotTabs';
 import { SpotEmptyState } from './SpotEmptyState';
 import { SpotCardSkeleton } from './skeletons/SpotCardSkeleton';
 import { useSpotList } from '../model/use-spot';
-import { MOCK_MY_SPOTS } from '../model/mock';
 import type { Spot, SpotTabFilter } from '@/entities/spot/types';
 
 const MOCK_USER_ID = 'user-me';
@@ -30,8 +29,7 @@ export function SpotList() {
     const [activeTab, setActiveTab] = useState<SpotTabFilter>('ACTIVE');
     const { data, isLoading } = useSpotList({ participating: true });
 
-    // API 응답이 없으면 mock 데이터 사용
-    const spots: Spot[] = data?.data ?? MOCK_MY_SPOTS;
+    const spots: Spot[] = data?.data ?? [];
     const filtered = filterSpots(spots, activeTab);
 
     return (
