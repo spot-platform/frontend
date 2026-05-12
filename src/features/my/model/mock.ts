@@ -84,7 +84,7 @@ let supporterProfileState: SupporterProfile = {
     reviews: [
         {
             id: 'my-review-1',
-            reviewerNickname: '책벌레',
+            writerName: '책벌레',
             rating: 5,
             comment: '모임 진행을 차분하게 잘 이끌어줬어요.',
             spotTitle: '북클럽 독서 모임',
@@ -94,7 +94,7 @@ let supporterProfileState: SupporterProfile = {
         },
         {
             id: 'my-review-2',
-            reviewerNickname: '산악인',
+            writerName: '산악인',
             rating: 5,
             comment: '일정 조율이 빠르고 준비가 꼼꼼했어요.',
             spotTitle: '주말 등산 파트너 모집',
@@ -104,7 +104,7 @@ let supporterProfileState: SupporterProfile = {
         },
         {
             id: 'my-review-3',
-            reviewerNickname: '새벽런너',
+            writerName: '새벽런너',
             rating: 4,
             comment: '대화가 편했고 진행이 매끄러웠어요.',
             spotTitle: '한강 러닝 크루 모집',

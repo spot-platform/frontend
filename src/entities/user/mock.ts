@@ -14,7 +14,7 @@ export const MOCK_SUPPORTER_PROFILES: Record<string, SupporterProfile> = {
         reviews: [
             {
                 id: 'rv-1',
-                reviewerNickname: '나',
+                writerName: '나',
                 rating: 5,
                 comment: '설명이 아주 친절하고 동작 교정을 꼼꼼하게 해줬어요!',
                 spotTitle: '요가 클래스 파트너 모집',
@@ -24,7 +24,7 @@ export const MOCK_SUPPORTER_PROFILES: Record<string, SupporterProfile> = {
             },
             {
                 id: 'rv-2',
-                reviewerNickname: '하늘빛',
+                writerName: '하늘빛',
                 rating: 5,
                 comment: '시간 약속도 잘 지키고 분위기도 좋았어요.',
                 spotTitle: '새벽 스트레칭 모임',
@@ -34,7 +34,7 @@ export const MOCK_SUPPORTER_PROFILES: Record<string, SupporterProfile> = {
             },
             {
                 id: 'rv-3',
-                reviewerNickname: '달콤커피',
+                writerName: '달콤커피',
                 rating: 4,
                 comment: '실력은 좋은데 가끔 설명이 빠른 편이에요.',
                 spotTitle: '홈 요가 파트너',
@@ -79,7 +79,7 @@ export const MOCK_SUPPORTER_PROFILES: Record<string, SupporterProfile> = {
         reviews: [
             {
                 id: 'rv-4',
-                reviewerNickname: '나',
+                writerName: '나',
                 rating: 5,
                 comment: '페이스 맞춰주면서 끝까지 같이 뛰어줬어요. 최고!',
                 spotTitle: '한강 러닝 크루 모집',
@@ -89,7 +89,7 @@ export const MOCK_SUPPORTER_PROFILES: Record<string, SupporterProfile> = {
             },
             {
                 id: 'rv-5',
-                reviewerNickname: '새벽런너',
+                writerName: '새벽런너',
                 rating: 4,
                 comment: '코스 설명을 잘 해줬어요.',
                 spotTitle: '공원 조깅 파트너',

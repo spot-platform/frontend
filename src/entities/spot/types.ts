@@ -154,7 +154,7 @@ export type ProgressNote = {
 export type SpotReview = {
     id: string;
     spotId: string;
-    reviewerNickname: string;
+    writerName: string;
     targetNickname: string;
     rating: 1 | 2 | 3 | 4 | 5;
     comment?: string;

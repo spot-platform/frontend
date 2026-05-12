@@ -301,7 +301,7 @@ export function MySupportProfilePageClient() {
                             >
                                 <div className="flex items-center justify-between gap-3">
                                     <p className="text-sm font-medium text-foreground">
-                                        {review.reviewerNickname}
+                                        {review.writerName}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {review.rating}점 ·{' '}

@@ -531,7 +531,7 @@ export const spotsApi = {
                 data: {
                     id: `review-${Date.now()}`,
                     spotId: id,
-                    reviewerNickname: '',
+                    writerName: '',
                     targetNickname: payload.targetNickname,
                     rating: payload.rating,
                     comment: payload.comment,

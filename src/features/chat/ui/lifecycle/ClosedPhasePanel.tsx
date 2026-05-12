@@ -92,8 +92,7 @@ function ReviewTile({ reviews }: { reviews: SpotReview[] }) {
                     >
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                             <span className="font-medium text-text-secondary">
-                                {review.reviewerNickname} →{' '}
-                                {review.targetNickname}
+                                {review.writerName} → {review.targetNickname}
                             </span>
                             <span className="font-semibold text-amber-600">
                                 ★ {review.rating}

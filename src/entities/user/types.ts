@@ -56,7 +56,7 @@ export type ProfileType = 'SUPPORTER' | 'PARTNER';
 
 export type ProfileReview = {
     id: string;
-    reviewerNickname: string;
+    writerName: string;
     rating: 1 | 2 | 3 | 4 | 5;
     comment?: string;
     spotTitle: string;
