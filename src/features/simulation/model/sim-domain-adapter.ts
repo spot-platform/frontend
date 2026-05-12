@@ -5,7 +5,7 @@
 // 그대로 두고 데이터 소스만 sim 으로 바꾸기 위함. tick→ms 변환은 useSimRun 이 노출하는
 // playbackStartMsRef + tickDurationMsRef 를 사용해 SpotInfoCard 의 ms 기반 비교를 만족.
 //
-// 입력은 모두 안정적으로 fetch 된 fixture(=immutable) 라 가정 — 매 emit 마다 lifecycle 객체를
+// 입력은 모두 API에서 조회한 immutable 데이터로 가정 — 매 emit 마다 lifecycle 객체를
 // 새로 만들지 않고, manifest+events 로부터 한 번 빌드한 뒤 useDomain 훅에서 currentTick 에 따라
 // participants 의 도착 여부만 다시 계산한다.
 
