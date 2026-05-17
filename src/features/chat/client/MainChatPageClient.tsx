@@ -476,6 +476,7 @@ export function MainChatPageClient({
         setSelectedContextId,
         setPersonalFilter,
         applyRouteIntent,
+        loadRooms,
     } = useMainChatStore();
     const {
         close: closeChatNav,
@@ -493,6 +494,10 @@ export function MainChatPageClient({
             chatNavMode.kind === 'room-info' ||
             chatNavMode.kind === 'personal-create' ||
             chatNavMode.kind === 'friend-add');
+
+    useEffect(() => {
+        void loadRooms();
+    }, [loadRooms]);
 
     useEffect(() => {
         const resolution = applyRouteIntent(routeIntent);

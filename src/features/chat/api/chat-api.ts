@@ -9,6 +9,7 @@ export type ChatRoomsQuery = {
 };
 
 export type ChatMessagesQuery = {
+    cursor?: string | number;
     beforeId?: string | number;
     size?: number;
 };
@@ -50,6 +51,8 @@ export type ChatMessageListResponse = {
     nextCursor?: number | string | null;
     hasMore?: boolean;
 };
+
+export type ChatMessageEventHandler = (message: ChatMessage) => void;
 
 function toChatMessage(message: BackendMessage): ChatMessage {
     return {
@@ -119,6 +122,29 @@ function toChatRoom(room: BackendRoom): ChatRoom {
     };
 }
 
+function toChronologicalMessages(messages: BackendMessage[]): ChatMessage[] {
+    return messages
+        .map(toChatMessage)
+        .sort(
+            (left, right) =>
+                new Date(left.createdAt).getTime() -
+                new Date(right.createdAt).getTime(),
+        );
+}
+
+function toBackendMessagesQuery(params?: ChatMessagesQuery) {
+    if (!params) {
+        return undefined;
+    }
+
+    const { beforeId, cursor, ...rest } = params;
+
+    return {
+        ...rest,
+        cursor: cursor ?? beforeId,
+    };
+}
+
 function toBackendRoomPayload(payload: CreateChatRoomPayload) {
     return {
         spotId: payload.spotId,
@@ -142,9 +168,9 @@ export const chatApi = {
         params?: ChatMessagesQuery,
     ): Promise<ChatMessageListResponse> =>
         clientApiFetch<BackendMessageList>(
-            `/chat/rooms/${roomId}/messages${buildQueryString(params)}`,
+            `/chat/rooms/${roomId}/messages${buildQueryString(toBackendMessagesQuery(params))}`,
         ).then((response) => ({
-            data: (response.messages ?? []).map(toChatMessage),
+            data: toChronologicalMessages(response.messages ?? []),
             nextCursor: response.nextCursor,
             hasMore: response.hasMore,
         })),
@@ -154,9 +180,14 @@ export const chatApi = {
             method: 'POST',
         }),
 
-    getRoomBySpot: async (spotId: string): Promise<{ data: ChatRoom }> =>
-        clientApiFetch<BackendRoom>(`/chat/rooms/by-spot/${spotId}`).then(
-            (room) => ({ data: toChatRoom(room) }),
+    getRoomsBySpot: async (spotId: string): Promise<{ data: ChatRoom[] }> =>
+        clientApiFetch<BackendRoom[]>(`/chat/rooms/by-spot/${spotId}`).then(
+            (rooms) => ({ data: (rooms ?? []).map(toChatRoom) }),
+        ),
+
+    getRoomBySpot: async (spotId: string): Promise<{ data: ChatRoom | null }> =>
+        clientApiFetch<BackendRoom[]>(`/chat/rooms/by-spot/${spotId}`).then(
+            (rooms) => ({ data: rooms[0] ? toChatRoom(rooms[0]) : null }),
         ),
 
     getRoomsByUser: async (userId: string): Promise<{ data: ChatRoom[] }> =>
@@ -187,5 +218,21 @@ export const chatApi = {
                 body: JSON.stringify({ content: payload.content ?? '' }),
             },
         ).then((message) => ({ data: toChatMessage(message) }));
+    },
+
+    subscribeToRoom: (
+        roomId: string,
+        onMessage: ChatMessageEventHandler,
+    ): EventSource => {
+        const eventSource = new EventSource(
+            `/api/backend/chat/connect${buildQueryString({ roomId })}`,
+        );
+
+        eventSource.addEventListener('message', (event) => {
+            const payload = JSON.parse(event.data) as BackendMessage;
+            onMessage(toChatMessage(payload));
+        });
+
+        return eventSource;
     },
 };

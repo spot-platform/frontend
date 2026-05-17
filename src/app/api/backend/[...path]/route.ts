@@ -33,9 +33,21 @@ async function proxyBackendRequest(
                 request.headers.get('content-type') ?? 'application/json',
         },
     });
-    const responseBody = await upstream.text();
     const contentType =
         upstream.headers.get('content-type') ?? 'application/json';
+
+    if (contentType.includes('text/event-stream')) {
+        return new NextResponse(upstream.body, {
+            status: upstream.status,
+            headers: {
+                'Content-Type': contentType,
+                'Cache-Control': 'no-cache, no-transform',
+                Connection: 'keep-alive',
+            },
+        });
+    }
+
+    const responseBody = await upstream.text();
 
     return new NextResponse(responseBody || null, {
         status: upstream.status,
