@@ -1,10 +1,6 @@
 export { FeedCard } from './ui/FeedCard';
-export { FeedPageClient } from './client/FeedPageClient';
 export { HotSpotBanner } from './ui/HotSpotBanner';
 export { Notice } from './ui/Notice';
-export { HomeSection } from './ui/home/HomeSection';
-export { OfferSection } from './ui/offer/OfferSection';
-export { RequestSection } from './ui/request/RequestSection';
 export type {
     FeedApplication,
     FeedApplicationRole,

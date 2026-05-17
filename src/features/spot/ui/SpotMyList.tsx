@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useSpotNavStore } from '@/shared/model/spot-nav-store';
-import { MOCK_MY_SPOTS } from '../model/mock';
+import { useSpotList } from '../model/use-spot';
 import type { SpotView } from '../model/view';
 import { SpotMyListSection } from './SpotMyListSection';
 import type { Spot } from '@/entities/spot/types';
@@ -36,13 +36,15 @@ interface SpotMyListProps {
 
 export function SpotMyList({ view }: SpotMyListProps) {
     const { expandedSpotId, setExpandedSpotId, toggleSpot } = useSpotNavStore();
+    const { data } = useSpotList({ participating: true });
+    const spots = data?.data ?? [];
 
     useEffect(() => {
         setExpandedSpotId(null);
     }, [setExpandedSpotId, view]);
 
     if (view === 'SUPPORTER') {
-        const { applying, inProgress } = partitionSupporterSpots(MOCK_MY_SPOTS);
+        const { applying, inProgress } = partitionSupporterSpots(spots);
         return (
             <div className="flex flex-col gap-3">
                 <SpotMyListSection
@@ -63,7 +65,7 @@ export function SpotMyList({ view }: SpotMyListProps) {
         );
     }
 
-    const { recruiting, inProgress } = partitionPartnerSpots(MOCK_MY_SPOTS);
+    const { recruiting, inProgress } = partitionPartnerSpots(spots);
     return (
         <div className="flex flex-col gap-3">
             <SpotMyListSection

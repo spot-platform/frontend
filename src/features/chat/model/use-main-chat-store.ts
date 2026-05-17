@@ -3,12 +3,12 @@
 import { create } from 'zustand';
 import type { SpotDetailFull } from '@/entities/spot/types';
 import type { SharedFile, SpotVote } from '@/entities/spot/types';
+import { chatApi } from '../api/chat-api';
 import {
     CHAT_CURRENT_USER_ID,
     CHAT_CURRENT_USER_NAME,
     getChatDirectoryCandidateById,
     getChatFriends,
-    getChatRooms,
 } from './mock';
 import type {
     ChatFriend,
@@ -65,6 +65,10 @@ type MainChatState = {
         slots: import('@/entities/spot/types').ScheduleSlot[],
     ) => void;
     applyRouteIntent: (intent: ChatRouteIntent) => ResolvedChatRoom;
+    loadRooms: () => Promise<void>;
+    loadRoom: (roomId: string) => Promise<ChatRoom | null>;
+    loadMessages: (roomId: string) => Promise<void>;
+    receiveMessage: (roomId: string, message: ChatMessage) => void;
     createOrSelectFeedParticipationRoom: (payload: {
         item: FeedItem;
         role: FeedParticipationRole;
@@ -80,7 +84,7 @@ type MainChatState = {
 
 function createInitialState() {
     return {
-        rooms: getChatRooms(),
+        rooms: [],
         friends: getChatFriends(),
         selectedContextId: PERSONAL_CHAT_CONTEXT_ID,
         personalFilter: 'all' as const,
@@ -141,6 +145,56 @@ function appendMessageToRoom(
                 : room,
         ),
     );
+}
+
+function replaceRoomMessages(
+    rooms: ChatRoom[],
+    roomId: string,
+    messages: ChatMessage[],
+) {
+    return sortRoomsByUpdatedAt(
+        rooms.map((room) =>
+            room.id === roomId
+                ? {
+                      ...room,
+                      updatedAt:
+                          messages[messages.length - 1]?.createdAt ??
+                          room.updatedAt,
+                      messages,
+                  }
+                : room,
+        ),
+    );
+}
+
+function isBackendChatRoomId(roomId: string): boolean {
+    return /^\d+$/.test(roomId);
+}
+
+function upsertBackendRooms(currentRooms: ChatRoom[], backendRooms: ChatRoom[]) {
+    const currentById = new Map(currentRooms.map((room) => [room.id, room]));
+
+    return sortRoomsByUpdatedAt(
+        backendRooms.map((room) => {
+            const currentRoom = currentById.get(room.id);
+
+            if (!currentRoom) {
+                return room;
+            }
+
+            return {
+                ...room,
+                messages:
+                    currentRoom.messages.length > 0
+                        ? currentRoom.messages
+                        : room.messages,
+            } as ChatRoom;
+        }),
+    );
+}
+
+function upsertBackendRoom(currentRooms: ChatRoom[], backendRoom: ChatRoom) {
+    return upsertBackendRooms(currentRooms, [backendRoom]);
 }
 
 function createReverseOfferSummary(payload: {
@@ -707,6 +761,94 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
             })),
         });
     },
+    loadRooms: async () => {
+        try {
+            const response = await chatApi.listRooms();
+
+            set(({ rooms }) => ({
+                rooms: upsertBackendRooms(rooms, response.data),
+            }));
+        } catch {
+            set({ rooms: [] });
+        }
+    },
+    loadRoom: async (roomId) => {
+        if (!isBackendChatRoomId(roomId)) {
+            return null;
+        }
+
+        try {
+            const response = await chatApi.getRoom(roomId);
+
+            set(({ rooms }) => ({
+                rooms: upsertBackendRoom(rooms, response.data),
+            }));
+
+            return response.data;
+        } catch {
+            return null;
+        }
+    },
+    loadMessages: async (roomId) => {
+        if (!isBackendChatRoomId(roomId)) {
+            return;
+        }
+
+        try {
+            const response = await chatApi.getMessages(roomId, { size: 50 });
+
+            set(({ rooms }) => ({
+                rooms: replaceRoomMessages(rooms, roomId, response.data),
+            }));
+
+            await chatApi.markRead(roomId);
+        } catch {
+            // 메시지 더미가 없거나 백엔드 접근이 실패하면 로컬 메시지를 그대로 둔다.
+        }
+    },
+    receiveMessage: (roomId, message) => {
+        set(({ rooms }) => {
+            const room = rooms.find((candidate) => candidate.id === roomId);
+
+            if (!room) {
+                return { rooms };
+            }
+
+            if (
+                room.messages.some(
+                    (candidate) => candidate.id === message.id,
+                )
+            ) {
+                return { rooms };
+            }
+
+            const pendingMessage = room.messages.find(
+                (candidate) =>
+                    candidate.kind === 'message' &&
+                    message.kind === 'message' &&
+                    candidate.id.startsWith('local-message-') &&
+                    candidate.content === message.content,
+            );
+
+            if (pendingMessage) {
+                return {
+                    rooms: replaceRoomMessages(
+                        rooms,
+                        roomId,
+                        room.messages.map((candidate) =>
+                            candidate.id === pendingMessage.id
+                                ? message
+                                : candidate,
+                        ),
+                    ),
+                };
+            }
+
+            return {
+                rooms: appendMessageToRoom(rooms, roomId, message),
+            };
+        });
+    },
     applyRouteIntent: (intent) => {
         const { rooms, friends } = get();
         const fallbackRoom = rooms[0] ?? null;
@@ -901,6 +1043,54 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
         set({
             rooms: appendMessageToRoom(rooms, roomId, message),
         });
+
+        if (!isBackendChatRoomId(roomId)) {
+            return message;
+        }
+
+        void chatApi
+            .sendMessage(roomId, { content: trimmedContent })
+            .then(({ data }) => {
+                set(({ rooms: latestRooms }) => {
+                    return {
+                        rooms: sortRoomsByUpdatedAt(
+                            latestRooms.map((latestRoom) => {
+                                if (latestRoom.id !== roomId) {
+                                    return latestRoom;
+                                }
+
+                                const messagesWithoutDuplicate =
+                                    latestRoom.messages.filter(
+                                        (candidate) =>
+                                            candidate.id !== data.id,
+                                    );
+                                const hasPendingMessage =
+                                    messagesWithoutDuplicate.some(
+                                        (candidate) =>
+                                            candidate.id === message.id,
+                                    );
+                                const messages = hasPendingMessage
+                                    ? messagesWithoutDuplicate.map(
+                                          (candidate) =>
+                                              candidate.id === message.id
+                                                  ? data
+                                                  : candidate,
+                                      )
+                                    : [...messagesWithoutDuplicate, data];
+
+                                return {
+                                    ...latestRoom,
+                                    updatedAt: data.createdAt,
+                                    messages,
+                                };
+                            }),
+                        ),
+                    };
+                });
+            })
+            .catch(() => {
+                // 전송 실패 시에도 입력한 로컬 메시지는 유지해서 데모 흐름을 깨지 않는다.
+            });
 
         return message;
     },

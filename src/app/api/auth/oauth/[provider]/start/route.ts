@@ -3,7 +3,7 @@ import {
     pickSingleQueryValue,
     sanitizeNextPath,
 } from '@/features/auth/model/safe-next';
-import { authenticateMockOAuth } from '@/features/auth/model/mock';
+import { getBackendApiUrl } from '@/lib/server-api';
 import type { OAuthProvider } from '@/features/auth/model/types';
 
 function isOAuthProvider(value: string): value is OAuthProvider {
@@ -26,17 +26,13 @@ export async function GET(
     const nextPath = sanitizeNextPath(
         pickSingleQueryValue(request.nextUrl.searchParams.getAll('next')),
     );
-    const loginResult = authenticateMockOAuth(provider, nextPath);
-    const redirectUrl = new URL(loginResult.redirectTo, request.url);
-    const response = NextResponse.redirect(redirectUrl);
+    const upstreamUrl = new URL(
+        getBackendApiUrl(`/api/auth/oauth/${provider}/start`),
+    );
 
-    response.cookies.set('spot-auth-token', loginResult.accessToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 30,
-    });
+    if (nextPath) {
+        upstreamUrl.searchParams.set('next', nextPath);
+    }
 
-    return response;
+    return NextResponse.redirect(upstreamUrl);
 }

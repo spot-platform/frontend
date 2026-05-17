@@ -29,6 +29,7 @@ import {
     PERSONAL_CHAT_CONTEXT_ID,
     useMainChatStore,
 } from '../model/use-main-chat-store';
+import { chatApi } from '../api/chat-api';
 import { isSupporterForSpot } from '../model/mock';
 import {
     getShareableSpotActionItems,
@@ -58,6 +59,10 @@ type ShareableSpotActionItem = Extract<
 
 interface ChatDetailProps {
     roomId: string;
+}
+
+function isBackendChatRoomId(id: string): boolean {
+    return /^\d+$/.test(id);
 }
 
 function formatTime(iso: string): string {
@@ -473,6 +478,9 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
             state.rooms.find((candidate) => candidate.id === roomId) ?? null,
     );
     const sendMessage = useMainChatStore((state) => state.sendMessage);
+    const loadRoom = useMainChatStore((state) => state.loadRoom);
+    const loadMessages = useMainChatStore((state) => state.loadMessages);
+    const receiveMessage = useMainChatStore((state) => state.receiveMessage);
     const shareActionShortcut = useMainChatStore(
         (state) => state.shareActionShortcut,
     );
@@ -495,6 +503,11 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
 
     useEffect(() => {
         if (!room) {
+            if (isBackendChatRoomId(roomId)) {
+                void loadRoom(roomId);
+                return;
+            }
+
             router.replace('/chat');
             return;
         }
@@ -507,7 +520,25 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
 
         setSelectedContextId(PERSONAL_CHAT_CONTEXT_ID);
         setSelectedFriendId(room.partnerId);
-    }, [room, router, setSelectedContextId, setSelectedFriendId]);
+    }, [loadRoom, room, roomId, router, setSelectedContextId, setSelectedFriendId]);
+
+    useEffect(() => {
+        void loadMessages(roomId);
+    }, [loadMessages, roomId]);
+
+    useEffect(() => {
+        if (!room || !isBackendChatRoomId(room.id)) {
+            return;
+        }
+
+        const eventSource = chatApi.subscribeToRoom(room.id, (message) => {
+            receiveMessage(room.id, message);
+        });
+
+        return () => {
+            eventSource.close();
+        };
+    }, [receiveMessage, room]);
 
     useEffect(() => {
         if (!room) {

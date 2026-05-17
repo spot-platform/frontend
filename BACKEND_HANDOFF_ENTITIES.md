@@ -69,33 +69,33 @@
 
 ### ResolvedPlace
 
-| Field            | Type   | Required | Notes |
-| ---------------- | ------ | -------- | ----- |
-| place_id         | string | required |       |
-| name             | string | required |       |
-| primary_category | string | required |       |
-| role             | meetup \| main \| secondary \| wrapup | required | |
-| lat              | number | required |       |
-| lng              | number | required |       |
-| address          | string | required |       |
-| road_address     | string | optional |       |
-| confidence       | number | required | 0~1   |
+| Field            | Type                                  | Required | Notes |
+| ---------------- | ------------------------------------- | -------- | ----- |
+| place_id         | string                                | required |       |
+| name             | string                                | required |       |
+| primary_category | string                                | required |       |
+| role             | meetup \| main \| secondary \| wrapup | required |       |
+| lat              | number                                | required |       |
+| lng              | number                                | required |       |
+| address          | string                                | required |       |
+| road_address     | string                                | optional |       |
+| confidence       | number                                | required | 0~1   |
 
 ### PlanStep
 
-| Field    | Type          | Required | Notes |
-| -------- | ------------- | -------- | ----- |
-| time     | string        | required | HH:MM or +Nm |
-| activity | string        | required |       |
-| place_id | string \| null | required |       |
-| intent   | string \| null | required |       |
+| Field    | Type           | Required | Notes        |
+| -------- | -------------- | -------- | ------------ |
+| time     | string         | required | HH:MM or +Nm |
+| activity | string         | required |              |
+| place_id | string \| null | required |              |
+| intent   | string \| null | required |              |
 
 ### PlanV3
 
-| Field                  | Type       | Required | Notes |
-| ---------------------- | ---------- | -------- | ----- |
+| Field                  | Type       | Required | Notes           |
+| ---------------------- | ---------- | -------- | --------------- |
 | steps                  | PlanStep[] | required | 3~7 recommended |
-| total_duration_minutes | number     | required | 60~360 |
+| total_duration_minutes | number     | required | 60~360          |
 
 ### AddOnMechanism (enum)
 
@@ -103,9 +103,9 @@
 
 ### IncludedItem
 
-| Field | Type   | Required | Notes |
-| ----- | ------ | -------- | ----- |
-| name  | string | required |       |
+| Field | Type   | Required | Notes               |
+| ----- | ------ | -------- | ------------------- |
+| name  | string | required |                     |
 | value | string | required | natural language OK |
 
 ### AddOn
@@ -172,19 +172,19 @@
 
 ### Spot
 
-| Field          | Type            | Required | Notes                                             |
-| -------------- | --------------- | -------- | ------------------------------------------------- |
-| id             | string          | required |                                                   |
-| type           | SpotType        | required |                                                   |
-| status         | SpotStatus      | required |                                                   |
-| title          | string          | required |                                                   |
-| description    | string          | required |                                                   |
-| pointCost      | number          | required |                                                   |
-| authorId       | string          | required |                                                   |
-| authorNickname | string          | required |                                                   |
-| createdAt      | string          | required | ISO 8601                                          |
-| updatedAt      | string          | required | ISO 8601                                          |
-| forfeitPool    | SpotForfeitPool | optional | 누락 시 `{toPool:0, toPlatformFee:0}`으로 간주    |
+| Field          | Type            | Required | Notes                                          |
+| -------------- | --------------- | -------- | ---------------------------------------------- |
+| id             | string          | required |                                                |
+| type           | SpotType        | required |                                                |
+| status         | SpotStatus      | required |                                                |
+| title          | string          | required |                                                |
+| description    | string          | required |                                                |
+| pointCost      | number          | required |                                                |
+| authorId       | string          | required |                                                |
+| authorNickname | string          | required |                                                |
+| createdAt      | string          | required | ISO 8601                                       |
+| updatedAt      | string          | required | ISO 8601                                       |
+| forfeitPool    | SpotForfeitPool | optional | 누락 시 `{toPool:0, toPlatformFee:0}`으로 간주 |
 
 ### SpotForfeitPool
 
@@ -195,13 +195,13 @@
 
 ### TimelineEventKind (enum)
 
-| Value     | Notes |
-| --------- | ----- |
-| CREATED   |       |
-| MATCHED   |       |
-| COMPLETED |       |
-| CANCELLED |       |
-| COMMENT   |       |
+| Value                | Notes                     |
+| -------------------- | ------------------------- |
+| CREATED              |                           |
+| MATCHED              |                           |
+| COMPLETED            |                           |
+| CANCELLED            |                           |
+| COMMENT              |                           |
 | SETTLEMENT_REQUESTED | 정산 요청 타임라인 이벤트 |
 | SETTLEMENT_APPROVED  | 정산 승인 타임라인 이벤트 |
 
@@ -330,15 +330,15 @@
 
 ### CreateSpotRequest
 
-| Field           | Type           | Required | Notes |
-| --------------- | -------------- | -------- | ----- |
-| type            | SpotType       | required |       |
-| title           | string         | required |       |
-| description     | string         | required |       |
-| pointCost       | number         | required |       |
-| plan            | PlanV3         | optional | OFFER 는 폼에서 필수 입력, REQUEST 는 옵션. BE 는 둘 다 옵셔널로 받는다 (2026-04-30) |
-| priceBreakdown  | PriceBreakdown | optional | OFFER 폼 필수, REQUEST 옵션 (2026-04-30)        |
-| preparation     | Preparation    | optional | OFFER 폼 필수, REQUEST 옵션 (2026-04-30)        |
+| Field          | Type           | Required | Notes                                                                                |
+| -------------- | -------------- | -------- | ------------------------------------------------------------------------------------ |
+| type           | SpotType       | required |                                                                                      |
+| title          | string         | required |                                                                                      |
+| description    | string         | required |                                                                                      |
+| pointCost      | number         | required |                                                                                      |
+| plan           | PlanV3         | optional | OFFER 는 폼에서 필수 입력, REQUEST 는 옵션. BE 는 둘 다 옵셔널로 받는다 (2026-04-30) |
+| priceBreakdown | PriceBreakdown | optional | OFFER 폼 필수, REQUEST 옵션 (2026-04-30)                                             |
+| preparation    | Preparation    | optional | OFFER 폼 필수, REQUEST 옵션 (2026-04-30)                                             |
 
 ### UpsertSpotScheduleRequest
 
@@ -754,36 +754,36 @@ My spot list card entity for the My page. `role=AUTHOR` means the authenticated 
 
 ### FeedItem
 
-| Field                    | Type                     | Required | Notes                                          |
-| ------------------------ | ------------------------ | -------- | ---------------------------------------------- |
-| id                       | string                   | required |                                                |
-| title                    | string                   | required |                                                |
-| description              | string                   | optional | Card/detail body summary                       |
-| location                 | string                   | required |                                                |
-| authorNickname           | string                   | required |                                                |
-| authorProfile            | FeedAuthorProfile        | optional |                                                |
-| price                    | number                   | required |                                                |
-| type                     | FeedItemType             | required |                                                |
-| status                   | FeedItemStatus           | required |                                                |
-| progressPercent          | number                   | optional | OFFER only, 0 to 100                           |
-| imageUrl                 | string                   | optional |                                                |
-| views                    | number                   | required |                                                |
-| likes                    | number                   | required |                                                |
-| partnerCount             | number                   | optional | OFFER: confirmed partner count                 |
-| applicantCount           | number                   | optional | REQUEST: applicant count                       |
-| confirmedPartnerProfiles | FeedParticipantProfile[] | optional | 카드 아바타 스크롤용, 목록 API에서 함께 내려줌 |
-| category                 | FeedCategory             | optional |                                                |
-| deadline                 | string                   | optional | ISO date                                       |
-| maxParticipants          | number                   | optional |                                                |
-| isBookmarked             | boolean                  | optional |                                                |
-| myApplicationStatus      | FeedApplicationStatus    | optional | 인증된 사용자의 신청 상태. 미신청 시 omitted   |
-| spotId                   | string                   | optional | 연결된 Spot id. 있으면 맵 프리뷰/점수 조회 키  |
+| Field                    | Type                     | Required | Notes                                                                                                                       |
+| ------------------------ | ------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| id                       | string                   | required |                                                                                                                             |
+| title                    | string                   | required |                                                                                                                             |
+| description              | string                   | optional | Card/detail body summary                                                                                                    |
+| location                 | string                   | required |                                                                                                                             |
+| authorNickname           | string                   | required |                                                                                                                             |
+| authorProfile            | FeedAuthorProfile        | optional |                                                                                                                             |
+| price                    | number                   | required |                                                                                                                             |
+| type                     | FeedItemType             | required |                                                                                                                             |
+| status                   | FeedItemStatus           | required |                                                                                                                             |
+| progressPercent          | number                   | optional | OFFER only, 0 to 100                                                                                                        |
+| imageUrl                 | string                   | optional |                                                                                                                             |
+| views                    | number                   | required |                                                                                                                             |
+| likes                    | number                   | required |                                                                                                                             |
+| partnerCount             | number                   | optional | OFFER: confirmed partner count                                                                                              |
+| applicantCount           | number                   | optional | REQUEST: applicant count                                                                                                    |
+| confirmedPartnerProfiles | FeedParticipantProfile[] | optional | 카드 아바타 스크롤용, 목록 API에서 함께 내려줌                                                                              |
+| category                 | FeedCategory             | optional |                                                                                                                             |
+| deadline                 | string                   | optional | ISO date                                                                                                                    |
+| maxParticipants          | number                   | optional |                                                                                                                             |
+| isBookmarked             | boolean                  | optional |                                                                                                                             |
+| myApplicationStatus      | FeedApplicationStatus    | optional | 인증된 사용자의 신청 상태. 미신청 시 omitted                                                                                |
+| spotId                   | string                   | optional | 연결된 Spot id. 있으면 맵 프리뷰/점수 조회 키                                                                               |
 | isAi                     | boolean                  | optional | contextBuilder 시뮬레이션이 합성한 AI 피드. true 면 실제 호스트가 없으므로 참여 액션 대신 "리퀘스트 열기" 안내 (2026-04-30) |
-| plan                     | PlanV3                   | optional | contextBuilder 활동 계획. OFFER 는 작성 시 채워지고, REQUEST 는 매칭된 서포터가 채울 수 있음 (2026-04-30) |
-| priceBreakdown           | PriceBreakdown           | optional | contextBuilder 가격 분해. OFFER 작성 시 필수, REQUEST 옵션 (2026-04-30) |
-| preparation              | Preparation              | optional | contextBuilder 준비물/안전 가이드. OFFER 작성 시 필수, REQUEST 옵션 (2026-04-30) |
-| venueAnchors             | ResolvedPlace[]          | optional | 활동 장소 후보. routing 결과로 BE 가 채움 (2026-04-30) |
-| primaryPin               | ResolvedPlace            | optional | 카드 핀 정밀 좌표 (2026-04-30)                 |
+| plan                     | PlanV3                   | optional | contextBuilder 활동 계획. OFFER 는 작성 시 채워지고, REQUEST 는 매칭된 서포터가 채울 수 있음 (2026-04-30)                   |
+| priceBreakdown           | PriceBreakdown           | optional | contextBuilder 가격 분해. OFFER 작성 시 필수, REQUEST 옵션 (2026-04-30)                                                     |
+| preparation              | Preparation              | optional | contextBuilder 준비물/안전 가이드. OFFER 작성 시 필수, REQUEST 옵션 (2026-04-30)                                            |
+| venueAnchors             | ResolvedPlace[]          | optional | 활동 장소 후보. routing 결과로 BE 가 채움 (2026-04-30)                                                                      |
+| primaryPin               | ResolvedPlace            | optional | 카드 핀 정밀 좌표 (2026-04-30)                                                                                              |
 
 > `PlanV3` / `PriceBreakdown` / `Preparation` / `ResolvedPlace` 의 정의는 `Shared contextBuilder value objects` 절을 참조한다.
 
@@ -813,34 +813,34 @@ My spot list card entity for the My page. `role=AUTHOR` means the authenticated 
 
 ### FeedApplicationRole (enum)
 
-| Value     | Notes                    |
-| --------- | ------------------------ |
-| SUPPORTER | 서포터 역할로 신청/참여  |
-| PARTNER   | 파트너 역할로 신청/참여  |
+| Value     | Notes                   |
+| --------- | ----------------------- |
+| SUPPORTER | 서포터 역할로 신청/참여 |
+| PARTNER   | 파트너 역할로 신청/참여 |
 
 ### FeedApplication
 
-| Field        | Type                  | Required | Notes                                                                  |
-| ------------ | --------------------- | -------- | ---------------------------------------------------------------------- |
-| id           | string                | required |                                                                        |
-| feedId       | string                | required |                                                                        |
-| userId       | string                | required |                                                                        |
-| proposal     | string                | required | 신청 메시지                                                            |
-| status       | FeedApplicationStatus | required |                                                                        |
-| appliedRole  | FeedApplicationRole   | required | 신청자가 선택한 참여 역할                                              |
-| deposit      | number                | required | BE 재계산/검증 후 확정한 신청 시점 보증금                              |
-| createdAt    | string                | required | ISO datetime                                                           |
-| plan         | PlanV3                | optional | 서포터가 REQUEST 에 신청하면서 채우는 활동 계획. 호스트 미입력 시 필수 (2026-04-30) |
-| preparation  | Preparation           | optional | 서포터가 REQUEST 에 신청하면서 채우는 준비물. 호스트 미입력 시 필수 (2026-04-30) |
+| Field       | Type                  | Required | Notes                                                                               |
+| ----------- | --------------------- | -------- | ----------------------------------------------------------------------------------- |
+| id          | string                | required |                                                                                     |
+| feedId      | string                | required |                                                                                     |
+| userId      | string                | required |                                                                                     |
+| proposal    | string                | required | 신청 메시지                                                                         |
+| status      | FeedApplicationStatus | required |                                                                                     |
+| appliedRole | FeedApplicationRole   | required | 신청자가 선택한 참여 역할                                                           |
+| deposit     | number                | required | BE 재계산/검증 후 확정한 신청 시점 보증금                                           |
+| createdAt   | string                | required | ISO datetime                                                                        |
+| plan        | PlanV3                | optional | 서포터가 REQUEST 에 신청하면서 채우는 활동 계획. 호스트 미입력 시 필수 (2026-04-30) |
+| preparation | Preparation           | optional | 서포터가 REQUEST 에 신청하면서 채우는 준비물. 호스트 미입력 시 필수 (2026-04-30)    |
 
 > 신청 페이로드는 현재 FE 기준 `{ proposal, role, deposit, plan?, preparation? }` 이다. 응답/저장 모델에서는 `role` 을 `appliedRole` 로 내려준다. `deposit` 은 FE 가 보낸 값을 그대로 신뢰하지 말고 BE 가 동일 공식으로 재계산·검증해야 한다. 신청 페이로드에 `plan` / `preparation` 가 포함되면 BE 는 해당 Feed 의 본문 필드를 함께 update 한다 (서포터가 매칭과 동시에 비어있던 정보를 채우는 흐름).
 
 ### UpdateFeedDetailsRequest (2026-04-30)
 
-| Field       | Type        | Required | Notes                                  |
-| ----------- | ----------- | -------- | -------------------------------------- |
-| plan        | PlanV3      | optional | 부분 업데이트. omit 시 변경 없음       |
-| preparation | Preparation | optional | 부분 업데이트. omit 시 변경 없음       |
+| Field       | Type        | Required | Notes                            |
+| ----------- | ----------- | -------- | -------------------------------- |
+| plan        | PlanV3      | optional | 부분 업데이트. omit 시 변경 없음 |
+| preparation | Preparation | optional | 부분 업데이트. omit 시 변경 없음 |
 
 > 디테일 페이지에서 작성자 또는 매칭된 서포터가 plan/preparation 을 수정할 때 사용.
 
@@ -923,13 +923,13 @@ My spot list card entity for the My page. `role=AUTHOR` means the authenticated 
 
 ### FeedApplyRequest
 
-| Field       | Type                | Required | Notes                                                                  |
-| ----------- | ------------------- | -------- | ---------------------------------------------------------------------- |
-| proposal    | string              | required | 신청 메시지                                                            |
-| role        | FeedApplicationRole | required | 현재 FE 가 전송하는 참여 역할                                          |
+| Field       | Type                | Required | Notes                                                                     |
+| ----------- | ------------------- | -------- | ------------------------------------------------------------------------- |
+| proposal    | string              | required | 신청 메시지                                                               |
+| role        | FeedApplicationRole | required | 현재 FE 가 전송하는 참여 역할                                             |
 | deposit     | number              | required | FE 미리보기 보증금. BE 는 동일 공식으로 재계산·검증 후 authoritative 저장 |
-| plan        | PlanV3              | optional | REQUEST 가 비어있을 때 신청자가 보강 가능                              |
-| preparation | Preparation         | optional | REQUEST 가 비어있을 때 신청자가 보강 가능                              |
+| plan        | PlanV3              | optional | REQUEST 가 비어있을 때 신청자가 보강 가능                                 |
+| preparation | Preparation         | optional | REQUEST 가 비어있을 때 신청자가 보강 가능                                 |
 
 ### FeedApplyResponse
 
@@ -1538,18 +1538,18 @@ No body returned (204).
 
 ### SpotFinalApproval
 
-| Field            | Type                   | Required | Notes        |
-| ---------------- | ---------------------- | -------- | ------------ |
+| Field            | Type                     | Required | Notes        |
+| ---------------- | ------------------------ | -------- | ------------ |
 | status           | SettlementApprovalStatus | required |              |
-| approverNickname | string                 | required |              |
-| note             | string                 | required |              |
-| approvedAt       | string                 | optional | ISO datetime |
+| approverNickname | string                   | required |              |
+| note             | string                   | required |              |
+| approvedAt       | string                   | optional | ISO datetime |
 
 ### SpotSettlementApproval (확장)
 
 | Field           | Type                     | Required | Notes                                          |
 | --------------- | ------------------------ | -------- | ---------------------------------------------- |
-| status          | SettlementApprovalStatus   | required | PENDING \| APPROVED                            |
+| status          | SettlementApprovalStatus | required | PENDING \| APPROVED                            |
 | requestedAmount | number                   | required | 호스트가 제출한 line items의 합                |
 | approvedAmount  | number                   | required | 승인 시 `requestedAmount + forfeitPool.toPool` |
 | summary         | string                   | required |                                                |

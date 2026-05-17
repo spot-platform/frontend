@@ -20,7 +20,8 @@ import {
     useMainChatStore,
 } from '@/features/chat/model/use-main-chat-store';
 import { isSupporterForSpot } from '@/features/chat/model/mock';
-import { MOCK_SPOT_DETAILS } from '@/features/spot/model/mock';
+import { useSpotDetail } from '@/features/spot/model/use-spot';
+import type { SpotDetailFull } from '@/entities/spot/types';
 import { useChatNavStore } from '@/shared/model/chat-nav-store';
 import { useBottomNavMessageStore } from '@/shared/model/bottom-nav-message-store';
 
@@ -29,6 +30,33 @@ const TEAM_CHAT_SUB_NAV_ITEMS = [
     { step: 'schedule' as const, icon: IconCalendarEvent, label: '일정' },
     { step: 'file' as const, icon: IconFileText, label: '파일' },
 ];
+
+function toExpandedDetail(
+    detail: NonNullable<ReturnType<typeof useSpotDetail>['data']>['data'],
+): SpotDetailFull {
+    return {
+        ...detail,
+        participants: [],
+        votes: [],
+        files: [],
+        notes: [],
+        reviews: [],
+    };
+}
+
+function SpotExpandedContent({ spotId }: { spotId: string }) {
+    const { data } = useSpotDetail(spotId);
+    const detail = data?.data;
+
+    if (!detail) return null;
+
+    const expandedDetail = toExpandedDetail(detail);
+    return expandedDetail.type === 'OFFER' ? (
+        <OfferExpandedPanel detail={expandedDetail} />
+    ) : (
+        <RequestExpandedPanel detail={expandedDetail} />
+    );
+}
 
 export function NavWrapper() {
     const pathname = usePathname();
@@ -113,15 +141,9 @@ export function NavWrapper() {
             chatExpandedContent={(onClose) => (
                 <ChatCreationPanel onClose={onClose} />
             )}
-            spotExpandedContent={(spotId) => {
-                const detail = MOCK_SPOT_DETAILS[spotId];
-                if (!detail) return null;
-                return detail.type === 'OFFER' ? (
-                    <OfferExpandedPanel detail={detail} />
-                ) : (
-                    <RequestExpandedPanel detail={detail} />
-                );
-            }}
+            spotExpandedContent={(spotId) => (
+                <SpotExpandedContent spotId={spotId} />
+            )}
         />
     );
 }
