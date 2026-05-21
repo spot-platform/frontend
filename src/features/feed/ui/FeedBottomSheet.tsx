@@ -14,7 +14,7 @@ import { useFilterStore } from '@/features/map/model/use-filter-store';
 import type { SpotCategory } from '@/entities/spot/categories';
 import { FeedCard } from './FeedCard';
 import { AttractivenessMiniGauge } from './preference/AttractivenessMiniGauge';
-import type { FeedItem } from '../model/types';
+import { isJoinedFeedItem, type FeedItem } from '../model/types';
 
 type FeedBottomSheetProps = {
     open: boolean;
@@ -72,6 +72,8 @@ export function FeedBottomSheet({
         )
             return false;
         if (normalizedQuery.length > 0) {
+            if (isJoinedFeedItem(item)) return false;
+
             const haystack = [
                 item.title,
                 item.description ?? '',

@@ -20,6 +20,16 @@ export type FeedApplicationStatus =
     | 'REJECTED'
     | 'CANCELLED';
 
+export function isJoinedFeedStatus(
+    status?: FeedApplicationStatus | null,
+): boolean {
+    return status === 'APPLIED' || status === 'ACCEPTED';
+}
+
+export function isJoinedFeedItem(item: Pick<FeedItem, 'myApplicationStatus'>) {
+    return isJoinedFeedStatus(item.myApplicationStatus);
+}
+
 export type FeedApplicationRole = 'SUPPORTER' | 'PARTNER';
 
 export interface FeedApplication {

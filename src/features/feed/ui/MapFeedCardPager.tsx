@@ -13,6 +13,7 @@ import { useFilterStore } from '@/features/map/model/use-filter-store';
 import type { SpotCategory } from '@/entities/spot/categories';
 import { useFeedList } from '@/features/feed/model/use-feed';
 import type { FeedItem } from '@/features/feed/model/types';
+import { isJoinedFeedItem } from '@/features/feed/model/types';
 import { FeedCard } from '@/features/feed/ui/FeedCard';
 
 export type FeedCardPagerSnap = 'peek' | 'expanded';
@@ -73,6 +74,8 @@ export function MapFeedCardPager({
                 return false;
             }
             if (q.length > 0) {
+                if (isJoinedFeedItem(item)) return false;
+
                 const haystack = [
                     item.title,
                     item.description ?? '',
