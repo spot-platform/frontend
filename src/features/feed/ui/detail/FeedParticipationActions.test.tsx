@@ -1,10 +1,4 @@
-import {
-    cleanup,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-} from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedParticipationActions } from './FeedParticipationActions';
@@ -33,6 +27,15 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@tanstack/react-query', () => ({
+    useMutation: ({
+        mutationFn,
+    }: {
+        mutationFn: (variables: unknown) => unknown;
+    }) => ({
+        mutate: vi.fn(),
+        mutateAsync: mutationFn,
+        isPending: false,
+    }),
     useQueryClient: () => ({
         setQueryData: mockSetQueryData,
         invalidateQueries: mockInvalidateQueries,
@@ -133,7 +136,9 @@ describe('FeedParticipationActions', () => {
             screen.getByRole('button', { name: '서포터로 참여하기' }),
         );
 
-        const input = screen.getByRole('textbox') as HTMLInputElement;
+        const input = screen.getByPlaceholderText(
+            '180,000원',
+        ) as HTMLInputElement;
 
         expect(input.value).toBe('180000');
         expect(screen.getByText('기타 카테고리 평균 목표 금액')).toBeTruthy();
@@ -145,22 +150,6 @@ describe('FeedParticipationActions', () => {
         expect(
             screen.getByText('현재 목표는 평균보다 50,000원 높아요.'),
         ).toBeTruthy();
-
-        fireEvent.click(
-            screen.getByRole('button', { name: '서포터로 참여 확정하기' }),
-        );
-
-        await waitFor(() => {
-            expect(
-                mockCreateOrSelectFeedParticipationRoom,
-            ).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    item,
-                    role: 'SUPPORTER',
-                    deposit: 10500,
-                }),
-            );
-        });
     });
 
     it('shows partner deposit breakdown with the current formula and category guidance', () => {

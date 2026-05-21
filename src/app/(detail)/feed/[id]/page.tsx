@@ -1,6 +1,7 @@
 // Feed 상세 페이지 — OFFER/REQUEST 타입별 분기 렌더링
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { cookies } from 'next/headers';
 import {
     IconPhoto,
     IconUserCircle,
@@ -8,8 +9,7 @@ import {
     IconStar,
 } from '@tabler/icons-react';
 import { notFound } from 'next/navigation';
-import { MOCK_FEED, MOCK_FEED_MANAGEMENT } from '@/features/feed/model/mock';
-import { FeedManagementPanel } from '@/features/feed/ui/detail/FeedManagementPanel';
+import { getServerFeedDetail } from '@/features/feed/api/feed-server-api';
 import { FeedParticipationActions } from '@/features/feed/ui/detail/FeedParticipationActions';
 import { EditPlanPreparationCard } from '@/features/feed/ui/detail/EditPlanPreparationCard';
 import { PlanSection } from '@/features/feed/ui/detail/PlanSection';
@@ -17,13 +17,13 @@ import { PriceSection } from '@/features/feed/ui/detail/PriceSection';
 import { PreparationSection } from '@/features/feed/ui/detail/PreparationSection';
 import { VenueSection } from '@/features/feed/ui/detail/VenueSection';
 import { DetailHeader, DetailPageShell } from '@/shared/ui';
-import type { FeedItem } from '@/features/feed/model/types';
+import type { FeedItem, FeedManagementFlow } from '@/features/feed/model/types';
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
-    const item = MOCK_FEED.find((f) => f.id === id);
+    const item = await getServerFeedDetail(id);
 
     return { title: item?.title ?? '피드 상세' };
 }
@@ -214,7 +214,7 @@ function RequestDetailContent({
     management,
 }: {
     item: FeedItem;
-    management?: (typeof MOCK_FEED_MANAGEMENT)[string];
+    management?: FeedManagementFlow;
 }) {
     const applicants = management?.applications ?? [];
     const applicantCount = item.applicantCount ?? applicants.length;
@@ -353,13 +353,16 @@ function RequestDetailContent({
 
 export default async function FeedDetailPage({ params }: Props) {
     const { id } = await params;
-    const item = MOCK_FEED.find((f) => f.id === id);
+    const cookieStore = await cookies();
+    const item = await getServerFeedDetail(id, {
+        accessToken: cookieStore.get('spot-auth-token')?.value,
+    });
 
     if (!item) {
         notFound();
     }
 
-    const management = MOCK_FEED_MANAGEMENT[id];
+    const management: FeedManagementFlow | undefined = undefined;
     const isOffer = item.type === 'OFFER' || item.type === 'RENT';
     const isRequest = item.type === 'REQUEST';
 
@@ -411,11 +414,6 @@ export default async function FeedDetailPage({ params }: Props) {
                         initialPreparation={item.preparation}
                     />
                 ) : null}
-
-                {/* 호스트용 관리 패널 */}
-                {management && (
-                    <FeedManagementPanel item={item} flow={management} />
-                )}
 
                 <FeedParticipationActions item={item} management={management} />
             </DetailPageShell>

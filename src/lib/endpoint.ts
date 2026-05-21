@@ -40,6 +40,7 @@ export const endpoints = {
         logout: backendEndpoint('/auth/logout'),
         oauthStart: (provider: string) =>
             backendEndpoint(`/auth/oauth/${provider}/start`),
+        jwtExchange: backendEndpoint('/jwt/exchange'),
     },
     me: {
         profile: backendEndpoint('/me'),
@@ -48,6 +49,12 @@ export const endpoints = {
     users: {
         root: backendEndpoint('/users'),
         exist: backendEndpoint('/users/exist'),
+    },
+    posts: {
+        offer: backendEndpoint('/posts/offer'),
+        request: backendEndpoint('/posts/request'),
+        detail: (postId: string) => backendEndpoint(`/posts/${postId}`),
+        match: (postId: string) => backendEndpoint(`/posts/${postId}/match`),
     },
     spots: {
         root: backendEndpoint('/spots'),
@@ -117,6 +124,13 @@ export const endpoints = {
             backendEndpoint(`/chat/rooms/by-user/${userId}`),
         blocks: backendEndpoint('/chat/blocks'),
         block: (userId: string) => backendEndpoint(`/chat/blocks/${userId}`),
+    },
+    notifications: {
+        root: backendEndpoint('/notifications'),
+        subscribe: backendEndpoint('/notifications/subscribe'),
+        read: (notificationId: string) =>
+            backendEndpoint(`/notifications/${notificationId}/read`),
+        readAll: backendEndpoint('/notifications/read-all'),
     },
     sim: {
         manifest: (runId: string) =>

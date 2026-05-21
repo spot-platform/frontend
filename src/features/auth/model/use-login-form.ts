@@ -42,7 +42,7 @@ export function useLoginForm({ nextPath }: UseLoginFormOptions) {
     );
     const oauthLinks = useMemo(
         () => ({
-            kakao: authApi.oauthStartPath('kakao', nextPath),
+            naver: authApi.oauthStartPath('naver', nextPath),
             google: authApi.oauthStartPath('google', nextPath),
         }),
         [nextPath],

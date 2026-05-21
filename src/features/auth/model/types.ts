@@ -1,4 +1,4 @@
-export type OAuthProvider = 'kakao' | 'google';
+export type OAuthProvider = 'naver' | 'google';
 
 export interface LoginRequest {
     email: string;

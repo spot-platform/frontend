@@ -17,8 +17,11 @@ export { feedApi } from './api/feed-api';
 export type { FeedApplyPayload } from './api/feed-api';
 export {
     feedKeys,
+    useAcceptFeedApplication,
     useApplyFeed,
     useCancelFeedApplication,
+    useRejectFeedApplication,
+    useToggleFeedBookmark,
 } from './model/use-feed';
 export {
     PLATFORM_FEE_RATE_ON_FORFEIT,

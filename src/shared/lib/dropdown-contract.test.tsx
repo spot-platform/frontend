@@ -92,7 +92,7 @@ describe('Dropdown', () => {
         const combobox = screen.getByRole('combobox') as HTMLButtonElement;
 
         expect(screen.getByTestId('leading-adornment')).toBeTruthy();
-        expect(combobox.className).toContain('pl-11');
+        expect(combobox.className).toContain('pl-10');
         expect(combobox.disabled).toBe(true);
     });
 

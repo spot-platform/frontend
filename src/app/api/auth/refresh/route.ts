@@ -11,11 +11,6 @@ function getString(value: unknown): string | undefined {
     return typeof value === 'string' ? value : undefined;
 }
 
-async function readJsonBody(request: NextRequest): Promise<JsonRecord | null> {
-    const payload: unknown = await request.json().catch(() => null);
-    return isRecord(payload) ? payload : null;
-}
-
 async function readUpstreamJson(response: Response): Promise<JsonRecord> {
     const payload: unknown = await response.json().catch(() => ({}));
     return isRecord(payload) ? payload : {};
@@ -41,19 +36,10 @@ function appendSetCookieHeaders(response: NextResponse, upstream: Response) {
 }
 
 export async function POST(request: NextRequest) {
-    const body = await readJsonBody(request);
-    const refreshToken = getString(body?.refreshToken);
-
-    if (!refreshToken) {
-        return NextResponse.json(
-            { message: 'refreshToken이 필요합니다.' },
-            { status: 400 },
-        );
-    }
-
-    const upstream = await serverApiFetch('/api/auth/refresh', {
+    const cookie = request.headers.get('cookie');
+    const upstream = await serverApiFetch('/auth/refresh', {
         method: 'POST',
-        body: JSON.stringify({ refreshToken }),
+        headers: cookie ? { Cookie: cookie } : undefined,
     });
     const payload = await readUpstreamJson(upstream);
 
@@ -78,7 +64,7 @@ export async function POST(request: NextRequest) {
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        maxAge: 60 * 60 * 24 * 30,
+        maxAge: 60 * 60,
     });
     appendSetCookieHeaders(response, upstream);
 

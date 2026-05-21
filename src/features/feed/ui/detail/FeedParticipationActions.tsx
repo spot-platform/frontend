@@ -2,17 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
 import { Button, Input, Modal } from '@frontend/design-system';
-import { payKeys, usePointBalance } from '@/features/pay';
+import { usePointBalance } from '@/features/pay';
 import { BottomSheet } from '@/shared/ui';
-import { useMainChatStore } from '@/features/chat/model/use-main-chat-store';
 import { useBottomNavMessageStore } from '@/shared/model/bottom-nav-message-store';
-import {
-    addPlatformForfeit,
-    consumeMockPoints,
-    refundMockPoints,
-} from '@/features/pay/model/mock';
 import type {
     FeedApplicationRole,
     FeedItem,
@@ -88,11 +81,7 @@ export function FeedParticipationActions({
     management?: FeedManagementFlow;
 }) {
     const router = useRouter();
-    const queryClient = useQueryClient();
     const balanceQuery = usePointBalance();
-    const createOrSelectFeedParticipationRoom = useMainChatStore(
-        (state) => state.createOrSelectFeedParticipationRoom,
-    );
     const showBottomNavMessage = useBottomNavMessageStore(
         (state) => state.showMessage,
     );
@@ -232,20 +221,6 @@ export function FeedParticipationActions({
         setIsSubmitting(true);
 
         try {
-            const room = createOrSelectFeedParticipationRoom({
-                item,
-                role: selectedRole,
-                deposit,
-            });
-
-            showBottomNavMessage(
-                '스팟 참여가 완료되었어요. 팀 채팅에서 바로 이어가세요.',
-                '/chat',
-            );
-            const nextBalance = consumeMockPoints(
-                deposit,
-                `${item.title} 참여 보증금`,
-            );
             await applyFeed.mutateAsync({
                 feedId: item.id,
                 payload: {
@@ -254,21 +229,17 @@ export function FeedParticipationActions({
                     deposit,
                 },
             });
-            // BE 에 plan/preparation PATCH 가 없어 현재 화면 상태만 낙관적으로 반영한다.
-            if (requiresSupporterPlanInput && proposedPlan) {
-                item.plan = proposedPlan;
-            }
-            if (requiresSupporterPreparationInput && proposedPreparation) {
-                item.preparation = proposedPreparation;
-            }
-            item.myApplicationStatus = 'APPLIED';
-            item.myApplicationRole = selectedRole as FeedApplicationRole;
-            item.myApplicationDeposit = deposit;
-            queryClient.setQueryData(payKeys.balance, nextBalance);
-            queryClient.invalidateQueries({ queryKey: ['pay', 'history'] });
-            queryClient.invalidateQueries({ queryKey: ['my', 'profile'] });
+
+            showBottomNavMessage(
+                '스팟 참여가 완료되었어요. 팀 채팅에서 바로 이어가세요.',
+                '/chat',
+            );
             setSelectedRole(null);
-            router.push(`/chat?roomId=${room.id}`);
+            router.push(
+                item.spotId
+                    ? `/chat?tab=team&spotId=${encodeURIComponent(item.spotId)}`
+                    : '/chat?tab=team',
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -304,27 +275,6 @@ export function FeedParticipationActions({
         try {
             await cancelFeedApplication.mutateAsync(item.id);
 
-            if (cancelOutcome.refund > 0) {
-                const nextBalance = refundMockPoints(
-                    cancelOutcome.refund,
-                    `${item.title} 신청 취소 환불`,
-                );
-                queryClient.setQueryData(payKeys.balance, nextBalance);
-            }
-
-            const forfeitTotal =
-                cancelOutcome.forfeit.toPool +
-                cancelOutcome.forfeit.toPlatformFee;
-            if (forfeitTotal > 0) {
-                addPlatformForfeit(forfeitTotal);
-            }
-
-            item.myApplicationStatus = 'CANCELLED';
-            item.myApplicationRole = undefined;
-            item.myApplicationDeposit = undefined;
-
-            queryClient.invalidateQueries({ queryKey: ['pay', 'history'] });
-            queryClient.invalidateQueries({ queryKey: ['my', 'profile'] });
             showBottomNavMessage('신청을 취소했어요.', '');
             setCancelOpen(false);
         } finally {

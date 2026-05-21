@@ -7,7 +7,7 @@ import { usePostFormPrefill } from '../model/use-post-form-prefill';
 import { readSimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
 import { SimulationInsightCard } from '@/features/simulation/ui/SimulationInsightCard';
 import type { SimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
-import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
+import { postApi } from '../api/post-api';
 import { PlanInputSection } from '../ui/post-form/PlanInputSection';
 import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
 import { PostSubmitBar } from '../ui/post-form/PostSubmitBar';
@@ -25,6 +25,11 @@ import type {
 
 const POINT_COST = 15000;
 const STEPS = ['기본 정보', 'Request 상세', '플랜·준비물 (선택)', '가격 설정'];
+
+const parsePositiveInt = (value: string): number | undefined => {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
 
 export function RequestFormClient() {
     const router = useRouter();
@@ -92,29 +97,47 @@ export function RequestFormClient() {
                 ? isStep2Valid
                 : isStep3Valid;
 
-    const addMySpot = useMySpotsStore((s) => s.addSpot);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (step < STEPS.length - 1) {
             setStep((s) => s + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            const fallbackLocation = {
-                lat: 37.2636,
-                lng: 127.0286,
-            };
-            const created = addMySpot({
-                title: title || spotName,
-                category: simContext?.category ?? '운동',
-                intent: 'request',
-                location: simContext?.spotLocation ?? fallbackLocation,
-                participants: [
-                    { id: 'me', emoji: '👤', name: '나' },
-                    { id: 'demo-a', emoji: '🎨', name: '서연' },
-                ],
-            });
-            clearDraft();
-            router.push(`/post/complete?mySpot=${created.id}`);
+            setIsSubmitting(true);
+            setSubmitError(null);
+
+            try {
+                const created = await postApi.createRequest({
+                    type: 'REQUEST',
+                    spotName,
+                    title,
+                    content,
+                    categories,
+                    photoUrls: photoPreviews,
+                    pointCost: POINT_COST,
+                    location,
+                    deadline,
+                    detailDescription,
+                    serviceStylePhotoUrl: stylePhotoPreview ?? undefined,
+                    priceCapPerPerson: parsePositiveInt(priceCapPerPerson),
+                    maxPartnerCount: parsePositiveInt(maxPartnerCount),
+                });
+
+                clearDraft();
+                router.push(
+                    created.redirectUrl ?? `/post/complete?post=${created.id}`,
+                );
+            } catch (error) {
+                setSubmitError(
+                    error instanceof Error
+                        ? error.message
+                        : '게시글 등록에 실패했어요.',
+                );
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -154,6 +177,11 @@ export function RequestFormClient() {
                 <p className="text-sm text-gray-500">
                     함께할 파트너들이 한눈에 이해할 수 있게 작성해주세요.
                 </p>
+                {submitError && (
+                    <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                        {submitError}
+                    </p>
+                )}
 
                 {step === 0 && (
                     <PostBaseInfoSection
@@ -226,10 +254,16 @@ export function RequestFormClient() {
             </div>
 
             <PostSubmitBar
-                label={step < STEPS.length - 1 ? '다음' : '결제하기'}
+                label={
+                    step < STEPS.length - 1
+                        ? '다음'
+                        : isSubmitting
+                          ? '등록 중...'
+                          : '등록하기'
+                }
                 onClick={handleNext}
                 onBack={handleBack}
-                disabled={!canNext}
+                disabled={!canNext || isSubmitting}
                 showBack
             />
         </DetailPageShell>

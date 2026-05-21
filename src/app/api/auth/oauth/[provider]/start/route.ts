@@ -7,7 +7,7 @@ import { getBackendApiUrl } from '@/lib/server-api';
 import type { OAuthProvider } from '@/features/auth/model/types';
 
 function isOAuthProvider(value: string): value is OAuthProvider {
-    return value === 'kakao' || value === 'google';
+    return value === 'naver' || value === 'google';
 }
 
 export async function GET(
@@ -27,7 +27,7 @@ export async function GET(
         pickSingleQueryValue(request.nextUrl.searchParams.getAll('next')),
     );
     const upstreamUrl = new URL(
-        getBackendApiUrl(`/api/auth/oauth/${provider}/start`),
+        getBackendApiUrl(`/auth/oauth/${provider}/start`),
     );
 
     if (nextPath) {

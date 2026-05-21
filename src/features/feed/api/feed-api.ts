@@ -87,4 +87,44 @@ export const feedApi = {
         clientApiFetch<void>(endpoints.feeds.myApplication(feedId), {
             method: 'DELETE',
         }).then(() => ({ data: { feedId, status: 'CANCELLED' } })),
+
+    addBookmark: async (feedId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.feeds.bookmark(feedId), {
+            method: 'POST',
+        }),
+
+    removeBookmark: async (feedId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.feeds.bookmark(feedId), {
+            method: 'DELETE',
+        }),
+
+    acceptApplication: async (
+        feedId: string,
+        applicationId: string,
+    ): Promise<{ data: FeedApplication }> =>
+        clientApiFetch<BackendFeedApplication>(
+            endpoints.feeds.acceptApplication(feedId, applicationId),
+            { method: 'PATCH' },
+        ).then((data) => ({
+            data: toFeedApplication(data, {
+                proposal: data.proposal,
+                role: data.appliedRole ?? 'PARTNER',
+                deposit: data.deposit ?? 0,
+            }),
+        })),
+
+    rejectApplication: async (
+        feedId: string,
+        applicationId: string,
+    ): Promise<{ data: FeedApplication }> =>
+        clientApiFetch<BackendFeedApplication>(
+            endpoints.feeds.rejectApplication(feedId, applicationId),
+            { method: 'PATCH' },
+        ).then((data) => ({
+            data: toFeedApplication(data, {
+                proposal: data.proposal,
+                role: data.appliedRole ?? 'PARTNER',
+                deposit: data.deposit ?? 0,
+            }),
+        })),
 };

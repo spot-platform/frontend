@@ -7,7 +7,7 @@ async function readUpstreamJson(response: Response): Promise<unknown> {
 
 export async function POST(request: NextRequest) {
     const accessToken = request.cookies.get('spot-auth-token')?.value;
-    const upstream = await serverApiFetch('/api/auth/logout', {
+    const upstream = await serverApiFetch('/auth/logout', {
         method: 'POST',
         accessToken,
     });

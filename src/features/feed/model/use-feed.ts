@@ -50,8 +50,69 @@ export function useCancelFeedApplication() {
             queryClient.invalidateQueries({
                 queryKey: feedKeys.detail(feedId),
             });
+            queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
             queryClient.invalidateQueries({ queryKey: payKeys.balance });
             queryClient.invalidateQueries({ queryKey: ['pay', 'history'] });
+        },
+    });
+}
+
+export function useToggleFeedBookmark() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            feedId,
+            bookmarked,
+        }: {
+            feedId: string;
+            bookmarked: boolean;
+        }) =>
+            bookmarked
+                ? feedApi.removeBookmark(feedId)
+                : feedApi.addBookmark(feedId),
+        onSuccess: (_, { feedId }) => {
+            queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
+            queryClient.invalidateQueries({
+                queryKey: feedKeys.detail(feedId),
+            });
+        },
+    });
+}
+
+export function useAcceptFeedApplication() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            feedId,
+            applicationId,
+        }: {
+            feedId: string;
+            applicationId: string;
+        }) => feedApi.acceptApplication(feedId, applicationId),
+        onSuccess: (_, { feedId }) => {
+            queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
+            queryClient.invalidateQueries({
+                queryKey: feedKeys.detail(feedId),
+            });
+        },
+    });
+}
+
+export function useRejectFeedApplication() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({
+            feedId,
+            applicationId,
+        }: {
+            feedId: string;
+            applicationId: string;
+        }) => feedApi.rejectApplication(feedId, applicationId),
+        onSuccess: (_, { feedId }) => {
+            queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
+            queryClient.invalidateQueries({
+                queryKey: feedKeys.detail(feedId),
+            });
         },
     });
 }

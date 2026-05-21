@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const upstream = await serverApiFetch('/api/auth/login', {
+    const upstream = await serverApiFetch('/auth/login', {
         method: 'POST',
         body: JSON.stringify({
             email,
