@@ -289,6 +289,10 @@ function FileListRow({ files }: { files: SharedFile[] }) {
 }
 
 /* ── 스팟 컨텍스트 아이템 목록 ────────────────────────────── */
+function isOwnedSpotRoom(room: SpotChatRoom) {
+    return room.spot.authorId === room.currentUserId;
+}
+
 function SpotItemList({
     room,
     onOpenRoom,
@@ -299,6 +303,7 @@ function SpotItemList({
     onActionItem: (item: SpotActionItem) => void;
 }) {
     const actionItems = getSpotActionItems(room);
+    const isOwner = isOwnedSpotRoom(room);
     const reverseOfferItem =
         actionItems.find(
             (
@@ -321,6 +326,16 @@ function SpotItemList({
 
     return (
         <div className="flex flex-col px-2">
+            <div className="mx-3 mb-2 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2.5">
+                <p className="text-[12.5px] font-semibold text-zinc-900">
+                    {isOwner ? '내 스팟 관리 모드' : '참여 중인 스팟'}
+                </p>
+                <p className="mt-1 text-[11px] leading-4 text-zinc-500">
+                    {isOwner
+                        ? '스팟 작성자라서 일정·투표·파일을 관리하고 참여자 제안을 검토할 수 있어요.'
+                        : '참여자로 입장했어요. 필요한 경우 일정·투표·파일을 확인하고 역제안을 보낼 수 있어요.'}
+                </p>
+            </div>
             <SpotRoomListRow room={room} onOpen={onOpenRoom} />
 
             {reverseOfferItem && reverseOfferItem.kind === 'reverse-offer' && (
@@ -435,7 +450,9 @@ function SpotItemList({
 
             {!hasItems ? (
                 <div className="mx-1 mt-2 rounded-2xl border border-dashed border-zinc-200 px-4 py-6 text-center text-[12.5px] text-zinc-400">
-                    아직 등록된 항목이 없어요. 아래 바에서 추가해 보세요.
+                    {isOwner
+                        ? '아직 등록된 운영 항목이 없어요. 아래 바에서 일정·투표·파일을 추가해 보세요.'
+                        : '아직 공유된 운영 항목이 없어요. 팀 채팅에서 새 소식을 기다려 주세요.'}
                 </div>
             ) : null}
         </div>
@@ -807,6 +824,7 @@ export function MainChatPageClient({
                     mode="team"
                     showReverseOffer={
                         !!selectedSpotRoom &&
+                        !isOwnedSpotRoom(selectedSpotRoom) &&
                         isSupporterForSpot(selectedSpotRoom)
                     }
                     disabled={!selectedSpotRoom}

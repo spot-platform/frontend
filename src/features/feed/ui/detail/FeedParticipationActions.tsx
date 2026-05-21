@@ -7,6 +7,7 @@ import { usePointBalance } from '@/features/pay';
 import { BottomSheet } from '@/shared/ui';
 import { useBottomNavMessageStore } from '@/shared/model/bottom-nav-message-store';
 import type {
+    FeedApplication,
     FeedApplicationRole,
     FeedItem,
     FeedManagementFlow,
@@ -26,7 +27,14 @@ import {
     resolveCancellationOutcome,
     type CancellationOutcome,
 } from '../../model/cancellation-policy';
-import { useApplyFeed, useCancelFeedApplication } from '../../model/use-feed';
+import {
+    useApplyFeed,
+    useCancelFeedApplication,
+    useAcceptFeedApplication,
+    useFeedApplications,
+    useRejectFeedApplication,
+} from '../../model/use-feed';
+import { useAuthStore } from '@/shared/model/auth-store';
 
 function formatCurrency(value: number, maximumFractionDigits = 0) {
     return `${value.toLocaleString('ko-KR', {
@@ -41,6 +49,18 @@ function getRoleLabel(role: FeedParticipationRole) {
 
 function getActionLabel(role: FeedParticipationRole) {
     return role === 'SUPPORTER' ? '서포터로 참여하기' : '파트너로 참여하기';
+}
+
+function getApplicationApplicantName(application: FeedApplication) {
+    return (
+        application.applicantProfile?.nickname ??
+        application.nickname ??
+        application.userId
+    );
+}
+
+function isPendingApplication(application: FeedApplication) {
+    return application.status === 'APPLIED' || application.status === 'PENDING';
 }
 
 function sanitizeFundingGoalInput(value: string) {
@@ -85,8 +105,18 @@ export function FeedParticipationActions({
     const showBottomNavMessage = useBottomNavMessageStore(
         (state) => state.showMessage,
     );
+    const currentUserId = useAuthStore((state) => state.userId);
+    const isOwner = Boolean(
+        currentUserId && item.authorProfile?.id === currentUserId,
+    );
+    const applicationsQuery = useFeedApplications(item.id, isOwner);
+    const acceptFeedApplication = useAcceptFeedApplication();
+    const rejectFeedApplication = useRejectFeedApplication();
     const applyFeed = useApplyFeed();
     const cancelFeedApplication = useCancelFeedApplication();
+    const [processingApplicationId, setProcessingApplicationId] = useState<
+        string | null
+    >(null);
     const [selectedRole, setSelectedRole] =
         useState<FeedParticipationRole | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -231,15 +261,11 @@ export function FeedParticipationActions({
             });
 
             showBottomNavMessage(
-                '스팟 참여가 완료되었어요. 팀 채팅에서 바로 이어가세요.',
-                '/chat',
+                '참여 신청이 완료되었어요. 승인되면 팀 채팅에 참여할 수 있어요.',
+                '',
             );
             setSelectedRole(null);
-            router.push(
-                item.spotId
-                    ? `/chat?tab=team&spotId=${encodeURIComponent(item.spotId)}`
-                    : '/chat?tab=team',
-            );
+            router.refresh();
         } finally {
             setIsSubmitting(false);
         }
@@ -299,10 +325,144 @@ export function FeedParticipationActions({
             return '보증금보다 잔액이 부족해 지금은 참여를 확정할 수 없어요.';
         }
 
-        return '확정 후에는 개인 채팅이 아니라 팀 채팅으로 바로 연결돼요.';
+        return '신청 후 승인되면 팀 채팅에 참여할 수 있어요.';
     })();
 
     const isApplied = item.myApplicationStatus === 'APPLIED';
+    const pendingApplications = (applicationsQuery.data?.data ?? []).filter(
+        isPendingApplication,
+    );
+
+    const handleApplicationDecision = async (
+        applicationId: string,
+        decision: 'accept' | 'reject',
+    ) => {
+        setProcessingApplicationId(applicationId);
+
+        try {
+            if (decision === 'accept') {
+                await acceptFeedApplication.mutateAsync({
+                    feedId: item.id,
+                    applicationId,
+                });
+                showBottomNavMessage('신청자를 수락했어요.', '');
+            } else {
+                await rejectFeedApplication.mutateAsync({
+                    feedId: item.id,
+                    applicationId,
+                });
+                showBottomNavMessage('신청자를 거절했어요.', '');
+            }
+
+            router.refresh();
+        } finally {
+            setProcessingApplicationId(null);
+        }
+    };
+
+    if (isOwner) {
+        return (
+            <div className="fixed right-0 bottom-0 left-0 z-30 border-t border-border-soft bg-card/95 px-4 py-3 backdrop-blur-sm">
+                <div className="rounded-2xl border border-border-soft bg-background px-4 py-3 shadow-sm">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-sm font-semibold text-foreground">
+                                내 피드 신청 관리
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                authorProfile.id 기준으로 내 피드라서 참여 버튼
+                                대신 승인 플로우를 보여줘요.
+                            </p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+                            {pendingApplications.length}명 대기
+                        </span>
+                    </div>
+
+                    <div className="mt-3 space-y-2">
+                        {applicationsQuery.isLoading ? (
+                            <p className="rounded-xl bg-muted px-3 py-3 text-sm text-text-secondary">
+                                신청자 목록을 불러오는 중이에요.
+                            </p>
+                        ) : pendingApplications.length > 0 ? (
+                            pendingApplications.map((application) => {
+                                const isProcessing =
+                                    processingApplicationId === application.id;
+
+                                return (
+                                    <div
+                                        key={application.id}
+                                        className="rounded-xl border border-border-soft px-3 py-2.5"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-semibold text-foreground">
+                                                    {getApplicationApplicantName(
+                                                        application,
+                                                    )}
+                                                </p>
+                                                <p className="mt-1 text-xs text-muted-foreground">
+                                                    {application.appliedRole ===
+                                                    'SUPPORTER'
+                                                        ? '서포터 신청'
+                                                        : '파트너 신청'}{' '}
+                                                    · 보증금{' '}
+                                                    {application.deposit.toLocaleString(
+                                                        'ko-KR',
+                                                    )}
+                                                    P
+                                                </p>
+                                                {application.proposal ? (
+                                                    <p className="mt-1 line-clamp-2 text-xs text-text-secondary">
+                                                        {application.proposal}
+                                                    </p>
+                                                ) : null}
+                                            </div>
+                                            <div className="flex shrink-0 gap-1.5">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    disabled={isProcessing}
+                                                    className="rounded-full px-3"
+                                                    onClick={() =>
+                                                        void handleApplicationDecision(
+                                                            application.id,
+                                                            'reject',
+                                                        )
+                                                    }
+                                                >
+                                                    거절
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    disabled={isProcessing}
+                                                    className="rounded-full bg-accent px-3"
+                                                    onClick={() =>
+                                                        void handleApplicationDecision(
+                                                            application.id,
+                                                            'accept',
+                                                        )
+                                                    }
+                                                >
+                                                    수락
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <p className="rounded-xl bg-muted px-3 py-3 text-sm text-text-secondary">
+                                아직 승인 대기 중인 신청자가 없어요.
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // AI 피드(시뮬레이터가 합성한 데이터) 는 실제 호스트가 없으므로 참여가 의미 없음.
     // 같은 자리에 "이런 리퀘스트 직접 열기" 액션만 보여주고 /post/request 로 prefill 라우팅.
@@ -438,9 +598,9 @@ export function FeedParticipationActions({
                                 참여 전에 꼭 확인해 주세요.
                             </p>
                             <p className="mt-2 text-sm leading-6 text-text-secondary">
-                                보증금은 참여 의사를 확인한 뒤 팀 채팅으로
-                                이동하기 위한 임시 예치 금액이에요. 확정 후 진행
-                                안내와 역할 조율은 팀 채팅에서 이어집니다.
+                                보증금은 참여 의사를 확인하기 위한 임시 예치
+                                금액이에요. 신청이 승인되면 진행 안내와 역할
+                                조율은 팀 채팅에서 이어집니다.
                             </p>
                         </section>
 

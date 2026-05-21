@@ -15,22 +15,47 @@ export type FeedAuthorRole = 'SUPPORTER' | 'PARTNER';
 
 // 지원자 본인의 신청 생명주기 (SupporterApplicationStatus는 호스트 측 triage 라벨과 별개)
 export type FeedApplicationStatus =
+    | 'PENDING'
     | 'APPLIED'
     | 'ACCEPTED'
     | 'REJECTED'
     | 'CANCELLED';
 
+const SEARCH_EXCLUDED_APPLICATION_STATUSES = new Set<FeedApplicationStatus>([
+    'PENDING',
+    'APPLIED',
+    'ACCEPTED',
+]);
+
 export function isJoinedFeedStatus(
     status?: FeedApplicationStatus | null,
 ): boolean {
-    return status === 'APPLIED' || status === 'ACCEPTED';
+    return status === 'ACCEPTED';
 }
 
 export function isJoinedFeedItem(item: Pick<FeedItem, 'myApplicationStatus'>) {
     return isJoinedFeedStatus(item.myApplicationStatus);
 }
 
+export function isSearchExcludedFeedStatus(
+    status?: FeedApplicationStatus | null,
+): boolean {
+    return status != null && SEARCH_EXCLUDED_APPLICATION_STATUSES.has(status);
+}
+
+export function isSearchExcludedFeedItem(
+    item: Pick<FeedItem, 'myApplicationStatus'>,
+) {
+    return isSearchExcludedFeedStatus(item.myApplicationStatus);
+}
+
 export type FeedApplicationRole = 'SUPPORTER' | 'PARTNER';
+
+export interface FeedApplicationApplicantProfile {
+    id: string;
+    nickname: string;
+    avatarUrl?: string | null;
+}
 
 export interface FeedApplication {
     id: string;
@@ -41,6 +66,9 @@ export interface FeedApplication {
     appliedRole: FeedApplicationRole;
     deposit: number;
     createdAt: string;
+    applicantProfile?: FeedApplicationApplicantProfile | null;
+    nickname?: string;
+    avatarUrl?: string | null;
 }
 
 export interface FeedAuthorProfile {

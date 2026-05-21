@@ -88,6 +88,15 @@ export const feedApi = {
             method: 'DELETE',
         }).then(() => ({ data: { feedId, status: 'CANCELLED' } })),
 
+    applications: async (
+        feedId: string,
+    ): Promise<{ data: FeedApplication[] }> =>
+        clientApiFetch<FeedApplication[] | { data?: FeedApplication[] }>(
+            endpoints.feeds.applications(feedId),
+        ).then((payload) => ({
+            data: Array.isArray(payload) ? payload : (payload.data ?? []),
+        })),
+
     addBookmark: async (feedId: string): Promise<void> =>
         clientApiFetch<void>(endpoints.feeds.bookmark(feedId), {
             method: 'POST',

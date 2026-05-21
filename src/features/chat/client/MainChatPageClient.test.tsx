@@ -320,7 +320,9 @@ describe('MainChatPageClient', () => {
 
     it('still renders the selected spot room row when there are no action items', () => {
         const room = mockMainChatState.rooms.find(
-            (candidate) => candidate.category === 'spot',
+            (candidate) =>
+                candidate.category === 'spot' &&
+                candidate.spot.authorId !== candidate.currentUserId,
         );
 
         expect(room).toBeDefined();
@@ -352,12 +354,56 @@ describe('MainChatPageClient', () => {
         render(<MainChatPageClient initialTopTab="team" />);
 
         expect(screen.getAllByText(room.title).at(-1)).not.toBeNull();
+        expect(screen.getByText('참여 중인 스팟')).not.toBeNull();
         expect(screen.getByText(/팀 채팅방 ·/)).not.toBeNull();
         expect(
             screen.getByText(
-                '아직 등록된 항목이 없어요. 아래 바에서 추가해 보세요.',
+                '아직 공유된 운영 항목이 없어요. 팀 채팅에서 새 소식을 기다려 주세요.',
             ),
         ).not.toBeNull();
+    });
+
+    it('separates owner team chat ui from participant ui using spot.authorId', () => {
+        const room = mockMainChatState.rooms.find(
+            (candidate) => candidate.category === 'spot',
+        );
+
+        expect(room).toBeDefined();
+
+        if (!room || room.category !== 'spot') {
+            throw new Error('Expected a spot room to exist.');
+        }
+
+        const ownedRoom: SpotChatRoom = {
+            ...room,
+            spot: {
+                ...room.spot,
+                authorId: room.currentUserId,
+                votes: [],
+                files: [],
+            },
+        };
+        delete ownedRoom.reverseOffer;
+        delete ownedRoom.spot.schedule;
+
+        mockMainChatState.rooms = [
+            ownedRoom,
+            ...mockMainChatState.rooms.filter(
+                (candidate) => candidate.id !== room.id,
+            ),
+        ];
+        mockMainChatState.selectedContextId = room.id;
+        mockApplyRouteIntent.mockReturnValue({ roomId: room.id });
+
+        render(<MainChatPageClient initialTopTab="team" />);
+
+        expect(screen.getByText('내 스팟 관리 모드')).not.toBeNull();
+        expect(
+            screen.getByText(
+                '아직 등록된 운영 항목이 없어요. 아래 바에서 일정·투표·파일을 추가해 보세요.',
+            ),
+        ).not.toBeNull();
+        expect(screen.queryByLabelText('역제안 등록')).toBeNull();
     });
 
     it('shows the personal search ui only while personal search is open', () => {
