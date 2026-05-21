@@ -138,7 +138,7 @@ export function OfferFormClient() {
 
                 clearDraft();
                 router.push(
-                    created.redirectUrl ?? `/post/complete?post=${created.id}`,
+                    `/chat?tab=team&spotId=${encodeURIComponent(created.spotId ?? created.id)}`,
                 );
             } catch (error) {
                 setSubmitError(

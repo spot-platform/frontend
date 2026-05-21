@@ -1,4 +1,5 @@
 import { clientApiFetch } from '@/lib/client-api';
+import { chatApi } from '@/features/chat/api/chat-api';
 import { endpoints } from '@/lib/endpoint';
 import type { PostSpotCategory } from '../model/types';
 
@@ -8,7 +9,16 @@ export type PostCompletionResponse = {
     id: string;
     type: PostType;
     title: string;
+    spotId?: string;
+    feedId?: string;
+    chatRoomId?: string;
     redirectUrl?: string;
+};
+
+type BackendPostCompletionResponse = PostCompletionResponse & {
+    spot?: { id?: string | number } | null;
+    feed?: { id?: string | number; spotId?: string | number | null } | null;
+    chatRoom?: { id?: string | number } | null;
 };
 
 type BasePostPayload = {
@@ -71,18 +81,48 @@ function normalizeBasePayload<T extends BasePostPayload>(
     };
 }
 
+function resolveCreatedSpotId(created: BackendPostCompletionResponse): string {
+    return String(
+        created.spotId ??
+            created.spot?.id ??
+            created.feed?.spotId ??
+            created.id,
+    );
+}
+
+async function createRoomForCreatedPost(
+    created: BackendPostCompletionResponse,
+): Promise<PostCompletionResponse> {
+    if (created.chatRoomId || created.chatRoom?.id) {
+        return {
+            ...created,
+            chatRoomId: String(created.chatRoomId ?? created.chatRoom?.id),
+            spotId: resolveCreatedSpotId(created),
+        };
+    }
+
+    const spotId = resolveCreatedSpotId(created);
+    const room = await chatApi.createRoom({ category: 'spot', spotId });
+
+    return {
+        ...created,
+        spotId,
+        chatRoomId: room.data.id,
+    };
+}
+
 export const postApi = {
     createOffer: (payload: CreateOfferPostPayload) =>
-        clientApiFetch<PostCompletionResponse>(endpoints.posts.offer, {
+        clientApiFetch<BackendPostCompletionResponse>(endpoints.posts.offer, {
             method: 'POST',
             body: JSON.stringify(normalizeBasePayload(payload)),
-        }),
+        }).then(createRoomForCreatedPost),
 
     createRequest: (payload: CreateRequestPostPayload) =>
-        clientApiFetch<PostCompletionResponse>(endpoints.posts.request, {
+        clientApiFetch<BackendPostCompletionResponse>(endpoints.posts.request, {
             method: 'POST',
             body: JSON.stringify(normalizeBasePayload(payload)),
-        }),
+        }).then(createRoomForCreatedPost),
 
     get: (postId: string) => clientApiFetch(endpoints.posts.detail(postId)),
 
