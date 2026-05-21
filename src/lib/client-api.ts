@@ -38,6 +38,11 @@ export async function clientApiFetch<T>(
     });
 
     if (!response.ok) {
+        if (response.status === 401 && typeof window !== 'undefined') {
+            const next = `${window.location.pathname}${window.location.search}`;
+            window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+        }
+
         throw new Error(await readErrorMessage(response));
     }
 

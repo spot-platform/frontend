@@ -1,6 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-const PROTECTED_ROUTES = ['/post', '/pay', '/my'];
+const PROTECTED_ROUTES = [
+    '/admin-post',
+    '/chat',
+    '/feed',
+    '/map',
+    '/my',
+    '/pay',
+    '/post',
+    '/spot',
+];
 
 export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -15,7 +24,10 @@ export function proxy(request: NextRequest) {
 
     if (isProtected && !token) {
         const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('next', pathname);
+        loginUrl.searchParams.set(
+            'next',
+            `${pathname}${request.nextUrl.search}`,
+        );
         return NextResponse.redirect(loginUrl);
     }
 
