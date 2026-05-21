@@ -11,6 +11,7 @@ import type {
 } from '@/entities/user/types';
 import type { PagedResponse } from '@/entities/spot/types';
 import { clientApiFetch } from '@/lib/client-api';
+import { endpoints } from '@/lib/endpoint';
 import {
     clearMockRecentViews,
     getMockFavorites,
@@ -29,7 +30,9 @@ import {
 
 export const myApi = {
     profile: async (): Promise<{ data: UserProfile }> =>
-        clientApiFetch<UserProfile>('/users/me').then((data) => ({ data })),
+        clientApiFetch<UserProfile>(endpoints.me.profile).then((data) => ({
+            data,
+        })),
 
     notificationSettings: async (): Promise<{ data: NotificationSettings }> =>
         getMockNotificationSettings(),
@@ -65,13 +68,13 @@ export const myApi = {
         email?: string;
         phone?: string;
     }): Promise<{ data: UserProfile }> =>
-        clientApiFetch<UserProfile>('/users/me', {
+        clientApiFetch<UserProfile>(endpoints.me.profile, {
             method: 'PATCH',
             body: JSON.stringify(payload),
         }).then((data) => ({ data })),
 
     changePassword: async (payload: PasswordChangePayload): Promise<void> =>
-        clientApiFetch<void>('/users/me/password', {
+        clientApiFetch<void>(endpoints.me.password, {
             method: 'PATCH',
             body: JSON.stringify(payload),
         }),

@@ -1,3 +1,5 @@
+import { backendProxyEndpoint } from './endpoint';
+
 type ApiEnvelope<T> = {
     status?: number;
     message?: string;
@@ -29,7 +31,7 @@ export async function clientApiFetch<T>(
         headers.set('Content-Type', 'application/json');
     }
 
-    const response = await fetch(`/api/backend${path}`, {
+    const response = await fetch(backendProxyEndpoint(path), {
         ...init,
         headers,
         cache: init.cache ?? 'no-store',

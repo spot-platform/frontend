@@ -1,3 +1,5 @@
+import { backendEndpoint } from './endpoint';
+
 type ServerApiOptions = RequestInit & {
     accessToken?: string | null;
 };
@@ -13,8 +15,7 @@ function getBackendUrl(): string {
 }
 
 export function getBackendApiUrl(path: string): string {
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    return `${getBackendUrl()}${normalizedPath}`;
+    return `${getBackendUrl()}${backendEndpoint(path)}`;
 }
 
 export async function serverApiFetch(

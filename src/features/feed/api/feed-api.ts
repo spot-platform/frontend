@@ -1,4 +1,5 @@
 import { buildQueryString, clientApiFetch } from '@/lib/client-api';
+import { endpoints } from '@/lib/endpoint';
 import type {
     FeedApplication,
     FeedApplicationRole,
@@ -51,34 +52,39 @@ function toFeedApplication(
 export const feedApi = {
     list: async (params?: FeedListParams): Promise<PagedResponse<FeedItem>> =>
         clientApiFetch<BackendFeedList>(
-            `/feeds${buildQueryString(params)}`,
+            `${endpoints.feeds.root}${buildQueryString(params)}`,
         ).then((response) => ({
             data: response.data ?? [],
             meta: response.meta,
         })),
 
     get: async (feedId: string): Promise<{ data: FeedItem }> =>
-        clientApiFetch<FeedItem>(`/feeds/${feedId}`).then((data) => ({
-            data,
-        })),
+        clientApiFetch<FeedItem>(endpoints.feeds.detail(feedId)).then(
+            (data) => ({
+                data,
+            }),
+        ),
 
     apply: async (
         feedId: string,
         payload: FeedApplyPayload,
     ): Promise<{ data: FeedApplication }> =>
-        clientApiFetch<BackendFeedApplication>(`/feeds/${feedId}/apply`, {
-            method: 'POST',
-            body: JSON.stringify({
-                proposal: payload.proposal,
-                role: payload.role,
-                deposit: payload.deposit,
-            }),
-        }).then((data) => ({ data: toFeedApplication(data, payload) })),
+        clientApiFetch<BackendFeedApplication>(
+            endpoints.feeds.applications(feedId),
+            {
+                method: 'POST',
+                body: JSON.stringify({
+                    proposal: payload.proposal,
+                    role: payload.role,
+                    deposit: payload.deposit,
+                }),
+            },
+        ).then((data) => ({ data: toFeedApplication(data, payload) })),
 
     cancelApply: async (
         feedId: string,
     ): Promise<{ data: { feedId: string; status: 'CANCELLED' } }> =>
-        clientApiFetch<void>(`/feeds/${feedId}/apply`, {
+        clientApiFetch<void>(endpoints.feeds.myApplication(feedId), {
             method: 'DELETE',
         }).then(() => ({ data: { feedId, status: 'CANCELLED' } })),
 };

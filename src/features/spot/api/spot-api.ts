@@ -1,5 +1,6 @@
 // spot-api - 스팟 조회와 액션 요청, 서버 전용 mock fallback을 제공한다.
 import { buildQueryString, clientApiFetch } from '@/lib/client-api';
+import { endpoints } from '@/lib/endpoint';
 import { serverApiFetch } from '@/lib/server-api';
 import type {
     Spot,
@@ -69,6 +70,7 @@ type BackendSpot = Omit<Spot, 'type' | 'status'> & {
 
 type BackendParticipant = {
     userId: string;
+    nickname?: string;
     role: SpotParticipant['role'];
     joinedAt: string;
 };
@@ -83,30 +85,44 @@ type BackendVote = {
     id: number;
     question: string;
     state?: 'ACTIVE' | 'CLOSED';
+    multiSelect?: boolean;
+    closedAt?: string;
     options?: {
         id: number;
-        content: string;
+        label?: string;
+        content?: string;
         voteCount?: number;
+        voterIds?: string[];
     }[];
+    myVotedOptionIds?: number[] | null;
 };
 
 type BackendChecklistItem = {
     id: number;
-    content: string;
+    text?: string;
+    content?: string;
     isDone?: boolean;
+    completed?: boolean;
+    assigneeId?: string;
+    assigneeNickname?: string;
 };
 
 type BackendFile = {
     id: number;
     uploaderId?: string;
+    uploaderNickname?: string;
     fileName: string;
+    name?: string;
     fileUrl: string;
+    url?: string;
+    sizeBytes?: number;
     uploadedAt: string;
 };
 
 type BackendNote = {
     id: number;
     authorId?: string;
+    authorNickname?: string;
     content: string;
     createdAt: string;
 };
@@ -135,7 +151,7 @@ function toPagedResponse<T>(response: BackendPaged<T>): PagedResponse<T> {
 function toParticipant(participant: BackendParticipant): SpotParticipant {
     return {
         userId: participant.userId,
-        nickname: participant.userId,
+        nickname: participant.nickname ?? participant.userId,
         role: participant.role,
         joinedAt: participant.joinedAt,
     };
@@ -181,15 +197,18 @@ function toVote(spotId: string, vote: BackendVote): SpotVote {
         question: vote.question,
         options: (vote.options ?? []).map((option) => ({
             id: String(option.id),
-            label: option.content,
-            voterIds: Array.from(
-                { length: option.voteCount ?? 0 },
-                (_, index) => `voter-${option.id}-${index}`,
-            ),
+            label: option.label ?? option.content ?? '',
+            voterIds:
+                option.voterIds ??
+                Array.from(
+                    { length: option.voteCount ?? 0 },
+                    (_, index) => `voter-${option.id}-${index}`,
+                ),
         })),
-        multiSelect: false,
+        multiSelect: vote.multiSelect ?? false,
         closedAt:
-            vote.state === 'CLOSED' ? new Date().toISOString() : undefined,
+            vote.closedAt ??
+            (vote.state === 'CLOSED' ? new Date().toISOString() : undefined),
     };
 }
 
@@ -207,8 +226,10 @@ function toChecklist(
         spotId,
         items: itemList.map((item) => ({
             id: String(item.id),
-            text: item.content,
-            completed: item.isDone ?? false,
+            text: item.text ?? item.content ?? '',
+            completed: item.completed ?? item.isDone ?? false,
+            assigneeId: item.assigneeId,
+            assigneeNickname: item.assigneeNickname,
         })),
     };
 }
@@ -217,10 +238,10 @@ function toFile(spotId: string, file: BackendFile): SharedFile {
     return {
         id: String(file.id),
         spotId,
-        uploaderNickname: file.uploaderId ?? '',
-        name: file.fileName,
-        url: file.fileUrl,
-        sizeBytes: 0,
+        uploaderNickname: file.uploaderNickname ?? file.uploaderId ?? '',
+        name: file.name ?? file.fileName,
+        url: file.url ?? file.fileUrl,
+        sizeBytes: file.sizeBytes ?? 0,
         uploadedAt: file.uploadedAt,
     };
 }
@@ -229,7 +250,7 @@ function toNote(spotId: string, note: BackendNote): ProgressNote {
     return {
         id: String(note.id),
         spotId,
-        authorNickname: note.authorId ?? '',
+        authorNickname: note.authorNickname ?? note.authorId ?? '',
         content: note.content,
         createdAt: note.createdAt,
     };
@@ -267,7 +288,7 @@ function toSpotListQuery(params?: SpotListParams) {
 
 export const spotServerApi = {
     get: async (id: string): Promise<{ data: SpotDetail }> => {
-        const data = await serverApiFetch(`/api/spots/${id}`).then(
+        const data = await serverApiFetch(endpoints.spots.detail(id)).then(
             async (response) => {
                 if (!response.ok) {
                     throw new Error('스팟 상세 조회에 실패했어요.');
@@ -284,22 +305,22 @@ export const spotServerApi = {
     getParticipants: async (
         id: string,
     ): Promise<{ data: SpotParticipant[] }> => {
-        const data = await serverApiFetch(`/api/spots/${id}/participants`).then(
-            async (response) => {
-                if (!response.ok) {
-                    throw new Error('스팟 참여자 조회에 실패했어요.');
-                }
-                const payload = (await response.json()) as {
-                    data: BackendParticipant[];
-                };
-                return payload.data;
-            },
-        );
+        const data = await serverApiFetch(
+            endpoints.spots.participants(id),
+        ).then(async (response) => {
+            if (!response.ok) {
+                throw new Error('스팟 참여자 조회에 실패했어요.');
+            }
+            const payload = (await response.json()) as {
+                data: BackendParticipant[];
+            };
+            return payload.data;
+        });
         return { data: (data ?? []).map(toParticipant) };
     },
 
     getSchedule: async (id: string): Promise<{ data: SpotSchedule | null }> => {
-        const data = await serverApiFetch(`/api/spots/${id}/schedule`).then(
+        const data = await serverApiFetch(endpoints.spots.schedule(id)).then(
             async (response) => {
                 if (!response.ok) {
                     throw new Error('스팟 일정 조회에 실패했어요.');
@@ -314,7 +335,7 @@ export const spotServerApi = {
     },
 
     getVotes: async (id: string): Promise<{ data: SpotVote[] }> => {
-        const data = await serverApiFetch(`/api/spots/${id}/votes`).then(
+        const data = await serverApiFetch(endpoints.spots.votes(id)).then(
             async (response) => {
                 if (!response.ok) {
                     throw new Error('스팟 투표 조회에 실패했어요.');
@@ -331,7 +352,7 @@ export const spotServerApi = {
     getChecklist: async (
         id: string,
     ): Promise<{ data: SpotChecklist | null }> => {
-        const data = await serverApiFetch(`/api/spots/${id}/checklist`).then(
+        const data = await serverApiFetch(endpoints.spots.checklist(id)).then(
             async (response) => {
                 if (!response.ok) {
                     throw new Error('스팟 체크리스트 조회에 실패했어요.');
@@ -346,7 +367,7 @@ export const spotServerApi = {
     },
 
     getFiles: async (id: string): Promise<{ data: SharedFile[] }> => {
-        const data = await serverApiFetch(`/api/spots/${id}/files`).then(
+        const data = await serverApiFetch(endpoints.spots.files(id)).then(
             async (response) => {
                 if (!response.ok) {
                     throw new Error('스팟 파일 조회에 실패했어요.');
@@ -361,7 +382,7 @@ export const spotServerApi = {
     },
 
     getNotes: async (id: string): Promise<{ data: ProgressNote[] }> => {
-        const data = await serverApiFetch(`/api/spots/${id}/notes`).then(
+        const data = await serverApiFetch(endpoints.spots.notes(id)).then(
             async (response) => {
                 if (!response.ok) {
                     throw new Error('스팟 노트 조회에 실패했어요.');
@@ -383,7 +404,7 @@ export const spotServerApi = {
 export const spotsApi = {
     list: async (params?: SpotListParams): Promise<PagedResponse<Spot>> =>
         clientApiFetch<BackendPaged<BackendSpot>>(
-            `/spots${buildQueryString(toSpotListQuery(params))}`,
+            `${endpoints.spots.root}${buildQueryString(toSpotListQuery(params))}`,
         ).then((response) => {
             const paged = toPagedResponse(response);
             return {
@@ -393,38 +414,40 @@ export const spotsApi = {
         }),
 
     get: async (id: string): Promise<{ data: SpotDetail }> =>
-        clientApiFetch<BackendSpot>(`/spots/${id}`).then((data) => ({
-            data: toSpotDetail(data),
-        })),
+        clientApiFetch<BackendSpot>(endpoints.spots.detail(id)).then(
+            (data) => ({
+                data: toSpotDetail(data),
+            }),
+        ),
 
     create: async (payload: CreateSpotPayload): Promise<{ data: Spot }> =>
-        clientApiFetch<BackendSpot>('/spots', {
+        clientApiFetch<BackendSpot>(endpoints.spots.root, {
             method: 'POST',
             body: JSON.stringify(payload),
         }).then((data) => ({ data: toSpot(data) })),
 
     match: async (id: string): Promise<{ data: Spot }> =>
-        clientApiFetch<BackendSpot>(`/spots/${id}/match`, {
+        clientApiFetch<BackendSpot>(endpoints.spots.match(id), {
             method: 'POST',
         }).then((data) => ({ data: toSpot(data) })),
 
     cancel: async (id: string): Promise<{ data: Spot }> =>
-        clientApiFetch<BackendSpot>(`/spots/${id}/cancel`, {
+        clientApiFetch<BackendSpot>(endpoints.spots.cancel(id), {
             method: 'POST',
         }).then((data) => ({ data: toSpot(data) })),
 
     complete: async (id: string): Promise<{ data: Spot }> =>
-        clientApiFetch<BackendSpot>(`/spots/${id}/complete`, {
+        clientApiFetch<BackendSpot>(endpoints.spots.complete(id), {
             method: 'POST',
         }).then((data) => ({ data: toSpot(data) })),
 
     getParticipants: async (id: string): Promise<{ data: SpotParticipant[] }> =>
-        clientApiFetch<BackendParticipant[]>(`/spots/${id}/participants`).then(
-            (data) => ({ data: (data ?? []).map(toParticipant) }),
-        ),
+        clientApiFetch<BackendParticipant[]>(
+            endpoints.spots.participants(id),
+        ).then((data) => ({ data: (data ?? []).map(toParticipant) })),
 
     getSchedule: async (id: string): Promise<{ data: SpotSchedule | null }> =>
-        clientApiFetch<BackendSchedule[]>(`/spots/${id}/schedule`).then(
+        clientApiFetch<BackendSchedule[]>(endpoints.spots.schedule(id)).then(
             (data) => ({ data: toSchedule(id, data) }),
         ),
 
@@ -432,7 +455,7 @@ export const spotsApi = {
         id: string,
         slots: ScheduleSlot[],
     ): Promise<{ data: SpotSchedule }> =>
-        clientApiFetch<BackendSchedule>(`/spots/${id}/schedule`, {
+        clientApiFetch<BackendSchedule>(endpoints.spots.schedule(id), {
             method: 'PUT',
             body: JSON.stringify(firstSchedulePayload(slots)),
         }).then((data) => ({
@@ -443,19 +466,22 @@ export const spotsApi = {
         })),
 
     getVotes: async (id: string): Promise<{ data: SpotVote[] }> =>
-        clientApiFetch<BackendVote[]>(`/spots/${id}/votes`).then((data) => ({
-            data: (data ?? []).map((vote) => toVote(id, vote)),
-        })),
+        clientApiFetch<BackendVote[]>(endpoints.spots.votes(id)).then(
+            (data) => ({
+                data: (data ?? []).map((vote) => toVote(id, vote)),
+            }),
+        ),
 
     createVote: async (
         id: string,
         payload: CreateVotePayload,
     ): Promise<{ data: SpotVote }> =>
-        clientApiFetch<BackendVote>(`/spots/${id}/votes`, {
+        clientApiFetch<BackendVote>(endpoints.spots.votes(id), {
             method: 'POST',
             body: JSON.stringify({
                 question: payload.question,
                 options: payload.options,
+                multiSelect: payload.multiSelect ?? false,
             }),
         }).then((data) => ({ data: toVote(id, data) })),
 
@@ -464,23 +490,23 @@ export const spotsApi = {
         voteId: string,
         optionIds: string[],
     ): Promise<{ data: SpotVote }> =>
-        clientApiFetch<BackendVote>(`/spots/${id}/votes/${voteId}/cast`, {
-            method: 'POST',
+        clientApiFetch<BackendVote>(endpoints.spots.voteMyAnswers(id, voteId), {
+            method: 'PUT',
             body: JSON.stringify({
-                optionId: Number(optionIds[0]),
+                optionIds: optionIds.map(Number),
             }),
         }).then((data) => ({ data: toVote(id, data) })),
 
     getChecklist: async (id: string): Promise<{ data: SpotChecklist | null }> =>
-        clientApiFetch<BackendChecklistItem[]>(`/spots/${id}/checklist`).then(
-            (data) => ({ data: toChecklist(id, data) }),
-        ),
+        clientApiFetch<BackendChecklistItem[]>(
+            endpoints.spots.checklist(id),
+        ).then((data) => ({ data: toChecklist(id, data) })),
 
     upsertChecklist: async (
         id: string,
         items: ChecklistItem[],
     ): Promise<{ data: SpotChecklist }> =>
-        clientApiFetch<BackendChecklistItem>(`/spots/${id}/checklist`, {
+        clientApiFetch<BackendChecklistItem>(endpoints.spots.checklist(id), {
             method: 'PUT',
             body: JSON.stringify(firstChecklistPayload(items)),
         }).then((data) => ({
@@ -491,31 +517,35 @@ export const spotsApi = {
         })),
 
     getFiles: async (id: string): Promise<{ data: SharedFile[] }> =>
-        clientApiFetch<BackendFile[]>(`/spots/${id}/files`).then((data) => ({
-            data: (data ?? []).map((file) => toFile(id, file)),
-        })),
+        clientApiFetch<BackendFile[]>(endpoints.spots.files(id)).then(
+            (data) => ({
+                data: (data ?? []).map((file) => toFile(id, file)),
+            }),
+        ),
 
     deleteFile: async (id: string, fileId: string): Promise<void> =>
-        clientApiFetch<void>(`/spots/${id}/files/${fileId}`, {
+        clientApiFetch<void>(endpoints.spots.file(id, fileId), {
             method: 'DELETE',
         }),
 
     getNotes: async (id: string): Promise<{ data: ProgressNote[] }> =>
-        clientApiFetch<BackendNote[]>(`/spots/${id}/notes`).then((data) => ({
-            data: (data ?? []).map((note) => toNote(id, note)),
-        })),
+        clientApiFetch<BackendNote[]>(endpoints.spots.notes(id)).then(
+            (data) => ({
+                data: (data ?? []).map((note) => toNote(id, note)),
+            }),
+        ),
 
     createNote: async (
         id: string,
         content: string,
     ): Promise<{ data: ProgressNote }> =>
-        clientApiFetch<BackendNote>(`/spots/${id}/notes`, {
+        clientApiFetch<BackendNote>(endpoints.spots.notes(id), {
             method: 'POST',
             body: JSON.stringify({ content }),
         }).then((data) => ({ data: toNote(id, data) })),
 
     getReviews: async (id: string): Promise<{ data: SpotReview[] }> =>
-        clientApiFetch<unknown>(`/spots/${id}/reviews`).then((data) => ({
+        clientApiFetch<unknown>(endpoints.spots.reviews(id)).then((data) => ({
             data: Array.isArray(data) ? (data as SpotReview[]) : [],
         })),
 
@@ -523,7 +553,7 @@ export const spotsApi = {
         id: string,
         payload: SubmitReviewPayload,
     ): Promise<{ data: SpotReview }> =>
-        clientApiFetch<void>(`/spots/${id}/reviews`, {
+        clientApiFetch<void>(endpoints.spots.reviews(id), {
             method: 'POST',
             body: JSON.stringify(payload),
         })
