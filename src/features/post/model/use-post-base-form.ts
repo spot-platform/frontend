@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { PostSpotCategory } from './types';
+import type { SelectedPostLocation } from '../ui/post-form/MapLocationPicker';
 
 const DRAFT_KEY = 'post-base-form-draft';
 const EMPTY_DRAFT: BaseFormDraft = {
@@ -10,6 +11,8 @@ const EMPTY_DRAFT: BaseFormDraft = {
     content: '',
     categories: [],
     location: '',
+    locationLat: undefined,
+    locationLng: undefined,
     deadline: '',
 };
 
@@ -19,6 +22,8 @@ interface BaseFormDraft {
     content: string;
     categories: PostSpotCategory[];
     location: string;
+    locationLat?: number;
+    locationLng?: number;
     deadline: string;
 }
 
@@ -56,6 +61,8 @@ function getInitialDraft(): BaseFormDraft {
             content: draft.content ?? '',
             categories: draft.categories ?? [],
             location: draft.location ?? '',
+            locationLat: draft.locationLat,
+            locationLng: draft.locationLng,
             deadline: draft.deadline ?? '',
         };
     } catch {
@@ -81,7 +88,27 @@ export function usePostBaseForm(prefill?: PostBaseFormPrefill) {
     );
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
     const draft = draftOverride ?? initialDraft;
-    const { spotName, title, content, categories, location, deadline } = draft;
+    const {
+        spotName,
+        title,
+        content,
+        categories,
+        location,
+        locationLat,
+        locationLng,
+        deadline,
+    } = draft;
+    const selectedLocation: SelectedPostLocation | null =
+        typeof locationLat === 'number' &&
+        Number.isFinite(locationLat) &&
+        typeof locationLng === 'number' &&
+        Number.isFinite(locationLng)
+            ? {
+                  lat: locationLat,
+                  lng: locationLng,
+                  label: location,
+              }
+            : null;
 
     // prefill 이 시뮬→포스트 전환에서 변경되면 draft 를 한번 덮어씀 (localStorage 는 그대로).
     // prefill 의 내용 변화를 단순 JSON 직렬화로 감지.
@@ -121,6 +148,7 @@ export function usePostBaseForm(prefill?: PostBaseFormPrefill) {
         categories,
         photoPreviews,
         location,
+        selectedLocation,
         deadline,
         setSpotName: (value: string) =>
             setDraftOverride((prev) => ({
@@ -146,6 +174,13 @@ export function usePostBaseForm(prefill?: PostBaseFormPrefill) {
             setDraftOverride((prev) => ({
                 ...(prev ?? initialDraft),
                 location: value,
+            })),
+        setSelectedLocation: (value: SelectedPostLocation) =>
+            setDraftOverride((prev) => ({
+                ...(prev ?? initialDraft),
+                location: value.label,
+                locationLat: value.lat,
+                locationLng: value.lng,
             })),
         setDeadline: (value: string) =>
             setDraftOverride((prev) => ({

@@ -56,6 +56,8 @@ describe('postApi', () => {
             photoUrls: ['https://cdn.example.com/offer.jpg'],
             pointCost: 25000,
             location: '여의도',
+            lat: 37.5283,
+            lng: 126.9326,
             deadline: '2026-06-30',
             detailDescription: '그늘막 포함',
             desiredPrice: 50000,
@@ -71,6 +73,8 @@ describe('postApi', () => {
         expect(url).toBe('/api/backend/v1/feeds/offer');
         expect(body).toMatchObject({
             categories: ['음식_요리'],
+            lat: 37.5283,
+            lng: 126.9326,
             desiredPrice: 50000,
             maxPartnerCount: 4,
             plan,
@@ -102,6 +106,8 @@ describe('postApi', () => {
             photoUrls: [],
             pointCost: 15000,
             location: '합정동',
+            lat: 37.5496,
+            lng: 126.9136,
             deadline: '2026-06-30',
             detailDescription: '야간 이용 가능',
             serviceStylePhotoUrl: 'https://cdn.example.com/style.jpg',
@@ -118,6 +124,8 @@ describe('postApi', () => {
         expect(url).toBe('/api/backend/v1/feeds/request');
         expect(body).toMatchObject({
             categories: ['BBQ_조개'],
+            lat: 37.5496,
+            lng: 126.9136,
             priceCapPerPerson: 30000,
             maxPartnerCount: 3,
             plan,

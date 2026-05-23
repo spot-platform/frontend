@@ -56,12 +56,13 @@ export function RequestFormClient() {
         categories,
         photoPreviews,
         location,
+        selectedLocation,
         deadline,
         setSpotName,
         setTitle,
         setContent,
         setCategories,
-        setLocation,
+        setSelectedLocation,
         setDeadline,
         handleAddPhoto,
         handleRemovePhoto,
@@ -87,7 +88,8 @@ export function RequestFormClient() {
     const isStep0Valid =
         spotName.trim() !== '' &&
         title.trim() !== '' &&
-        location.trim() !== '' &&
+        content.trim() !== '' &&
+        selectedLocation !== null &&
         deadline !== '';
     const isStep1Valid = detailDescription.trim() !== '';
     // step 2 (플랜·준비물) 는 선택. 항상 다음 진행 가능.
@@ -111,6 +113,13 @@ export function RequestFormClient() {
             setStep((s) => s + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
+            const locationForSubmit = selectedLocation;
+
+            if (!locationForSubmit) {
+                setSubmitError('지도에서 활동 위치를 선택해주세요.');
+                return;
+            }
+
             setIsSubmitting(true);
             setSubmitError(null);
 
@@ -124,6 +133,8 @@ export function RequestFormClient() {
                     photoUrls: photoPreviews,
                     pointCost: POINT_COST,
                     location,
+                    lat: locationForSubmit.lat,
+                    lng: locationForSubmit.lng,
                     deadline,
                     detailDescription,
                     serviceStylePhotoUrl: stylePhotoPreview ?? undefined,
@@ -199,7 +210,7 @@ export function RequestFormClient() {
                         content={content}
                         categories={categories}
                         photoPreviews={photoPreviews}
-                        location={location}
+                        selectedLocation={selectedLocation}
                         deadline={deadline}
                         onSpotNameChange={setSpotName}
                         onTitleChange={setTitle}
@@ -207,7 +218,7 @@ export function RequestFormClient() {
                         onCategoriesChange={setCategories}
                         onAddPhoto={handleAddPhoto}
                         onRemovePhoto={handleRemovePhoto}
-                        onLocationChange={setLocation}
+                        onLocationChange={setSelectedLocation}
                         onDeadlineChange={setDeadline}
                     />
                 )}
