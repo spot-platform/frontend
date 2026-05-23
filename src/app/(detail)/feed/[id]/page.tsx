@@ -445,10 +445,10 @@ export default async function FeedDetailPage({ params }: Props) {
     const management = buildFeedManagement(item, applications);
     const canEditPlanPreparation =
         item.owner === true ||
-        (item.myApplicationStatus === 'APPLIED' &&
-            item.myApplicationRole === 'SUPPORTER') ||
-        (item.myApplicationStatus === 'PENDING' &&
-            item.myApplicationRole === 'SUPPORTER');
+        (item.myApplicationRole === 'SUPPORTER' &&
+            (item.myApplicationStatus === 'APPLIED' ||
+                item.myApplicationStatus === 'PENDING' ||
+                item.myApplicationStatus === 'ACCEPTED'));
     const isOffer = item.type === 'OFFER' || item.type === 'RENT';
     const isRequest = item.type === 'REQUEST';
 
