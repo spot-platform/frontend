@@ -4,6 +4,10 @@ import { CategoryTagSelector } from '../CategoryTagSelector';
 import { FormCard } from '../FormCard';
 import { FormField } from '../FormField';
 import { ImageUploadGrid } from '../ImageUploadGrid';
+import {
+    MapLocationPicker,
+    type SelectedPostLocation,
+} from './MapLocationPicker';
 
 type PostBaseInfoSectionProps = {
     spotName: string;
@@ -11,7 +15,7 @@ type PostBaseInfoSectionProps = {
     content: string;
     categories: PostSpotCategory[];
     photoPreviews: string[];
-    location: string;
+    selectedLocation: SelectedPostLocation | null;
     deadline: string;
     onSpotNameChange: (value: string) => void;
     onTitleChange: (value: string) => void;
@@ -19,7 +23,7 @@ type PostBaseInfoSectionProps = {
     onCategoriesChange: (value: PostSpotCategory[]) => void;
     onAddPhoto: (file: File, preview: string) => void;
     onRemovePhoto: (index: number) => void;
-    onLocationChange: (value: string) => void;
+    onLocationChange: (value: SelectedPostLocation) => void;
     onDeadlineChange: (value: string) => void;
 };
 
@@ -29,7 +33,7 @@ export function PostBaseInfoSection({
     content,
     categories,
     photoPreviews,
-    location,
+    selectedLocation,
     deadline,
     onSpotNameChange,
     onTitleChange,
@@ -60,7 +64,7 @@ export function PostBaseInfoSection({
                 />
             </FormField>
 
-            <FormField label="게시글 내용">
+            <FormField label="게시글 내용" required>
                 <Textarea
                     className="resize-none"
                     rows={3}
@@ -71,11 +75,9 @@ export function PostBaseInfoSection({
             </FormField>
 
             <FormField label="활동 위치" required>
-                <Input
-                    type="text"
-                    placeholder="예) 마포구 합정동 / 온라인"
-                    value={location}
-                    onChange={(event) => onLocationChange(event.target.value)}
+                <MapLocationPicker
+                    value={selectedLocation}
+                    onChange={onLocationChange}
                 />
             </FormField>
 

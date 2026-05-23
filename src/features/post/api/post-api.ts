@@ -45,8 +45,8 @@ type BasePostPayload = {
     deadline: string;
     detailDescription: string;
     maxPartnerCount?: number;
-    lat?: number;
-    lng?: number;
+    lat: number;
+    lng: number;
     plan?: PlanV3;
     preparation?: Preparation;
     priceBreakdown?: PriceBreakdown;

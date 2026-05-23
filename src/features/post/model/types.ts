@@ -23,6 +23,8 @@ export interface PostBaseFormData {
     photoPreviews: string[];
     pointCost: number;
     location: string;
+    lat: number;
+    lng: number;
     deadline: string; // ISO date YYYY-MM-DD
 }
 
