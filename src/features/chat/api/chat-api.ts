@@ -331,8 +331,12 @@ export const chatApi = {
         );
 
         eventSource.addEventListener('message', (event) => {
-            const payload = JSON.parse(event.data) as BackendMessage;
-            onMessage(toChatMessage(payload));
+            try {
+                const payload = JSON.parse(event.data) as BackendMessage;
+                onMessage(toChatMessage(payload));
+            } catch {
+                // Ignore malformed keepalive/non-message SSE payloads.
+            }
         });
 
         return eventSource;
@@ -347,8 +351,12 @@ export const chatApi = {
         );
 
         eventSource.addEventListener('message', (event) => {
-            const payload = JSON.parse(event.data) as BackendMessage;
-            onMessage(toChatMessage(payload));
+            try {
+                const payload = JSON.parse(event.data) as BackendMessage;
+                onMessage(toChatMessage(payload));
+            } catch {
+                // Ignore malformed keepalive/non-message SSE payloads.
+            }
         });
 
         return eventSource;

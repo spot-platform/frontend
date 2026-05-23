@@ -24,7 +24,11 @@ export async function serverApiFetch(
 ): Promise<Response> {
     const requestHeaders = new Headers(headers);
 
-    if (!requestHeaders.has('Content-Type') && init.body) {
+    if (
+        !requestHeaders.has('Content-Type') &&
+        init.body &&
+        !(init.body instanceof FormData)
+    ) {
         requestHeaders.set('Content-Type', 'application/json');
     }
 

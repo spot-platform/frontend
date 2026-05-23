@@ -443,6 +443,12 @@ export default async function FeedDetailPage({ params }: Props) {
 
     const applications = await getServerFeedApplications(id, { accessToken });
     const management = buildFeedManagement(item, applications);
+    const canEditPlanPreparation =
+        item.owner === true ||
+        (item.myApplicationStatus === 'APPLIED' &&
+            item.myApplicationRole === 'SUPPORTER') ||
+        (item.myApplicationStatus === 'PENDING' &&
+            item.myApplicationRole === 'SUPPORTER');
     const isOffer = item.type === 'OFFER' || item.type === 'RENT';
     const isRequest = item.type === 'REQUEST';
 
@@ -484,10 +490,7 @@ export default async function FeedDetailPage({ params }: Props) {
 
                 {/* 매칭된 서포터/작성자가 plan/preparation 을 추가/수정.
                     AI 피드는 실제 호스트가 없으므로 수정 진입점 숨김. */}
-                {!item.isAi &&
-                ((item.myApplicationStatus === 'APPLIED' &&
-                    item.myApplicationRole === 'SUPPORTER') ||
-                    management) ? (
+                {!item.isAi && canEditPlanPreparation ? (
                     <EditPlanPreparationCard
                         feedId={item.id}
                         initialPlan={item.plan}

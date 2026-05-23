@@ -8,11 +8,14 @@ import type {
     FeedItemType,
 } from '../model/types';
 import type { PagedResponse } from '@/entities/spot/types';
+import type { PlanV3, Preparation } from '@/entities/spot/simulation-types';
 
 export type FeedApplyPayload = {
     proposal: string;
     role: FeedApplicationRole;
     deposit: number;
+    plan?: PlanV3;
+    preparation?: Preparation;
 };
 
 export type FeedListParams = {
@@ -134,6 +137,10 @@ export const feedApi = {
                     proposal: payload.proposal,
                     role: payload.role,
                     deposit: payload.deposit,
+                    ...(payload.plan ? { plan: payload.plan } : {}),
+                    ...(payload.preparation
+                        ? { preparation: payload.preparation }
+                        : {}),
                 }),
             },
         ).then((data) => ({ data: toFeedApplication(data, payload) })),
@@ -151,9 +158,15 @@ export const feedApi = {
         clientApiFetch<
             BackendFeedApplication[] | { data?: BackendFeedApplication[] }
         >(endpoints.feeds.applications(feedId)).then((payload) => ({
-            data: (Array.isArray(payload) ? payload : (payload.data ?? [])).map(
-                (application) => toFeedApplication(application),
-            ),
+            data: (Array.isArray(payload) ? payload : (payload.data ?? []))
+                .filter(
+                    (application): application is BackendFeedApplication =>
+                        typeof application === 'object' &&
+                        application !== null &&
+                        'id' in application &&
+                        'feedId' in application,
+                )
+                .map((application) => toFeedApplication(application)),
         })),
 
     addBookmark: async (feedId: string): Promise<void> =>

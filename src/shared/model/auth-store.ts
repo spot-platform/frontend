@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthState>()(
             onRehydrateStorage: () => (state) => {
                 if (state) {
                     state.token = null;
-                    state.isAuthenticated = Boolean(state.userId);
+                    state.isAuthenticated = false;
                     state.hasCompletedOnboarding = Boolean(
                         state.hasCompletedOnboarding && state.userPersona,
                     );

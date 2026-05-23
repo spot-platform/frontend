@@ -60,6 +60,9 @@ export function useCancelFeedApplication() {
             queryClient.invalidateQueries({
                 queryKey: feedKeys.detail(feedId),
             });
+            queryClient.invalidateQueries({
+                queryKey: feedKeys.applications(feedId),
+            });
             queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
             queryClient.invalidateQueries({ queryKey: payKeys.balance });
             queryClient.invalidateQueries({ queryKey: ['pay', 'history'] });
@@ -104,6 +107,9 @@ export function useAcceptFeedApplication() {
             queryClient.invalidateQueries({
                 queryKey: feedKeys.detail(feedId),
             });
+            queryClient.invalidateQueries({
+                queryKey: feedKeys.applications(feedId),
+            });
         },
     });
 }
@@ -122,6 +128,9 @@ export function useRejectFeedApplication() {
             queryClient.invalidateQueries({ queryKey: feedKeys.lists() });
             queryClient.invalidateQueries({
                 queryKey: feedKeys.detail(feedId),
+            });
+            queryClient.invalidateQueries({
+                queryKey: feedKeys.applications(feedId),
             });
         },
     });

@@ -83,9 +83,14 @@ export const myApi = {
         page?: number;
         size?: number;
     }): Promise<PagedResponse<Participation>> =>
-        clientApiFetch<BackendParticipation[]>(
-            endpoints.me.participations,
-        ).then((items) => {
+        clientApiFetch<
+            BackendParticipation[] | { data?: BackendParticipation[] }
+        >(endpoints.me.participations).then((payload) => {
+            const items = Array.isArray(payload)
+                ? payload
+                : Array.isArray(payload.data)
+                  ? payload.data
+                  : [];
             const page = params?.page ?? 0;
             const size = params?.size ?? items.length;
             const start = page * size;

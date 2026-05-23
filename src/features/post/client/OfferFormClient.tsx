@@ -27,8 +27,14 @@ const POINT_COST = 25000;
 const STEPS = ['기본 정보', 'Offer 상세', '플랜·준비물', '가격 설정'];
 
 const parsePositiveInt = (value: string): number | undefined => {
-    const parsed = Number.parseInt(value, 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+    const trimmed = value.trim();
+
+    if (!/^\d+$/.test(trimmed)) {
+        return undefined;
+    }
+
+    const parsed = Number(trimmed);
+    return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined;
 };
 
 export function OfferFormClient() {

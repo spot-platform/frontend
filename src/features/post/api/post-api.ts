@@ -129,13 +129,21 @@ async function createRoomForCreatedPost(
     }
 
     const spotId = resolveCreatedSpotId(created);
-    const room = await chatApi.createRoom({ category: 'spot', spotId });
 
-    return {
-        ...normalizedCreated,
-        spotId,
-        chatRoomId: room.data.id,
-    };
+    try {
+        const room = await chatApi.createRoom({ category: 'spot', spotId });
+
+        return {
+            ...normalizedCreated,
+            spotId,
+            chatRoomId: room.data.id,
+        };
+    } catch {
+        return {
+            ...normalizedCreated,
+            spotId,
+        };
+    }
 }
 
 export const postApi = {

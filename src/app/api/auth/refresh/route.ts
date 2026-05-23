@@ -16,6 +16,8 @@ async function readUpstreamJson(response: Response): Promise<JsonRecord> {
     return isRecord(payload) ? payload : {};
 }
 
+const REFRESH_COOKIE_NAMES = ['refreshToken', 'refresh-token', 'refresh_token'];
+
 function appendSetCookieHeaders(response: NextResponse, upstream: Response) {
     const headers = upstream.headers as Headers & {
         getSetCookie?: () => string[];
@@ -35,8 +37,17 @@ function appendSetCookieHeaders(response: NextResponse, upstream: Response) {
     }
 }
 
+function buildRefreshCookieHeader(request: NextRequest): string | undefined {
+    const cookie = REFRESH_COOKIE_NAMES.flatMap((name) => {
+        const value = request.cookies.get(name)?.value;
+        return value ? [`${name}=${encodeURIComponent(value)}`] : [];
+    }).join('; ');
+
+    return cookie || undefined;
+}
+
 export async function POST(request: NextRequest) {
-    const cookie = request.headers.get('cookie');
+    const cookie = buildRefreshCookieHeader(request);
     const upstream = await serverApiFetch('/auth/refresh', {
         method: 'POST',
         headers: cookie ? { Cookie: cookie } : undefined,

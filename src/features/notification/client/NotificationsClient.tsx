@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@frontend/design-system';
 import {
     useMarkAllNotificationsRead,
@@ -19,10 +20,12 @@ function formatNotificationTime(value: string) {
 }
 
 export function NotificationsClient() {
-    const notifications = useNotifications();
+    const [size, setSize] = useState(20);
+    const notifications = useNotifications(0, size);
     const markRead = useMarkNotificationRead();
     const markAllRead = useMarkAllNotificationsRead();
     const items = notifications.data?.data ?? [];
+    const hasNext = notifications.data?.meta.hasNext ?? false;
     const unreadCount = items.filter((item) => !item.isRead).length;
 
     return (
@@ -94,6 +97,20 @@ export function NotificationsClient() {
                             </li>
                         ))}
                     </ul>
+                )}
+                {hasNext && (
+                    <Button
+                        type="button"
+                        fullWidth
+                        variant="secondary"
+                        className="mt-3 rounded-full"
+                        disabled={notifications.isFetching}
+                        onClick={() => setSize((current) => current + 20)}
+                    >
+                        {notifications.isFetching
+                            ? '더 불러오는 중...'
+                            : '알림 더 보기'}
+                    </Button>
                 )}
             </section>
         </div>

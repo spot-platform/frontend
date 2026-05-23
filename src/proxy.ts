@@ -18,8 +18,8 @@ export function proxy(request: NextRequest) {
     // Zustand persists to localStorage (client-only) for API calls.
     const token = request.cookies.get('spot-auth-token')?.value;
 
-    const isProtected = PROTECTED_ROUTES.some((route) =>
-        pathname.startsWith(route),
+    const isProtected = PROTECTED_ROUTES.some(
+        (route) => pathname === route || pathname.startsWith(`${route}/`),
     );
 
     if (isProtected && !token) {

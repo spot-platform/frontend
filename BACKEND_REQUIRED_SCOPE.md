@@ -106,9 +106,10 @@ type ChargePointsRequest = {
 ### 백엔드 구현 주의점
 
 - MVP 충전은 PG/계좌 연동 없이 “요청하면 충전”으로 처리합니다.
-- `POST /points/charge`는 amount validation만 확실히 두면 됩니다. 예: 양수, 최소/최대 충전 금액.
-- 잔액 변경 API는 중복 요청 방지 정책이 있으면 좋습니다. 단순 MVP라면 서버에서 거래 row를 생성하고 잔액을 트랜잭션으로 갱신하는 수준이면 충분합니다.
-- `POST /feeds/{feedId}/applications` 같은 신청 API에서 포인트/보증금이 연결된다면, 클라이언트가 보낸 금액을 그대로 신뢰하지 말고 서버에서 재계산해야 합니다.
+- `POST /points/charge`는 amount validation을 확실히 둡니다. 예: 양수, 최소/최대 충전 금액.
+- 잔액 변경 API는 중복 요청 방지 정책이 필수입니다. `POST /points/charge`는 클라이언트가 `Idempotency-Key` 헤더를 제공하도록 계약화하고, 서버는 해당 키로 중복 요청을 차단하거나 기존 거래 결과를 반환해야 합니다.
+- 포인트 거래 row 생성과 잔액 갱신은 하나의 트랜잭션에서 처리하고, 가능하면 거래 row를 먼저 확보한 뒤 잔액을 갱신합니다.
+- `POST /feeds/{feedId}/applications` 같은 신청 API에서 포인트/보증금이 연결된다면, 클라이언트가 보낸 금액을 그대로 신뢰하지 말고 서버에서 재계산해야 합니다. 보증금/차감이 발생하는 신청 API에도 동일하게 멱등성 키 또는 서버 단 중복 요청 차단을 적용합니다.
 - 계좌번호/출금 관련 응답과 상태값은 정책 확정 전까지 구현하지 않습니다.
 
 ---
@@ -270,10 +271,17 @@ type FeedManagementFlow = {
 | `GET` | `/api/v1/chat/rooms/{roomId}` | 채팅방 상세 조회 | required |
 | `GET` | `/api/v1/chat/rooms/{roomId}/messages` | 메시지 목록 조회 | required |
 | `POST` | `/api/v1/chat/rooms/{roomId}/messages` | 메시지 전송 | required |
-| `POST` | `/api/v1/chat/rooms/{roomId}/read` | 읽음 처리 | required |
+| `POST` | `/api/v1/chat/rooms/{roomId}/read` | 방 전체 읽음 처리 | required |
+| `POST` | `/api/v1/chat/rooms/{roomId}/messages/{messageId}/read` | 특정 메시지까지 읽음 처리 | required |
+| `POST` | `/api/v1/chat/rooms/{roomId}/typing` | 타이핑 이벤트 브로드캐스트 | required |
+| `DELETE` | `/api/v1/chat/rooms/{roomId}/members/me` | 채팅방 나가기 | required |
 | `GET` | `/api/v1/chat/rooms/by-spot/{spotId}` | spot/team 채팅방 조회 | required |
 | `GET` | `/api/v1/chat/rooms/by-user/{userId}` | 개인 채팅방 조회 | required |
-| `GET` | `/api/v1/chat/rooms/{roomId}/stream` | 실시간 메시지 스트림 | required |
+| `GET` | `/api/v1/chat/stream` | 유저 레벨 unread/badge 스트림 | required |
+| `GET` | `/api/v1/chat/rooms/{roomId}/stream` | 방 실시간 메시지 스트림 | required |
+| `GET` | `/api/v1/chat/blocks` | 차단한 유저 목록 | required |
+| `POST` | `/api/v1/chat/blocks` | 유저 차단 | required |
+| `DELETE` | `/api/v1/chat/blocks/{userId}` | 유저 차단 해제 | required |
 
 ### 백엔드 구현 주의점
 

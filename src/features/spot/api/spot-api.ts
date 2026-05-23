@@ -302,13 +302,7 @@ function schedulePayload(slots: ScheduleSlot[]) {
             hour: slot.hour,
             availableUserIds: slot.availableUserIds ?? [],
         })),
-        confirmedSlot: slots[0]
-            ? {
-                  date: slots[0].date,
-                  hour: slots[0].hour,
-                  availableUserIds: slots[0].availableUserIds ?? [],
-              }
-            : null,
+        confirmedSlot: null,
     };
 }
 
@@ -647,9 +641,19 @@ export const spotsApi = {
         }).then((data) => ({ data: toNote(id, data) })),
 
     getReviews: async (id: string): Promise<{ data: SpotReview[] }> =>
-        clientApiFetch<unknown>(endpoints.spots.reviews(id)).then((data) => ({
-            data: Array.isArray(data) ? (data as SpotReview[]) : [],
-        })),
+        clientApiFetch<unknown>(endpoints.spots.reviews(id)).then((payload) => {
+            const data =
+                typeof payload === 'object' &&
+                payload !== null &&
+                'data' in payload &&
+                Array.isArray(payload.data)
+                    ? payload.data
+                    : payload;
+
+            return {
+                data: Array.isArray(data) ? (data as SpotReview[]) : [],
+            };
+        }),
 
     submitReview: async (
         id: string,

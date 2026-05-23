@@ -43,9 +43,18 @@ function clearAuthCookies(response: NextResponse) {
     });
 }
 
+function buildAllowedCookieHeader(request: NextRequest): string | undefined {
+    const cookie = AUTH_COOKIE_NAMES_TO_CLEAR.flatMap((name) => {
+        const value = request.cookies.get(name)?.value;
+        return value ? [`${name}=${encodeURIComponent(value)}`] : [];
+    }).join('; ');
+
+    return cookie || undefined;
+}
+
 export async function POST(request: NextRequest) {
     const accessToken = request.cookies.get('spot-auth-token')?.value;
-    const cookie = request.headers.get('cookie');
+    const cookie = buildAllowedCookieHeader(request);
     const upstream = await serverApiFetch('/auth/logout', {
         method: 'POST',
         accessToken,

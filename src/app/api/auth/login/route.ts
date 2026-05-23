@@ -84,14 +84,21 @@ export async function POST(request: NextRequest) {
         | Partial<BackendLoginResult>
         | undefined;
 
-    if (!loginResult?.accessToken) {
+    const accessToken = getString(loginResult?.accessToken);
+
+    if (!loginResult || !accessToken) {
         return NextResponse.json(
             { message: '로그인 응답에 accessToken이 없습니다.' },
             { status: 502 },
         );
     }
 
-    const { accessToken, refreshToken, ...publicLoginResult } = loginResult;
+    const {
+        accessToken: _accessToken,
+        refreshToken,
+        ...publicLoginResult
+    } = loginResult;
+    void _accessToken;
     void refreshToken;
 
     const response = NextResponse.json({

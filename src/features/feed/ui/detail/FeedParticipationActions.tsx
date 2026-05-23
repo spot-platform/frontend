@@ -249,15 +249,22 @@ export function FeedParticipationActions({
         }
 
         setIsSubmitting(true);
-
         try {
+            const payload = {
+                proposal: `${getRoleLabel(selectedRole)} 참여 요청`,
+                role: selectedRole as FeedApplicationRole,
+                deposit,
+                ...(requiresSupporterPlanInput && proposedPlan
+                    ? { plan: proposedPlan }
+                    : {}),
+                ...(requiresSupporterPreparationInput && proposedPreparation
+                    ? { preparation: proposedPreparation }
+                    : {}),
+            };
+
             await applyFeed.mutateAsync({
                 feedId: item.id,
-                payload: {
-                    proposal: `${getRoleLabel(selectedRole)} 참여 요청`,
-                    role: selectedRole as FeedApplicationRole,
-                    deposit,
-                },
+                payload,
             });
 
             showBottomNavMessage(
@@ -271,9 +278,13 @@ export function FeedParticipationActions({
         }
     };
 
+    const hasPendingApplication =
+        item.myApplicationStatus === 'APPLIED' ||
+        item.myApplicationStatus === 'PENDING';
+
     const cancelOutcome: CancellationOutcome | null = useMemo(() => {
         if (
-            item.myApplicationStatus !== 'APPLIED' ||
+            !hasPendingApplication ||
             item.myApplicationRole == null ||
             item.myApplicationDeposit == null
         ) {
@@ -286,7 +297,7 @@ export function FeedParticipationActions({
             deposit: item.myApplicationDeposit,
         });
     }, [
-        item.myApplicationStatus,
+        hasPendingApplication,
         item.myApplicationRole,
         item.myApplicationDeposit,
     ]);
@@ -303,6 +314,7 @@ export function FeedParticipationActions({
 
             showBottomNavMessage('신청을 취소했어요.', '');
             setCancelOpen(false);
+            router.refresh();
         } finally {
             setIsCancelling(false);
         }
@@ -328,7 +340,7 @@ export function FeedParticipationActions({
         return '신청 후 승인되면 팀 채팅에 참여할 수 있어요.';
     })();
 
-    const isApplied = item.myApplicationStatus === 'APPLIED';
+    const isApplied = hasPendingApplication;
     const pendingApplications = (applicationsQuery.data?.data ?? []).filter(
         isPendingApplication,
     );

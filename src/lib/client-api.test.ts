@@ -17,6 +17,7 @@ describe('clientApiFetch auth recovery', () => {
     });
 
     afterEach(() => {
+        vi.unstubAllGlobals();
         Object.defineProperty(window, 'location', {
             configurable: true,
             value: originalLocation,
