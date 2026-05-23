@@ -57,8 +57,18 @@ export function MapLocationPicker({ value, onChange }: MapLocationPickerProps) {
     };
 
     const handleManualSelect = () => {
-        const lat = Number(manualLat);
-        const lng = Number(manualLng);
+        const trimmedLat = manualLat.trim();
+        const trimmedLng = manualLng.trim();
+
+        if (!trimmedLat || !trimmedLng) {
+            setManualError(
+                '위도는 -90~90, 경도는 -180~180 사이 숫자로 입력해주세요.',
+            );
+            return;
+        }
+
+        const lat = Number(trimmedLat);
+        const lng = Number(trimmedLng);
 
         if (
             !Number.isFinite(lat) ||

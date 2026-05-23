@@ -216,6 +216,8 @@ function VoteCreatePanel({
     const [question, setQuestion] = useState('');
     const [options, setOptions] = useState(['', '']);
     const [multiSelect, setMultiSelect] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     function addOption() {
         if (options.length < 6) setOptions((p) => [...p, '']);
@@ -232,14 +234,24 @@ function VoteCreatePanel({
     const canSubmit = question.trim() && filledOptions.length >= 2;
 
     async function handleSubmit() {
-        if (!canSubmit) return;
+        if (!canSubmit || isSaving) return;
+
+        setIsSaving(true);
+        setSaveError(null);
         setSelectedContextId(room.id);
-        const createdRoom = await createTeamVote(
-            question.trim(),
-            options.filter((o) => o.trim()),
-            multiSelect,
-        );
-        if (createdRoom) onClose();
+
+        try {
+            const createdRoom = await createTeamVote(
+                question.trim(),
+                filledOptions,
+                multiSelect,
+            );
+            if (createdRoom) onClose();
+        } catch {
+            setSaveError('투표 생성에 실패했어요. 잠시 후 다시 시도해주세요.');
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     return (
@@ -323,14 +335,20 @@ function VoteCreatePanel({
                 복수 선택 허용
             </button>
 
+            {saveError && (
+                <p className="mb-3 rounded-2xl border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs text-red-100">
+                    {saveError}
+                </p>
+            )}
+
             <Button
                 fullWidth
                 size="lg"
-                disabled={!canSubmit}
+                disabled={!canSubmit || isSaving}
                 className="bg-white text-brand-900 hover:bg-brand-50 disabled:opacity-40 focus-visible:ring-white/40"
                 onClick={handleSubmit}
             >
-                투표 생성
+                {isSaving ? '생성 중...' : '투표 생성'}
             </Button>
         </div>
     );

@@ -25,7 +25,7 @@ import {
     useMainChatStore,
 } from '../model/use-main-chat-store';
 import { formatReverseOfferApprovalProgress } from '../model/types';
-import { isSupporterForSpot } from '../model/mock';
+import { isOwnedSpotRoom, isSupporterForSpot } from '../model/mock';
 import {
     buildScheduleSubtitle,
     findSpotActionItem,
@@ -289,10 +289,6 @@ function FileListRow({ files }: { files: SharedFile[] }) {
 }
 
 /* ── 스팟 컨텍스트 아이템 목록 ────────────────────────────── */
-function isOwnedSpotRoom(room: SpotChatRoom) {
-    return room.spot.authorId === room.currentUserId;
-}
-
 function SpotItemList({
     room,
     onOpenRoom,

@@ -560,3 +560,7 @@ export function isSupporterForSpot(
         ? room.spot.authorId === userId
         : room.spot.authorId !== userId;
 }
+
+export function isOwnedSpotRoom(room: SpotChatRoom): boolean {
+    return room.spot.authorId === room.currentUserId;
+}
