@@ -554,9 +554,13 @@ export function getChatDirectoryCandidateById(
 
 export function isSupporterForSpot(
     room: SpotChatRoom,
-    userId: string = CHAT_CURRENT_USER_ID,
+    userId: string = room.currentUserId,
 ): boolean {
     return room.spot.type === 'OFFER'
         ? room.spot.authorId === userId
         : room.spot.authorId !== userId;
+}
+
+export function isOwnedSpotRoom(room: SpotChatRoom): boolean {
+    return room.spot.authorId === room.currentUserId;
 }

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     PERSONAL_CHAT_CONTEXT_ID,
     useMainChatStore,
@@ -6,9 +6,11 @@ import {
 import { MOCK_FEED } from '@/features/feed/model/mock';
 import { getChatRooms } from './mock';
 import { getShareableSpotActionItems } from './spot-action-items';
+import { spotsApi } from '@/features/spot/api/spot-api';
 
 describe('useMainChatStore', () => {
     beforeEach(() => {
+        vi.restoreAllMocks();
         useMainChatStore.getState().reset();
         useMainChatStore.setState({ rooms: getChatRooms() });
     });
@@ -168,6 +170,99 @@ describe('useMainChatStore', () => {
                 .getState()
                 .rooms.filter((room) => room.id === firstRoom.id),
         ).toHaveLength(1);
+    });
+
+    it('casts a vote through the spot API and syncs room/thread vote state', async () => {
+        const room = useMainChatStore
+            .getState()
+            .rooms.find(
+                (candidate) =>
+                    candidate.id === 'spot-room-spot-6' &&
+                    candidate.category === 'spot',
+            );
+
+        expect(room?.category).toBe('spot');
+
+        if (!room || room.category !== 'spot') {
+            throw new Error('Expected an owner spot room with votes.');
+        }
+
+        const vote = room.spot.votes[0];
+        const option = vote.options.find(
+            (candidate) => !candidate.voterIds.includes(room.currentUserId),
+        );
+
+        expect(option).toBeDefined();
+
+        if (!option) {
+            throw new Error('Expected an unselected vote option.');
+        }
+
+        const apiVote = {
+            ...vote,
+            options: vote.options.map((candidate) => ({
+                ...candidate,
+                voterIds:
+                    candidate.id === option.id
+                        ? [room.currentUserId]
+                        : candidate.voterIds.filter(
+                              (id) => id !== room.currentUserId,
+                          ),
+            })),
+        };
+        const castSpy = vi
+            .spyOn(spotsApi, 'castVote')
+            .mockResolvedValue({ data: apiVote });
+
+        const updatedRoom = await useMainChatStore
+            .getState()
+            .castTeamVote(room.id, vote.id, option.id);
+
+        expect(castSpy).toHaveBeenCalledWith(room.spot.id, vote.id, [
+            option.id,
+        ]);
+        expect(
+            updatedRoom?.spot.votes
+                .find((candidate) => candidate.id === vote.id)
+                ?.options.find((candidate) => candidate.id === option.id)
+                ?.voterIds,
+        ).toContain(room.currentUserId);
+
+        const updatedVoteMessage = updatedRoom?.messages.find(
+            (message) => message.kind === 'vote' && message.vote.id === vote.id,
+        );
+
+        expect(updatedVoteMessage?.kind).toBe('vote');
+
+        if (updatedVoteMessage?.kind !== 'vote') {
+            throw new Error('Expected updated vote message.');
+        }
+
+        expect(
+            updatedVoteMessage.vote.options.find(
+                (candidate) => candidate.id === option.id,
+            )?.voterIds,
+        ).toContain(room.currentUserId);
+    });
+
+    it('keeps owner-only actions blocked for non-owner supporter rooms', async () => {
+        useMainChatStore.getState().setSelectedContextId('spot-room-spot-2');
+
+        await expect(
+            useMainChatStore.getState().createTeamVote('안건', ['A', 'B']),
+        ).resolves.toBeNull();
+        await expect(
+            useMainChatStore.getState().createTeamScheduleVote(),
+        ).resolves.toBeNull();
+        await expect(
+            useMainChatStore
+                .getState()
+                .createTeamFileShare(
+                    'owner-only.pdf',
+                    12,
+                    'https://example.com/owner-only.pdf',
+                ),
+        ).resolves.toBeNull();
     });
 
     it('creates reverse-offer approval counts on room and thread message', () => {

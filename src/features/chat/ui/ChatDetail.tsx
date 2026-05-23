@@ -30,7 +30,7 @@ import {
     useMainChatStore,
 } from '../model/use-main-chat-store';
 import { chatApi } from '../api/chat-api';
-import { isSupporterForSpot } from '../model/mock';
+import { isOwnedSpotRoom, isSupporterForSpot } from '../model/mock';
 import {
     getShareableSpotActionItems,
     getSpotScheduleActionId,
@@ -581,6 +581,50 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     const messageCount = messages.filter(
         (message) => message.kind !== 'system',
     ).length;
+    const canManageOwnerActions =
+        currentRoom.category === 'spot' && isOwnedSpotRoom(currentRoom);
+    const canCreateReverseOffer =
+        currentRoom.category === 'spot' &&
+        !canManageOwnerActions &&
+        isSupporterForSpot(currentRoom);
+    const creationItems = [
+        ...(canManageOwnerActions
+            ? [
+                  {
+                      step: 'vote' as const,
+                      label: '투표',
+                      description: '선택지를 제안해요',
+                      icon: <IconChartBar size={18} />,
+                      tone: 'bg-amber-50 text-amber-700',
+                  },
+                  {
+                      step: 'schedule' as const,
+                      label: '일정',
+                      description: '가능한 시간 조율',
+                      icon: <IconCalendarEvent size={18} />,
+                      tone: 'bg-brand-50 text-brand-800',
+                  },
+                  {
+                      step: 'file' as const,
+                      label: '파일',
+                      description: '첨부 파일 공유',
+                      icon: <IconFileText size={18} />,
+                      tone: 'bg-muted text-text-secondary',
+                  },
+              ]
+            : []),
+        ...(canCreateReverseOffer
+            ? [
+                  {
+                      step: 'reverse-offer' as const,
+                      label: '역제안',
+                      description: '파트너에게 역제안',
+                      icon: <IconHeartHandshake size={18} />,
+                      tone: 'bg-emerald-50 text-emerald-700',
+                  },
+              ]
+            : []),
+    ];
     const showMobileChatNavPanel =
         chatNavExpanded &&
         (chatNavMode.kind === 'room-info' ||
@@ -987,87 +1031,53 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                     snapPoint="half"
                 >
                     <div className="flex flex-col gap-4 pb-2">
-                        <section className="flex flex-col gap-2">
-                            <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-                                새로 만들기
-                            </p>
-                            <div className="grid grid-cols-2 gap-2">
-                                {[
-                                    {
-                                        step: 'vote' as const,
-                                        label: '투표',
-                                        description: '선택지를 제안해요',
-                                        icon: <IconChartBar size={18} />,
-                                        tone: 'bg-amber-50 text-amber-700',
-                                    },
-                                    {
-                                        step: 'schedule' as const,
-                                        label: '일정',
-                                        description: '가능한 시간 조율',
-                                        icon: <IconCalendarEvent size={18} />,
-                                        tone: 'bg-brand-50 text-brand-800',
-                                    },
-                                    ...(isSupporterForSpot(currentRoom)
-                                        ? [
-                                              {
-                                                  step: 'reverse-offer' as const,
-                                                  label: '역제안',
-                                                  description:
-                                                      '파트너에게 역제안',
-                                                  icon: (
-                                                      <IconHeartHandshake
-                                                          size={18}
-                                                      />
-                                                  ),
-                                                  tone: 'bg-emerald-50 text-emerald-700',
-                                              },
-                                          ]
-                                        : []),
-                                    {
-                                        step: 'file' as const,
-                                        label: '파일',
-                                        description: '첨부 파일 공유',
-                                        icon: <IconFileText size={18} />,
-                                        tone: 'bg-muted text-text-secondary',
-                                    },
-                                ].map(
-                                    ({
-                                        step,
-                                        label,
-                                        description,
-                                        icon,
-                                        tone,
-                                    }) => (
-                                        <button
-                                            key={step}
-                                            type="button"
-                                            onClick={() => {
-                                                setShortcutPickerOpen(false);
-                                                openCreation(step);
-                                            }}
-                                            className="flex items-start gap-3 rounded-2xl border border-border-soft bg-card px-3 py-3 text-left transition hover:bg-muted active:scale-[0.99]"
-                                        >
-                                            <div
-                                                className={cn(
-                                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-                                                    tone,
-                                                )}
+                        {creationItems.length > 0 ? (
+                            <section className="flex flex-col gap-2">
+                                <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                                    새로 만들기
+                                </p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {creationItems.map(
+                                        ({
+                                            step,
+                                            label,
+                                            description,
+                                            icon,
+                                            tone,
+                                        }) => (
+                                            <button
+                                                key={step}
+                                                type="button"
+                                                onClick={() => {
+                                                    setShortcutPickerOpen(
+                                                        false,
+                                                    );
+                                                    openCreation(step);
+                                                }}
+                                                className="flex items-start gap-3 rounded-2xl border border-border-soft bg-card px-3 py-3 text-left transition hover:bg-muted active:scale-[0.99]"
                                             >
-                                                {icon}
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-semibold text-foreground">
-                                                    {label}
-                                                </p>
-                                                <p className="mt-0.5 text-xs text-muted-foreground">
-                                                    {description}
-                                                </p>
-                                            </div>
-                                        </button>
-                                    ),
-                                )}
-                            </div>
-                        </section>
+                                                <div
+                                                    className={cn(
+                                                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                                                        tone,
+                                                    )}
+                                                >
+                                                    {icon}
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-foreground">
+                                                        {label}
+                                                    </p>
+                                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                                        {description}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        ),
+                                    )}
+                                </div>
+                            </section>
+                        ) : null}
 
                         <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
                             바로가기 공유

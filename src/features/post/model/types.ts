@@ -14,6 +14,12 @@ export type PostSpotCategory =
     | '음악'
     | '기타';
 
+export type SelectedPostLocation = {
+    lat: number;
+    lng: number;
+    label: string;
+};
+
 export interface PostBaseFormData {
     spotName: string;
     title: string;

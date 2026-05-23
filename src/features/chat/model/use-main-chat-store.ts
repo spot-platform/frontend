@@ -2,13 +2,15 @@
 
 import { create } from 'zustand';
 import type { SpotDetailFull } from '@/entities/spot/types';
-import type { SharedFile, SpotVote } from '@/entities/spot/types';
+import type { SpotVote } from '@/entities/spot/types';
+import { spotsApi } from '@/features/spot/api/spot-api';
 import { chatApi } from '../api/chat-api';
 import {
     CHAT_CURRENT_USER_ID,
     CHAT_CURRENT_USER_NAME,
     getChatDirectoryCandidateById,
     getChatFriends,
+    isSupporterForSpot,
 } from './mock';
 import type {
     ChatFriend,
@@ -50,12 +52,18 @@ type MainChatState = {
         question?: string,
         options?: string[],
         multiSelect?: boolean,
-    ) => SpotChatRoom | null;
-    createTeamScheduleVote: () => SpotChatRoom | null;
+    ) => Promise<SpotChatRoom | null>;
+    castTeamVote: (
+        roomId: string,
+        voteId: string,
+        optionId: string,
+    ) => Promise<SpotChatRoom | null>;
+    createTeamScheduleVote: () => Promise<SpotChatRoom | null>;
     createTeamFileShare: (
-        fileName?: string,
-        fileSize?: number,
-    ) => SpotChatRoom | null;
+        fileName: string,
+        fileSize: number | undefined,
+        fileUrl: string,
+    ) => Promise<SpotChatRoom | null>;
     createTeamReverseOffer: (
         priorAgreementReachedInChat: boolean,
     ) => SpotChatRoom | null;
@@ -63,7 +71,7 @@ type MainChatState = {
     updateSpotSchedule: (
         roomId: string,
         slots: import('@/entities/spot/types').ScheduleSlot[],
-    ) => void;
+    ) => Promise<void>;
     applyRouteIntent: (intent: ChatRouteIntent) => ResolvedChatRoom;
     loadRooms: () => Promise<void>;
     loadRoom: (roomId: string) => Promise<ChatRoom | null>;
@@ -198,6 +206,113 @@ function upsertBackendRooms(
 
 function upsertBackendRoom(currentRooms: ChatRoom[], backendRoom: ChatRoom) {
     return upsertBackendRooms(currentRooms, [backendRoom]);
+}
+
+function isOwnedSpotRoom(room: SpotChatRoom): boolean {
+    return room.spot.authorId === room.currentUserId;
+}
+
+function canManageOwnerActions(room: SpotChatRoom): boolean {
+    return isOwnedSpotRoom(room);
+}
+
+function canCreateReverseOffer(room: SpotChatRoom): boolean {
+    return (
+        !isOwnedSpotRoom(room) && isSupporterForSpot(room, room.currentUserId)
+    );
+}
+
+function replaceVoteInRoom(room: SpotChatRoom, vote: SpotVote): SpotChatRoom {
+    return {
+        ...room,
+        spot: {
+            ...room.spot,
+            votes: room.spot.votes.map((candidate) =>
+                candidate.id === vote.id ? vote : candidate,
+            ),
+        },
+        messages: room.messages.map((message) =>
+            message.kind === 'vote' && message.vote.id === vote.id
+                ? { ...message, vote }
+                : message,
+        ),
+    };
+}
+
+function applyLocalVoteSelection(
+    vote: SpotVote,
+    userId: string,
+    optionId: string,
+): SpotVote {
+    const selected = vote.options
+        .filter((option) => option.voterIds.includes(userId))
+        .map((option) => option.id);
+    const alreadySelected = selected.includes(optionId);
+    const nextSelected = vote.multiSelect
+        ? alreadySelected
+            ? selected.filter((id) => id !== optionId)
+            : [...selected, optionId]
+        : [optionId];
+
+    return {
+        ...vote,
+        options: vote.options.map((option) => ({
+            ...option,
+            voterIds: nextSelected.includes(option.id)
+                ? Array.from(new Set([...option.voterIds, userId]))
+                : option.voterIds.filter((id) => id !== userId),
+        })),
+    };
+}
+
+async function enrichSpotRoomWithBackend(
+    room: SpotChatRoom,
+): Promise<SpotChatRoom> {
+    const spotId = room.spot.id;
+    const [participants, schedule, votes, files] = await Promise.all([
+        spotsApi
+            .getParticipants(spotId)
+            .then((response) => response.data)
+            .catch(() => room.spot.participants),
+        spotsApi
+            .getSchedule(spotId)
+            .then((response) => response.data)
+            .catch(() => room.spot.schedule ?? null),
+        spotsApi
+            .getVotes(spotId)
+            .then((response) => response.data)
+            .catch(() => room.spot.votes),
+        spotsApi
+            .getFiles(spotId)
+            .then((response) => response.data)
+            .catch(() => room.spot.files),
+    ]);
+    const owner = participants.find(
+        (participant) => participant.role === 'AUTHOR',
+    );
+
+    return {
+        ...room,
+        spot: {
+            ...room.spot,
+            authorId: room.spot.authorId || owner?.userId || '',
+            authorNickname: room.spot.authorNickname || owner?.nickname || '',
+            participants,
+            schedule: schedule ?? undefined,
+            votes,
+            files,
+        },
+    };
+}
+
+async function enrichSpotRoomsWithBackend(
+    rooms: ChatRoom[],
+): Promise<ChatRoom[]> {
+    return Promise.all(
+        rooms.map((room) =>
+            room.category === 'spot' ? enrichSpotRoomWithBackend(room) : room,
+        ),
+    );
 }
 
 function createReverseOfferSummary(payload: {
@@ -459,7 +574,7 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
 
         return nextRoom.room;
     },
-    createTeamVote: (question?, options?, multiSelect?) => {
+    createTeamVote: async (question?, options?, multiSelect?) => {
         const { selectedContextId, rooms } = get();
 
         if (selectedContextId === PERSONAL_CHAT_CONTEXT_ID) {
@@ -471,29 +586,25 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
                 room.id === selectedContextId && room.category === 'spot',
         );
 
-        if (!targetRoom) {
+        if (!targetRoom || !canManageOwnerActions(targetRoom)) {
             return null;
         }
 
         const now = new Date().toISOString();
-        const ts = Date.now();
         const resolvedOptions =
             options && options.length >= 2
                 ? options
                 : ['준비물 먼저 정리', '역할 분담 먼저 정리'];
-        const vote: SpotVote = {
-            id: `chat-vote-${ts}`,
-            spotId: targetRoom.spot.id,
-            question:
-                question ??
-                `${targetRoom.spot.title}에서 먼저 정할 안건은 무엇인가요?`,
-            options: resolvedOptions.map((label, i) => ({
-                id: `chat-vote-option-${ts}-${i}`,
-                label,
-                voterIds: i === 0 ? [CHAT_CURRENT_USER_ID] : [],
-            })),
-            multiSelect: multiSelect ?? false,
-        };
+        const resolvedQuestion =
+            question ??
+            `${targetRoom.spot.title}에서 먼저 정할 안건은 무엇인가요?`;
+        const vote = await spotsApi
+            .createVote(targetRoom.spot.id, {
+                question: resolvedQuestion,
+                options: resolvedOptions,
+                multiSelect,
+            })
+            .then((response) => response.data);
 
         const message: ChatMessage = {
             id: `chat-vote-message-${Date.now()}`,
@@ -521,7 +632,42 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
 
         return updatedRoom;
     },
-    createTeamScheduleVote: () => {
+    castTeamVote: async (roomId, voteId, optionId) => {
+        const { rooms } = get();
+        const targetRoom = rooms.find(
+            (room): room is SpotChatRoom =>
+                room.id === roomId && room.category === 'spot',
+        );
+        const targetVote = targetRoom?.spot.votes.find(
+            (vote) => vote.id === voteId,
+        );
+
+        if (!targetRoom || !targetVote || targetVote.closedAt) {
+            return null;
+        }
+
+        const optimisticVote = applyLocalVoteSelection(
+            targetVote,
+            targetRoom.currentUserId,
+            optionId,
+        );
+        const selectedOptionIds = optimisticVote.options
+            .filter((option) =>
+                option.voterIds.includes(targetRoom.currentUserId),
+            )
+            .map((option) => option.id);
+        const vote = await spotsApi
+            .castVote(targetRoom.spot.id, voteId, selectedOptionIds)
+            .then((response) => response.data);
+        const updatedRoom = replaceVoteInRoom(targetRoom, vote);
+
+        set({
+            rooms: updateSpotRoom(rooms, targetRoom.id, () => updatedRoom),
+        });
+
+        return updatedRoom;
+    },
+    createTeamScheduleVote: async () => {
         const { selectedContextId, rooms } = get();
 
         if (selectedContextId === PERSONAL_CHAT_CONTEXT_ID) {
@@ -533,7 +679,7 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
                 room.id === selectedContextId && room.category === 'spot',
         );
 
-        if (!targetRoom) {
+        if (!targetRoom || !canManageOwnerActions(targetRoom)) {
             return null;
         }
 
@@ -575,7 +721,7 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
             messages: [...targetRoom.messages, message],
         };
     },
-    createTeamFileShare: (fileName?, fileSize?) => {
+    createTeamFileShare: async (fileName, fileSize, fileUrl) => {
         const { selectedContextId, rooms } = get();
 
         if (selectedContextId === PERSONAL_CHAT_CONTEXT_ID) {
@@ -587,20 +733,18 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
                 room.id === selectedContextId && room.category === 'spot',
         );
 
-        if (!targetRoom) {
+        if (!targetRoom || !canManageOwnerActions(targetRoom)) {
             return null;
         }
 
         const now = new Date().toISOString();
-        const file: SharedFile = {
-            id: `chat-file-${Date.now()}`,
-            spotId: targetRoom.spot.id,
-            uploaderNickname: targetRoom.currentUserName,
-            name: fileName ?? '준비물_정리.pdf',
-            url: 'https://example.com/files/chat-shared-file.pdf',
-            sizeBytes: fileSize ?? 128 * 1024,
-            uploadedAt: now,
-        };
+        const file = await spotsApi
+            .uploadFile(targetRoom.spot.id, {
+                fileName,
+                fileUrl,
+                sizeBytes: fileSize,
+            })
+            .then((response) => response.data);
 
         const message: ChatMessage = {
             id: `chat-file-message-${Date.now()}`,
@@ -640,7 +784,7 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
                 room.id === selectedContextId && room.category === 'spot',
         );
 
-        if (!targetRoom) {
+        if (!targetRoom || !canCreateReverseOffer(targetRoom)) {
             return null;
         }
 
@@ -747,19 +891,28 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
 
         return updatedRoom;
     },
-    updateSpotSchedule: (roomId, slots) => {
+    updateSpotSchedule: async (roomId, slots) => {
         const { rooms } = get();
+        const targetRoom = rooms.find(
+            (candidate): candidate is SpotChatRoom =>
+                candidate.id === roomId && candidate.category === 'spot',
+        );
+
+        if (!targetRoom || !canManageOwnerActions(targetRoom)) {
+            return;
+        }
+
+        const schedule = await spotsApi
+            .upsertSchedule(targetRoom.spot.id, slots)
+            .then((response) => response.data);
+
         set({
             rooms: updateSpotRoom(rooms, roomId, (room) => ({
                 ...room,
                 updatedAt: new Date().toISOString(),
                 spot: {
                     ...room.spot,
-                    schedule: {
-                        spotId: room.spot.id,
-                        proposedSlots: slots,
-                        confirmedSlot: room.spot.schedule?.confirmedSlot,
-                    },
+                    schedule,
                 },
             })),
         });
@@ -767,9 +920,12 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
     loadRooms: async () => {
         try {
             const response = await chatApi.listRooms();
+            const backendRooms = await enrichSpotRoomsWithBackend(
+                response.data,
+            );
 
             set(({ rooms }) => ({
-                rooms: upsertBackendRooms(rooms, response.data),
+                rooms: upsertBackendRooms(rooms, backendRooms),
             }));
         } catch {
             set({ rooms: [] });
@@ -782,12 +938,16 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
 
         try {
             const response = await chatApi.getRoom(roomId);
+            const room =
+                response.data.category === 'spot'
+                    ? await enrichSpotRoomWithBackend(response.data)
+                    : response.data;
 
             set(({ rooms }) => ({
-                rooms: upsertBackendRoom(rooms, response.data),
+                rooms: upsertBackendRoom(rooms, room),
             }));
 
-            return response.data;
+            return room;
         } catch {
             return null;
         }

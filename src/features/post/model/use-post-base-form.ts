@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import type { PostSpotCategory } from './types';
-import type { SelectedPostLocation } from '../ui/post-form/MapLocationPicker';
+import type { PostSpotCategory, SelectedPostLocation } from './types';
 
 const DRAFT_KEY = 'post-base-form-draft';
 const EMPTY_DRAFT: BaseFormDraft = {
