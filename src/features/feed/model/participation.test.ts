@@ -6,8 +6,20 @@ import {
     resolveParticipationDeposit,
     resolveParticipationMaxHeadcount,
 } from './participation';
+import { isJoinedFeedStatus, isSearchExcludedFeedStatus } from './types';
 
 describe('feed participation helpers', () => {
+    it('distinguishes joined status from search-excluded application statuses', () => {
+        expect(isJoinedFeedStatus('ACCEPTED')).toBe(true);
+        expect(isJoinedFeedStatus('APPLIED')).toBe(false);
+
+        expect(isSearchExcludedFeedStatus('PENDING')).toBe(true);
+        expect(isSearchExcludedFeedStatus('APPLIED')).toBe(true);
+        expect(isSearchExcludedFeedStatus('ACCEPTED')).toBe(true);
+        expect(isSearchExcludedFeedStatus('REJECTED')).toBe(false);
+        expect(isSearchExcludedFeedStatus('CANCELLED')).toBe(false);
+    });
+
     it('prefers management demand data when calculating deposit', () => {
         const item = MOCK_FEED.find((feed) => feed.id === '1');
 

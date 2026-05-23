@@ -24,7 +24,7 @@ async function proxyBackendRequest(
     const search = request.nextUrl.search;
     const accessToken = request.cookies.get('spot-auth-token')?.value;
     const body = await readRequestBody(request);
-    const upstream = await serverApiFetch(`/api/${path.join('/')}${search}`, {
+    const upstream = await serverApiFetch(`/${path.join('/')}${search}`, {
         method: request.method,
         body,
         accessToken,

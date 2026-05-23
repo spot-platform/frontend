@@ -55,7 +55,7 @@ export function LoginPageClient({
                 />
 
                 <SocialLoginButtons
-                    kakaoHref={oauthLinks.kakao}
+                    naverHref={oauthLinks.naver}
                     googleHref={oauthLinks.google}
                 />
 

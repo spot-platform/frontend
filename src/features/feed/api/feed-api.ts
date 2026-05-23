@@ -1,4 +1,5 @@
 import { buildQueryString, clientApiFetch } from '@/lib/client-api';
+import { endpoints } from '@/lib/endpoint';
 import type {
     FeedApplication,
     FeedApplicationRole,
@@ -7,11 +8,14 @@ import type {
     FeedItemType,
 } from '../model/types';
 import type { PagedResponse } from '@/entities/spot/types';
+import type { PlanV3, Preparation } from '@/entities/spot/simulation-types';
 
 export type FeedApplyPayload = {
     proposal: string;
     role: FeedApplicationRole;
     deposit: number;
+    plan?: PlanV3;
+    preparation?: Preparation;
 };
 
 export type FeedListParams = {
@@ -25,60 +29,188 @@ export type FeedListParams = {
 };
 
 type BackendFeedList = {
-    data?: FeedItem[];
+    data?: BackendFeedItem[];
     meta?: PagedResponse<FeedItem>['meta'];
 };
 
-type BackendFeedApplication = Omit<
-    FeedApplication,
-    'appliedRole' | 'deposit'
+export type BackendFeedItem = Omit<
+    FeedItem,
+    'id' | 'spotId' | 'confirmedPartnerProfiles' | 'isAi'
 > & {
+    id: string | number;
+    spotId?: string | number;
+    ai?: boolean;
+    isAi?: boolean;
+    confirmedPartnerProfiles?: Array<{
+        id: string;
+        nickname: string;
+        avatarUrl?: string | null;
+        avatar_url?: string | null;
+    }>;
+};
+
+export type BackendFeedApplication = Omit<
+    FeedApplication,
+    | 'id'
+    | 'feedId'
+    | 'appliedRole'
+    | 'deposit'
+    | 'applicantProfile'
+    | 'nickname'
+> & {
+    id: string | number;
+    feedId: string | number;
+    userNickname?: string;
+    nickname?: string;
+    avatarUrl?: string | null;
+    applicantProfile?: FeedApplication['applicantProfile'];
     appliedRole?: FeedApplicationRole;
     deposit?: number;
 };
 
-function toFeedApplication(
+export function toFeedApplication(
     application: BackendFeedApplication,
-    fallback: FeedApplyPayload,
+    fallback?: Partial<FeedApplyPayload>,
 ): FeedApplication {
+    const nickname = application.nickname ?? application.userNickname;
+
     return {
         ...application,
-        appliedRole: application.appliedRole ?? fallback.role,
-        deposit: application.deposit ?? fallback.deposit,
+        id: String(application.id),
+        feedId: String(application.feedId),
+        nickname,
+        applicantProfile:
+            application.applicantProfile ??
+            (nickname
+                ? {
+                      id: application.userId,
+                      nickname,
+                      avatarUrl: application.avatarUrl,
+                  }
+                : undefined),
+        appliedRole: application.appliedRole ?? fallback?.role ?? 'PARTNER',
+        deposit: application.deposit ?? fallback?.deposit ?? 0,
+    };
+}
+
+export function toFeedItem(item: BackendFeedItem): FeedItem {
+    return {
+        ...item,
+        id: String(item.id),
+        spotId: item.spotId == null ? undefined : String(item.spotId),
+        confirmedPartnerProfiles: item.confirmedPartnerProfiles?.map(
+            (profile) => ({
+                id: profile.id,
+                nickname: profile.nickname,
+                avatarUrl: profile.avatarUrl ?? profile.avatar_url ?? undefined,
+            }),
+        ),
+        isAi: item.isAi ?? item.ai,
     };
 }
 
 export const feedApi = {
     list: async (params?: FeedListParams): Promise<PagedResponse<FeedItem>> =>
         clientApiFetch<BackendFeedList>(
-            `/feeds${buildQueryString(params)}`,
+            `${endpoints.feeds.root}${buildQueryString(params)}`,
         ).then((response) => ({
-            data: response.data ?? [],
+            data: (response.data ?? []).map(toFeedItem),
             meta: response.meta,
         })),
 
     get: async (feedId: string): Promise<{ data: FeedItem }> =>
-        clientApiFetch<FeedItem>(`/feeds/${feedId}`).then((data) => ({
-            data,
-        })),
+        clientApiFetch<BackendFeedItem>(endpoints.feeds.detail(feedId)).then(
+            (data) => ({
+                data: toFeedItem(data),
+            }),
+        ),
 
     apply: async (
         feedId: string,
         payload: FeedApplyPayload,
     ): Promise<{ data: FeedApplication }> =>
-        clientApiFetch<BackendFeedApplication>(`/feeds/${feedId}/apply`, {
-            method: 'POST',
-            body: JSON.stringify({
-                proposal: payload.proposal,
-                role: payload.role,
-                deposit: payload.deposit,
-            }),
-        }).then((data) => ({ data: toFeedApplication(data, payload) })),
+        clientApiFetch<BackendFeedApplication>(
+            endpoints.feeds.applications(feedId),
+            {
+                method: 'POST',
+                body: JSON.stringify({
+                    proposal: payload.proposal,
+                    role: payload.role,
+                    deposit: payload.deposit,
+                    ...(payload.plan ? { plan: payload.plan } : {}),
+                    ...(payload.preparation
+                        ? { preparation: payload.preparation }
+                        : {}),
+                }),
+            },
+        ).then((data) => ({ data: toFeedApplication(data, payload) })),
 
     cancelApply: async (
         feedId: string,
     ): Promise<{ data: { feedId: string; status: 'CANCELLED' } }> =>
-        clientApiFetch<void>(`/feeds/${feedId}/apply`, {
+        clientApiFetch<void>(endpoints.feeds.myApplication(feedId), {
             method: 'DELETE',
         }).then(() => ({ data: { feedId, status: 'CANCELLED' } })),
+
+    applications: async (
+        feedId: string,
+    ): Promise<{ data: FeedApplication[] }> =>
+        clientApiFetch<
+            BackendFeedApplication[] | { data?: BackendFeedApplication[] }
+        >(endpoints.feeds.applications(feedId)).then((payload) => ({
+            data: (Array.isArray(payload) ? payload : (payload.data ?? []))
+                .filter(
+                    (application): application is BackendFeedApplication =>
+                        typeof application === 'object' &&
+                        application !== null &&
+                        'id' in application &&
+                        'feedId' in application,
+                )
+                .map((application) => toFeedApplication(application)),
+        })),
+
+    addBookmark: async (feedId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.feeds.bookmark(feedId), {
+            method: 'POST',
+        }),
+
+    removeBookmark: async (feedId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.feeds.bookmark(feedId), {
+            method: 'DELETE',
+        }),
+
+    acceptApplication: async (
+        feedId: string,
+        applicationId: string,
+    ): Promise<{ data: FeedApplication }> =>
+        clientApiFetch<BackendFeedApplication>(
+            endpoints.feeds.acceptApplication(feedId, applicationId),
+            { method: 'PATCH' },
+        ).then((data) => ({
+            data: toFeedApplication(data, {
+                proposal: data.proposal,
+                role: data.appliedRole ?? 'PARTNER',
+                deposit: data.deposit ?? 0,
+            }),
+        })),
+
+    rejectApplication: async (
+        feedId: string,
+        applicationId: string,
+    ): Promise<{ data: FeedApplication }> =>
+        clientApiFetch<BackendFeedApplication>(
+            endpoints.feeds.rejectApplication(feedId, applicationId),
+            { method: 'PATCH' },
+        ).then((data) => ({
+            data: toFeedApplication(data, {
+                proposal: data.proposal,
+                role: data.appliedRole ?? 'PARTNER',
+                deposit: data.deposit ?? 0,
+            }),
+        })),
+
+    delete: async (feedId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.feeds.delete(feedId), {
+            method: 'DELETE',
+        }),
 };

@@ -1,3 +1,5 @@
+import { backendProxyEndpoint } from './endpoint';
+
 type ApiEnvelope<T> = {
     status?: number;
     message?: string;
@@ -19,23 +21,71 @@ async function readErrorMessage(response: Response): Promise<string> {
     return response.statusText || '요청 처리에 실패했어요.';
 }
 
-export async function clientApiFetch<T>(
-    path: string,
-    init: RequestInit = {},
-): Promise<T> {
+async function requestBackend(path: string, init: RequestInit = {}) {
     const headers = new Headers(init.headers);
 
-    if (!headers.has('Content-Type') && init.body) {
+    if (
+        !headers.has('Content-Type') &&
+        init.body &&
+        !(init.body instanceof FormData)
+    ) {
         headers.set('Content-Type', 'application/json');
     }
 
-    const response = await fetch(`/api/backend${path}`, {
+    return fetch(backendProxyEndpoint(path), {
         ...init,
         headers,
         cache: init.cache ?? 'no-store',
     });
+}
+
+async function refreshAccessToken(): Promise<boolean> {
+    try {
+        const response = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            cache: 'no-store',
+        });
+
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
+async function clearBrowserAuth() {
+    window.localStorage.removeItem('spot-auth');
+
+    await fetch('/api/auth/logout', {
+        method: 'POST',
+        cache: 'no-store',
+    }).catch(() => undefined);
+}
+
+function redirectToLogin() {
+    const next = `${window.location.pathname}${window.location.search}`;
+    window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+}
+
+export async function clientApiFetch<T>(
+    path: string,
+    init: RequestInit = {},
+): Promise<T> {
+    let response = await requestBackend(path, init);
+
+    if (
+        response.status === 401 &&
+        typeof window !== 'undefined' &&
+        (await refreshAccessToken())
+    ) {
+        response = await requestBackend(path, init);
+    }
 
     if (!response.ok) {
+        if (response.status === 401 && typeof window !== 'undefined') {
+            await clearBrowserAuth();
+            redirectToLogin();
+        }
+
         throw new Error(await readErrorMessage(response));
     }
 

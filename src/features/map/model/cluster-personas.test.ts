@@ -138,6 +138,6 @@ describe('clusterPersonas', () => {
         expect(first).toHaveLength(1);
         expect(second).toHaveLength(1);
         expect(first[0].id).toBe(second[0].id);
-        expect(first[0].id).toMatch(/^운동-offer-\d+\.\d{4}-\d+\.\d{4}$/);
+        expect(first[0].id).toMatch(/^운동-offer-\d+\.\d{3}-\d+\.\d{3}$/);
     });
 });

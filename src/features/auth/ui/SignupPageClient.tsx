@@ -20,6 +20,7 @@ export function SignupPageClient({ nextPath }: SignupPageClientProps) {
         verificationCode,
         errors,
         isComplete,
+        isSubmitting,
         loginPath,
         handleEmailChange,
         handlePasswordChange,
@@ -48,6 +49,8 @@ export function SignupPageClient({ nextPath }: SignupPageClientProps) {
                         emailError={errors.email}
                         passwordError={errors.password}
                         passwordConfirmError={errors.passwordConfirm}
+                        formError={errors.form}
+                        isSubmitting={isSubmitting}
                         loginPath={loginPath}
                         onEmailChange={handleEmailChange}
                         onPasswordChange={handlePasswordChange}

@@ -3,7 +3,10 @@
 import { useCallback, useState } from 'react';
 import { IconNavigation, IconList } from '@tabler/icons-react';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
-import { useLayerStore } from '@/features/layer/model/use-layer-store';
+import {
+    LAYER_LABEL,
+    useLayerStore,
+} from '@/features/layer/model/use-layer-store';
 
 type MapFooterProps = {
     onCenterToUser?: (coord: { lat: number; lng: number }) => void;
@@ -20,7 +23,7 @@ export function MapFooter({
     const feedType = useFilterStore((s) => s.feedType);
     const setFeedType = useFilterStore((s) => s.setFeedType);
     const activeLayer = useLayerStore((s) => s.activeLayer);
-    const setLayer = useLayerStore((s) => s.setLayer);
+    const toggleMapLayer = useLayerStore((s) => s.toggleMapLayer);
 
     const handleMyLocation = useCallback(() => {
         if (!navigator.geolocation) return;
@@ -49,7 +52,7 @@ export function MapFooter({
             : feedType === 'request'
               ? '알려줘'
               : '전체';
-    const layerLabel = activeLayer === 'real' ? '현실' : '혼합';
+    const layerLabel = LAYER_LABEL[activeLayer];
 
     return (
         <div
@@ -110,9 +113,7 @@ export function MapFooter({
 
             <button
                 type="button"
-                onClick={() =>
-                    setLayer(activeLayer === 'mixed' ? 'real' : 'mixed')
-                }
+                onClick={toggleMapLayer}
                 className={`${btnBase} ${
                     activeLayer === 'real' ? btnActive : btnIdle
                 }`}

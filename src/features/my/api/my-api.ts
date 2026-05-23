@@ -10,12 +10,13 @@ import type {
     MySupportActivitySummary,
 } from '@/entities/user/types';
 import type { PagedResponse } from '@/entities/spot/types';
+import type { FeedItem } from '@/features/feed/model/types';
 import { clientApiFetch } from '@/lib/client-api';
+import { endpoints } from '@/lib/endpoint';
 import {
     clearMockRecentViews,
     getMockFavorites,
     getMockNotificationSettings,
-    getMockParticipations,
     getMockRecentViews,
     getMockSupportActivitySummary,
     getMockSupporterProfile,
@@ -27,9 +28,47 @@ import {
     updateMockSupporterRegistration,
 } from '../model/mock';
 
+type BackendParticipation = {
+    spotId: number | string;
+    title: string;
+    type: Participation['spotType'] | 'RENT';
+    status: Participation['status'];
+    role: Participation['role'];
+    joinedAt: string;
+};
+
+type BackendInvolvedFeedItem = Omit<FeedItem, 'id' | 'spotId' | 'isAi'> & {
+    id: string | number;
+    spotId?: string | number;
+    ai?: boolean;
+    isAi?: boolean;
+};
+
+function toInvolvedFeedItem(item: BackendInvolvedFeedItem): FeedItem {
+    return {
+        ...item,
+        id: String(item.id),
+        spotId: item.spotId == null ? undefined : String(item.spotId),
+        isAi: item.isAi ?? item.ai,
+    };
+}
+
+function toParticipation(item: BackendParticipation): Participation {
+    return {
+        spotId: String(item.spotId),
+        spotTitle: item.title,
+        spotType: item.type === 'RENT' ? 'OFFER' : item.type,
+        status: item.status,
+        role: item.role,
+        joinedAt: item.joinedAt,
+    };
+}
+
 export const myApi = {
     profile: async (): Promise<{ data: UserProfile }> =>
-        clientApiFetch<UserProfile>('/users/me').then((data) => ({ data })),
+        clientApiFetch<UserProfile>(endpoints.me.profile).then((data) => ({
+            data,
+        })),
 
     notificationSettings: async (): Promise<{ data: NotificationSettings }> =>
         getMockNotificationSettings(),
@@ -43,7 +82,41 @@ export const myApi = {
     participations: async (params?: {
         page?: number;
         size?: number;
-    }): Promise<PagedResponse<Participation>> => getMockParticipations(params),
+    }): Promise<PagedResponse<Participation>> =>
+        clientApiFetch<
+            BackendParticipation[] | { data?: BackendParticipation[] }
+        >(endpoints.me.participations).then((payload) => {
+            const items = Array.isArray(payload)
+                ? payload
+                : Array.isArray(payload.data)
+                  ? payload.data
+                  : [];
+            const page = params?.page ?? 0;
+            const size = params?.size ?? items.length;
+            const start = page * size;
+            const data = items.slice(start, start + size).map(toParticipation);
+
+            return {
+                data,
+                meta: {
+                    page,
+                    size,
+                    total: items.length,
+                    hasNext: start + size < items.length,
+                },
+            };
+        }),
+
+    involvedFeeds: async (): Promise<{ data: FeedItem[] }> =>
+        clientApiFetch<BackendInvolvedFeedItem[]>(
+            endpoints.me.involvedFeeds,
+        ).then((items) => ({ data: (items ?? []).map(toInvolvedFeedItem) })),
+
+    deleteUser: async (payload?: { password?: string }): Promise<void> =>
+        clientApiFetch<void>(endpoints.me.profile, {
+            method: 'DELETE',
+            body: payload ? JSON.stringify(payload) : undefined,
+        }),
 
     favorites: async (params?: {
         page?: number;
@@ -65,13 +138,13 @@ export const myApi = {
         email?: string;
         phone?: string;
     }): Promise<{ data: UserProfile }> =>
-        clientApiFetch<UserProfile>('/users/me', {
+        clientApiFetch<UserProfile>(endpoints.me.profile, {
             method: 'PATCH',
             body: JSON.stringify(payload),
         }).then((data) => ({ data })),
 
     changePassword: async (payload: PasswordChangePayload): Promise<void> =>
-        clientApiFetch<void>('/users/me/password', {
+        clientApiFetch<void>(endpoints.me.password, {
             method: 'PATCH',
             body: JSON.stringify(payload),
         }),

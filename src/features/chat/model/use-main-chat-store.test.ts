@@ -4,11 +4,13 @@ import {
     useMainChatStore,
 } from './use-main-chat-store';
 import { MOCK_FEED } from '@/features/feed/model/mock';
+import { getChatRooms } from './mock';
 import { getShareableSpotActionItems } from './spot-action-items';
 
 describe('useMainChatStore', () => {
     beforeEach(() => {
         useMainChatStore.getState().reset();
+        useMainChatStore.setState({ rooms: getChatRooms() });
     });
 
     it('selects a spot room from route intent', () => {

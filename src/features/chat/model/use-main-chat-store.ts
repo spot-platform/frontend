@@ -171,7 +171,10 @@ function isBackendChatRoomId(roomId: string): boolean {
     return /^\d+$/.test(roomId);
 }
 
-function upsertBackendRooms(currentRooms: ChatRoom[], backendRooms: ChatRoom[]) {
+function upsertBackendRooms(
+    currentRooms: ChatRoom[],
+    backendRooms: ChatRoom[],
+) {
     const currentById = new Map(currentRooms.map((room) => [room.id, room]));
 
     return sortRoomsByUpdatedAt(
@@ -815,9 +818,7 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
             }
 
             if (
-                room.messages.some(
-                    (candidate) => candidate.id === message.id,
-                )
+                room.messages.some((candidate) => candidate.id === message.id)
             ) {
                 return { rooms };
             }
@@ -1061,8 +1062,7 @@ export const useMainChatStore = create<MainChatState>()((set, get) => ({
 
                                 const messagesWithoutDuplicate =
                                     latestRoom.messages.filter(
-                                        (candidate) =>
-                                            candidate.id !== data.id,
+                                        (candidate) => candidate.id !== data.id,
                                     );
                                 const hasPendingMessage =
                                     messagesWithoutDuplicate.some(

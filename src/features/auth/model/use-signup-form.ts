@@ -1,12 +1,10 @@
 'use client';
 
 import { useMemo, useState, type ChangeEventHandler } from 'react';
+import { useRouter } from 'next/navigation';
+import { authApi } from '../api/auth-api';
 import { getAuthPathWithNext } from './get-auth-path-with-next';
-import {
-    validateSignupInfo,
-    validateVerificationCode,
-    type SignupFormErrors,
-} from './signup-validation';
+import { validateSignupInfo, type SignupFormErrors } from './signup-validation';
 
 type SignupStep = 'info' | 'verify';
 
@@ -22,6 +20,8 @@ export function useSignupForm({ nextPath }: UseSignupFormOptions) {
     const [verificationCode, setVerificationCode] = useState('');
     const [errors, setErrors] = useState<SignupFormErrors>({});
     const [isComplete, setIsComplete] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
 
     const loginPath = useMemo(
         () => getAuthPathWithNext('/login', nextPath),
@@ -71,7 +71,7 @@ export function useSignupForm({ nextPath }: UseSignupFormOptions) {
         }));
     };
 
-    const handleInfoSubmit = () => {
+    const handleInfoSubmit = async () => {
         const nextErrors = validateSignupInfo({
             email,
             password,
@@ -83,24 +83,42 @@ export function useSignupForm({ nextPath }: UseSignupFormOptions) {
             return;
         }
 
-        setEmail(email.trim());
-        setVerificationCode('');
-        setErrors({});
-        setIsComplete(false);
-        setStep('verify');
+        const trimmedEmail = email.trim();
+        setIsSubmitting(true);
+
+        try {
+            const exists = await authApi.checkEmailExists(trimmedEmail);
+            if (exists) {
+                setErrors({ email: '이미 가입된 이메일이에요.' });
+                return;
+            }
+
+            await authApi.signup({
+                email: trimmedEmail,
+                password,
+                nickname:
+                    trimmedEmail.split('@')[0].slice(0, 20) || 'spot-user',
+            });
+
+            setEmail(trimmedEmail);
+            setVerificationCode('');
+            setErrors({});
+            setIsComplete(true);
+            router.push(loginPath);
+        } catch (error) {
+            setErrors({
+                form:
+                    error instanceof Error
+                        ? error.message
+                        : '회원가입에 실패했어요.',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleVerificationSubmit = () => {
-        const verificationCodeError =
-            validateVerificationCode(verificationCode);
-
-        if (verificationCodeError) {
-            setErrors({ verificationCode: verificationCodeError });
-            return;
-        }
-
-        setErrors({});
-        setIsComplete(true);
+    const handleVerificationSubmit = async () => {
+        await handleInfoSubmit();
     };
 
     const handleBackToInfo = () => {
@@ -118,6 +136,7 @@ export function useSignupForm({ nextPath }: UseSignupFormOptions) {
         verificationCode,
         errors,
         isComplete,
+        isSubmitting,
         loginPath,
         handleEmailChange,
         handlePasswordChange,

@@ -1,4 +1,4 @@
-export type OAuthProvider = 'kakao' | 'google';
+export type OAuthProvider = 'naver' | 'google';
 
 export interface LoginRequest {
     email: string;
@@ -7,16 +7,10 @@ export interface LoginRequest {
 }
 
 export interface LoginResult {
-    accessToken: string;
-    refreshToken: string;
     userId: string;
     redirectTo: string;
 }
 
-export interface RefreshTokenRequest {
-    refreshToken: string;
-}
-
 export interface TokenRefreshResult {
-    accessToken: string;
+    refreshed: boolean;
 }

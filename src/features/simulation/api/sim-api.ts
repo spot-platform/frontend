@@ -1,4 +1,5 @@
 import { buildQueryString, clientApiFetch } from '@/lib/client-api';
+import { endpoints } from '@/lib/endpoint';
 import type {
     LifecycleChunk,
     MovementChunk,
@@ -9,7 +10,7 @@ import type { SimulationSpotDetail } from '@/entities/spot/simulation-types';
 export const DEMO_RUN_ID = 'demo_run_001';
 
 export function fetchSimManifest(runId: string): Promise<SimManifest> {
-    return clientApiFetch<SimManifest>(`/sim/runs/${runId}/manifest`);
+    return clientApiFetch<SimManifest>(endpoints.sim.manifest(runId));
 }
 
 export function fetchSimMovements(
@@ -18,7 +19,7 @@ export function fetchSimMovements(
     toTick: number,
 ): Promise<MovementChunk> {
     return clientApiFetch<MovementChunk>(
-        `/sim/runs/${runId}/movements${buildQueryString({
+        `${endpoints.sim.movements(runId)}${buildQueryString({
             fromTick,
             toTick,
         })}`,
@@ -31,7 +32,7 @@ export function fetchSimLifecycle(
     toTick: number,
 ): Promise<LifecycleChunk> {
     return clientApiFetch<LifecycleChunk>(
-        `/sim/runs/${runId}/lifecycle${buildQueryString({
+        `${endpoints.sim.lifecycle(runId)}${buildQueryString({
             fromTick,
             toTick,
         })}`,

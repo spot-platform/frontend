@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MOCK_FEED } from '@/features/feed/model/mock';
+import { getChatRooms } from './mock';
 import { useMainChatStore } from './use-main-chat-store';
 import { resolveReverseOfferFinancialSummary } from './reverse-offer-finance';
 
@@ -37,6 +38,7 @@ describe('reverse offer financial summary', () => {
 
     it('falls back to the current spot data when feed goal data is unavailable', () => {
         useMainChatStore.getState().reset();
+        useMainChatStore.setState({ rooms: getChatRooms() });
 
         const room = useMainChatStore
             .getState()

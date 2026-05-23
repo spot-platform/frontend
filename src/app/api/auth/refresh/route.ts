@@ -11,15 +11,12 @@ function getString(value: unknown): string | undefined {
     return typeof value === 'string' ? value : undefined;
 }
 
-async function readJsonBody(request: NextRequest): Promise<JsonRecord | null> {
-    const payload: unknown = await request.json().catch(() => null);
-    return isRecord(payload) ? payload : null;
-}
-
 async function readUpstreamJson(response: Response): Promise<JsonRecord> {
     const payload: unknown = await response.json().catch(() => ({}));
     return isRecord(payload) ? payload : {};
 }
+
+const REFRESH_COOKIE_NAMES = ['refreshToken', 'refresh-token', 'refresh_token'];
 
 function appendSetCookieHeaders(response: NextResponse, upstream: Response) {
     const headers = upstream.headers as Headers & {
@@ -40,20 +37,20 @@ function appendSetCookieHeaders(response: NextResponse, upstream: Response) {
     }
 }
 
+function buildRefreshCookieHeader(request: NextRequest): string | undefined {
+    const cookie = REFRESH_COOKIE_NAMES.flatMap((name) => {
+        const value = request.cookies.get(name)?.value;
+        return value ? [`${name}=${encodeURIComponent(value)}`] : [];
+    }).join('; ');
+
+    return cookie || undefined;
+}
+
 export async function POST(request: NextRequest) {
-    const body = await readJsonBody(request);
-    const refreshToken = getString(body?.refreshToken);
-
-    if (!refreshToken) {
-        return NextResponse.json(
-            { message: 'refreshToken이 필요합니다.' },
-            { status: 400 },
-        );
-    }
-
-    const upstream = await serverApiFetch('/api/auth/refresh', {
+    const cookie = buildRefreshCookieHeader(request);
+    const upstream = await serverApiFetch('/auth/refresh', {
         method: 'POST',
-        body: JSON.stringify({ refreshToken }),
+        headers: cookie ? { Cookie: cookie } : undefined,
     });
     const payload = await readUpstreamJson(upstream);
 
@@ -71,14 +68,14 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const response = NextResponse.json(tokenResult);
+    const response = NextResponse.json({ refreshed: true });
 
     response.cookies.set('spot-auth-token', accessToken, {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        maxAge: 60 * 60 * 24 * 30,
+        maxAge: 60 * 60,
     });
     appendSetCookieHeaders(response, upstream);
 

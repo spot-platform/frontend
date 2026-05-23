@@ -155,6 +155,13 @@ function ChatSection({ title, count, rooms, onRoomClick }: SectionProps) {
 export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
     const router = useRouter();
     const rooms = useMainChatStore((s) => s.rooms);
+    const loadRooms = useMainChatStore((s) => s.loadRooms);
+
+    useEffect(() => {
+        if (!open) return;
+
+        void loadRooms();
+    }, [loadRooms, open]);
 
     const { personalRooms, feedRooms, spotRooms } = useMemo(() => {
         const personal: PersonalChatRoom[] = [];

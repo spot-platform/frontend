@@ -4,7 +4,7 @@ import { Button, Input } from '@frontend/design-system';
 import type { ChangeEvent } from 'react';
 
 type InputChangeHandler = (event: ChangeEvent<HTMLInputElement>) => void;
-type FormSubmitHandler = () => void;
+type FormSubmitHandler = () => void | Promise<void>;
 
 type SignupInfoFormProps = {
     email: string;
@@ -13,6 +13,8 @@ type SignupInfoFormProps = {
     emailError?: string;
     passwordError?: string;
     passwordConfirmError?: string;
+    formError?: string;
+    isSubmitting?: boolean;
     loginPath: string;
     onEmailChange: InputChangeHandler;
     onPasswordChange: InputChangeHandler;
@@ -27,6 +29,8 @@ export function SignupInfoForm({
     emailError,
     passwordError,
     passwordConfirmError,
+    formError,
+    isSubmitting = false,
     loginPath,
     onEmailChange,
     onPasswordChange,
@@ -79,8 +83,18 @@ export function SignupInfoForm({
                 error={passwordConfirmError}
             />
 
-            <Button type="submit" size="lg" fullWidth>
-                다음 단계로
+            {formError && (
+                <p
+                    role="alert"
+                    aria-live="assertive"
+                    className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600"
+                >
+                    {formError}
+                </p>
+            )}
+
+            <Button type="submit" size="lg" fullWidth disabled={isSubmitting}>
+                {isSubmitting ? '가입 중...' : '가입하기'}
             </Button>
 
             <div className="text-center text-sm text-gray-500">

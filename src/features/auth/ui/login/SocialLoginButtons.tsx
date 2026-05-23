@@ -1,12 +1,12 @@
-import { SiGoogle, SiKakaotalk } from 'react-icons/si';
+import { SiGoogle, SiNaver } from 'react-icons/si';
 
 type SocialLoginButtonsProps = {
-    kakaoHref: string;
+    naverHref: string;
     googleHref: string;
 };
 
 export function SocialLoginButtons({
-    kakaoHref,
+    naverHref,
     googleHref,
 }: SocialLoginButtonsProps) {
     return (
@@ -19,11 +19,11 @@ export function SocialLoginButtons({
 
             <div className="relative grid gap-3">
                 <a
-                    href={kakaoHref}
-                    className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-[#F2D85B] bg-[#FEE500] px-4 text-sm font-semibold text-[#191919] transition hover:brightness-95"
+                    href={naverHref}
+                    className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-[#03C75A] bg-[#03C75A] px-4 text-sm font-semibold text-white transition hover:brightness-95"
                 >
-                    <SiKakaotalk size={18} />
-                    카카오로 시작하기
+                    <SiNaver size={18} />
+                    네이버로 시작하기
                 </a>
                 <a
                     href={googleHref}

@@ -520,7 +520,14 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
 
         setSelectedContextId(PERSONAL_CHAT_CONTEXT_ID);
         setSelectedFriendId(room.partnerId);
-    }, [loadRoom, room, roomId, router, setSelectedContextId, setSelectedFriendId]);
+    }, [
+        loadRoom,
+        room,
+        roomId,
+        router,
+        setSelectedContextId,
+        setSelectedFriendId,
+    ]);
 
     useEffect(() => {
         void loadMessages(roomId);

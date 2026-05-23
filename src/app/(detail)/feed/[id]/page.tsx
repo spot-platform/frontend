@@ -1,6 +1,7 @@
 // Feed 상세 페이지 — OFFER/REQUEST 타입별 분기 렌더링
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { cookies } from 'next/headers';
 import {
     IconPhoto,
     IconUserCircle,
@@ -8,8 +9,10 @@ import {
     IconStar,
 } from '@tabler/icons-react';
 import { notFound } from 'next/navigation';
-import { MOCK_FEED, MOCK_FEED_MANAGEMENT } from '@/features/feed/model/mock';
-import { FeedManagementPanel } from '@/features/feed/ui/detail/FeedManagementPanel';
+import {
+    getServerFeedApplications,
+    getServerFeedDetail,
+} from '@/features/feed/api/feed-server-api';
 import { FeedParticipationActions } from '@/features/feed/ui/detail/FeedParticipationActions';
 import { EditPlanPreparationCard } from '@/features/feed/ui/detail/EditPlanPreparationCard';
 import { PlanSection } from '@/features/feed/ui/detail/PlanSection';
@@ -17,13 +20,18 @@ import { PriceSection } from '@/features/feed/ui/detail/PriceSection';
 import { PreparationSection } from '@/features/feed/ui/detail/PreparationSection';
 import { VenueSection } from '@/features/feed/ui/detail/VenueSection';
 import { DetailHeader, DetailPageShell } from '@/shared/ui';
-import type { FeedItem } from '@/features/feed/model/types';
+import type {
+    FeedApplication,
+    FeedItem,
+    FeedManagementFlow,
+    SupporterApplication,
+} from '@/features/feed/model/types';
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
-    const item = MOCK_FEED.find((f) => f.id === id);
+    const item = await getServerFeedDetail(id);
 
     return { title: item?.title ?? '피드 상세' };
 }
@@ -214,7 +222,7 @@ function RequestDetailContent({
     management,
 }: {
     item: FeedItem;
-    management?: (typeof MOCK_FEED_MANAGEMENT)[string];
+    management?: FeedManagementFlow;
 }) {
     const applicants = management?.applications ?? [];
     const applicantCount = item.applicantCount ?? applicants.length;
@@ -351,15 +359,96 @@ function RequestDetailContent({
     );
 }
 
+function formatDeadlineLabel(deadline?: string) {
+    if (!deadline) return '마감일 미정';
+
+    return `마감 ${deadline}`;
+}
+
+function toSupporterApplication(
+    application: FeedApplication,
+    item: FeedItem,
+): SupporterApplication {
+    const nickname =
+        application.applicantProfile?.nickname ??
+        application.nickname ??
+        application.userId;
+
+    return {
+        id: application.userId,
+        nickname,
+        avatarUrl:
+            application.applicantProfile?.avatarUrl ??
+            application.avatarUrl ??
+            undefined,
+        category: item.category ?? '기타',
+        tagline: application.proposal,
+        tags: [application.appliedRole],
+        completedCount: 0,
+        rating: 0,
+        location: item.location,
+        proposal: application.proposal,
+        competitionScore: application.status === 'ACCEPTED' ? 100 : 50,
+        status:
+            application.status === 'ACCEPTED'
+                ? 'LEADING'
+                : application.status === 'REJECTED'
+                  ? 'WAITING'
+                  : 'REVIEWING',
+        relatedRequestId: item.id,
+    };
+}
+
+function buildFeedManagement(
+    item: FeedItem,
+    applications: FeedApplication[] | null,
+): FeedManagementFlow | undefined {
+    if (!applications) return undefined;
+
+    const confirmedPartnerProfiles = item.confirmedPartnerProfiles ?? [];
+    const requiredPartners = item.maxParticipants ?? applications.length;
+    const confirmedPartners =
+        item.partnerCount ?? confirmedPartnerProfiles.length;
+
+    return {
+        feedId: item.id,
+        stageLabel: item.status === 'OPEN' ? '지원 검토 중' : item.status,
+        demand: {
+            fundingGoal: item.price,
+            fundedAmount: Math.round(
+                item.price * ((item.progressPercent ?? 0) / 100),
+            ),
+            requiredPartners,
+            confirmedPartners,
+            confirmedPartnerProfiles,
+            deadlineLabel: formatDeadlineLabel(item.deadline),
+            hostNote: item.description ?? '',
+        },
+        applications: applications.map((application) =>
+            toSupporterApplication(application, item),
+        ),
+        insights: [],
+    };
+}
+
 export default async function FeedDetailPage({ params }: Props) {
     const { id } = await params;
-    const item = MOCK_FEED.find((f) => f.id === id);
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('spot-auth-token')?.value;
+    const item = await getServerFeedDetail(id, { accessToken });
 
     if (!item) {
         notFound();
     }
 
-    const management = MOCK_FEED_MANAGEMENT[id];
+    const applications = await getServerFeedApplications(id, { accessToken });
+    const management = buildFeedManagement(item, applications);
+    const canEditPlanPreparation =
+        item.owner === true ||
+        (item.myApplicationRole === 'SUPPORTER' &&
+            (item.myApplicationStatus === 'APPLIED' ||
+                item.myApplicationStatus === 'PENDING' ||
+                item.myApplicationStatus === 'ACCEPTED'));
     const isOffer = item.type === 'OFFER' || item.type === 'RENT';
     const isRequest = item.type === 'REQUEST';
 
@@ -401,21 +490,13 @@ export default async function FeedDetailPage({ params }: Props) {
 
                 {/* 매칭된 서포터/작성자가 plan/preparation 을 추가/수정.
                     AI 피드는 실제 호스트가 없으므로 수정 진입점 숨김. */}
-                {!item.isAi &&
-                ((item.myApplicationStatus === 'APPLIED' &&
-                    item.myApplicationRole === 'SUPPORTER') ||
-                    management) ? (
+                {!item.isAi && canEditPlanPreparation ? (
                     <EditPlanPreparationCard
                         feedId={item.id}
                         initialPlan={item.plan}
                         initialPreparation={item.preparation}
                     />
                 ) : null}
-
-                {/* 호스트용 관리 패널 */}
-                {management && (
-                    <FeedManagementPanel item={item} flow={management} />
-                )}
 
                 <FeedParticipationActions item={item} management={management} />
             </DetailPageShell>

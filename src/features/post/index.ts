@@ -1,3 +1,4 @@
+export { postApi } from './api/post-api';
 export { CategoryTagSelector } from './ui/CategoryTagSelector';
 export { CompletePageClient } from './client/CompletePageClient';
 export { FormCard } from './ui/FormCard';

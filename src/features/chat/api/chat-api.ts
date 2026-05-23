@@ -1,4 +1,5 @@
 import { buildQueryString, clientApiFetch } from '@/lib/client-api';
+import { backendProxyEndpoint, endpoints } from '@/lib/endpoint';
 import type { ChatMessage, ChatRoom } from '../model/types';
 
 export type ChatRoomsQuery = {
@@ -25,10 +26,30 @@ export type SendChatMessagePayload = {
     content?: string;
 };
 
+export type ChatBlock = {
+    id: string;
+    blockedId: string;
+    blockedNickname?: string;
+    createdAt: string;
+};
+
+type BackendChatBlock = Omit<ChatBlock, 'id'> & {
+    id: string | number;
+};
+
 type BackendRoom = {
     id: number | string;
     spotId?: string | null;
     type?: 'GROUP' | 'PERSONAL';
+    title?: string;
+    subtitle?: string;
+    currentUserId?: string;
+    currentUserName?: string;
+    partnerId?: string;
+    partnerNickname?: string;
+    unreadCount?: number;
+    lastMessagePreview?: string;
+    lastMessageAt?: string;
     createdAt?: string;
 };
 
@@ -36,15 +57,21 @@ type BackendMessage = {
     id: number | string;
     chatRoomId: number | string;
     senderId?: string;
+    authorId?: string | null;
+    authorName?: string | null;
+    kind?: 'message' | 'system';
+    blocked?: boolean;
     content?: string;
     createdAt?: string;
 };
 
-type BackendMessageList = {
-    messages?: BackendMessage[];
-    nextCursor?: number | string | null;
-    hasMore?: boolean;
-};
+type BackendMessageList =
+    | BackendMessage[]
+    | {
+          messages?: BackendMessage[];
+          nextCursor?: number | string | null;
+          hasMore?: boolean;
+      };
 
 export type ChatMessageListResponse = {
     data: ChatMessage[];
@@ -57,28 +84,42 @@ export type ChatMessageEventHandler = (message: ChatMessage) => void;
 function toChatMessage(message: BackendMessage): ChatMessage {
     return {
         id: String(message.id),
-        kind: 'message',
-        authorId: message.senderId ?? '',
-        authorName: message.senderId ?? '상대',
+        kind: message.kind ?? 'message',
+        authorId: message.authorId ?? message.senderId ?? '',
+        authorName:
+            message.authorName ??
+            message.authorId ??
+            message.senderId ??
+            '상대',
         content: message.content ?? '',
         createdAt: message.createdAt ?? new Date().toISOString(),
+    };
+}
+
+function toChatBlock(block: BackendChatBlock): ChatBlock {
+    return {
+        ...block,
+        id: String(block.id),
     };
 }
 
 function toChatRoom(room: BackendRoom): ChatRoom {
     const id = String(room.id);
     const isSpotRoom = room.type === 'GROUP' || Boolean(room.spotId);
-    const updatedAt = room.createdAt ?? new Date().toISOString();
+    const updatedAt =
+        room.lastMessageAt ?? room.createdAt ?? new Date().toISOString();
 
     if (isSpotRoom) {
         return {
             id,
             category: 'spot',
-            currentUserId: '',
-            currentUserName: '나',
-            title: room.spotId ? `스팟 ${room.spotId}` : `팀 채팅 ${id}`,
-            subtitle: '팀 채팅',
-            description: '백엔드 채팅방입니다.',
+            currentUserId: room.currentUserId ?? '',
+            currentUserName: room.currentUserName ?? '나',
+            title:
+                room.title ??
+                (room.spotId ? `스팟 ${room.spotId}` : `팀 채팅 ${id}`),
+            subtitle: room.subtitle ?? '팀 채팅',
+            description: room.lastMessagePreview ?? '백엔드 채팅방입니다.',
             metaLabel: '팀 채팅',
             updatedAt,
             messages: [],
@@ -106,16 +147,16 @@ function toChatRoom(room: BackendRoom): ChatRoom {
     return {
         id,
         category: 'personal',
-        currentUserId: '',
-        currentUserName: '나',
-        partnerId: '',
-        partnerName: `개인 채팅 ${id}`,
+        currentUserId: room.currentUserId ?? '',
+        currentUserName: room.currentUserName ?? '나',
+        partnerId: room.partnerId ?? '',
+        partnerName: room.partnerNickname ?? `개인 채팅 ${id}`,
         presenceLabel: '',
-        unreadCount: 0,
+        unreadCount: room.unreadCount ?? 0,
         counterpartRole: 'PARTNER',
-        title: `개인 채팅 ${id}`,
-        subtitle: '개인 채팅',
-        description: '백엔드 채팅방입니다.',
+        title: room.title ?? `개인 채팅 ${id}`,
+        subtitle: room.subtitle ?? '개인 채팅',
+        description: room.lastMessagePreview ?? '백엔드 채팅방입니다.',
         metaLabel: '개인 채팅',
         updatedAt,
         messages: [],
@@ -130,6 +171,20 @@ function toChronologicalMessages(messages: BackendMessage[]): ChatMessage[] {
                 new Date(left.createdAt).getTime() -
                 new Date(right.createdAt).getTime(),
         );
+}
+
+function toMessageListResponse(
+    response: BackendMessageList,
+): ChatMessageListResponse {
+    if (Array.isArray(response)) {
+        return { data: toChronologicalMessages(response) };
+    }
+
+    return {
+        data: toChronologicalMessages(response.messages ?? []),
+        nextCursor: response.nextCursor,
+        hasMore: response.hasMore,
+    };
 }
 
 function toBackendMessagesQuery(params?: ChatMessagesQuery) {
@@ -152,56 +207,90 @@ function toBackendRoomPayload(payload: CreateChatRoomPayload) {
     };
 }
 
+function toPersonalRoomPayload(payload: CreateChatRoomPayload) {
+    if (!payload.userId) {
+        throw new Error('개인 채팅을 시작할 상대가 필요합니다.');
+    }
+
+    return { partnerId: payload.userId };
+}
+
 export const chatApi = {
     listRooms: async (params?: ChatRoomsQuery): Promise<{ data: ChatRoom[] }> =>
         clientApiFetch<BackendRoom[]>(
-            `/chat/rooms${buildQueryString(params)}`,
+            `${endpoints.chat.rooms}${buildQueryString(params)}`,
         ).then((rooms) => ({ data: (rooms ?? []).map(toChatRoom) })),
 
     getRoom: async (roomId: string): Promise<{ data: ChatRoom }> =>
-        clientApiFetch<BackendRoom>(`/chat/rooms/${roomId}`).then((room) => ({
-            data: toChatRoom(room),
-        })),
+        clientApiFetch<BackendRoom>(endpoints.chat.room(roomId)).then(
+            (room) => ({
+                data: toChatRoom(room),
+            }),
+        ),
 
     getMessages: async (
         roomId: string,
         params?: ChatMessagesQuery,
     ): Promise<ChatMessageListResponse> =>
         clientApiFetch<BackendMessageList>(
-            `/chat/rooms/${roomId}/messages${buildQueryString(toBackendMessagesQuery(params))}`,
-        ).then((response) => ({
-            data: toChronologicalMessages(response.messages ?? []),
-            nextCursor: response.nextCursor,
-            hasMore: response.hasMore,
-        })),
+            `${endpoints.chat.roomMessages(roomId)}${buildQueryString(toBackendMessagesQuery(params))}`,
+        ).then(toMessageListResponse),
 
     markRead: async (roomId: string): Promise<void> =>
-        clientApiFetch<void>(`/chat/rooms/${roomId}/read`, {
+        clientApiFetch<void>(endpoints.chat.roomRead(roomId), {
             method: 'POST',
         }),
 
+    markMessageRead: async (
+        roomId: string,
+        messageId: string | number,
+    ): Promise<void> =>
+        clientApiFetch<void>(endpoints.chat.messageRead(roomId, messageId), {
+            method: 'POST',
+        }),
+
+    typing: async (roomId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.chat.roomTyping(roomId), {
+            method: 'POST',
+        }),
+
+    leaveRoom: async (roomId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.chat.roomLeave(roomId), {
+            method: 'DELETE',
+        }),
+
     getRoomsBySpot: async (spotId: string): Promise<{ data: ChatRoom[] }> =>
-        clientApiFetch<BackendRoom[]>(`/chat/rooms/by-spot/${spotId}`).then(
+        clientApiFetch<BackendRoom[]>(endpoints.chat.roomsBySpot(spotId)).then(
             (rooms) => ({ data: (rooms ?? []).map(toChatRoom) }),
         ),
 
     getRoomBySpot: async (spotId: string): Promise<{ data: ChatRoom | null }> =>
-        clientApiFetch<BackendRoom[]>(`/chat/rooms/by-spot/${spotId}`).then(
+        clientApiFetch<BackendRoom[]>(endpoints.chat.roomsBySpot(spotId)).then(
             (rooms) => ({ data: rooms[0] ? toChatRoom(rooms[0]) : null }),
         ),
 
     getRoomsByUser: async (userId: string): Promise<{ data: ChatRoom[] }> =>
-        clientApiFetch<BackendRoom[]>(`/chat/rooms/by-user/${userId}`).then(
+        clientApiFetch<BackendRoom[]>(endpoints.chat.roomsByUser(userId)).then(
             (rooms) => ({ data: (rooms ?? []).map(toChatRoom) }),
         ),
 
     createRoom: async (
         payload: CreateChatRoomPayload,
-    ): Promise<{ data: ChatRoom }> =>
-        clientApiFetch<BackendRoom>('/chat/rooms', {
+    ): Promise<{ data: ChatRoom }> => {
+        const endpoint =
+            payload.category === 'personal'
+                ? endpoints.chat.personalRooms
+                : endpoints.chat.rooms;
+        const body =
+            payload.category === 'personal'
+                ? toPersonalRoomPayload(payload)
+                : toBackendRoomPayload(payload);
+
+        return clientApiFetch<BackendRoom>(endpoint, {
             method: 'POST',
-            body: JSON.stringify(toBackendRoomPayload(payload)),
-        }).then((room) => ({ data: toChatRoom(room) })),
+            body: JSON.stringify(body),
+        }).then((room) => ({ data: toChatRoom(room) }));
+    },
 
     sendMessage: async (
         roomId: string,
@@ -212,7 +301,7 @@ export const chatApi = {
         }
 
         return clientApiFetch<BackendMessage>(
-            `/chat/rooms/${roomId}/messages`,
+            endpoints.chat.roomMessages(roomId),
             {
                 method: 'POST',
                 body: JSON.stringify({ content: payload.content ?? '' }),
@@ -220,17 +309,54 @@ export const chatApi = {
         ).then((message) => ({ data: toChatMessage(message) }));
     },
 
+    getBlocks: async (): Promise<{ data: ChatBlock[] }> =>
+        clientApiFetch<BackendChatBlock[]>(endpoints.chat.blocks).then(
+            (blocks) => ({ data: (blocks ?? []).map(toChatBlock) }),
+        ),
+
+    blockUser: async (userId: string): Promise<{ data: ChatBlock }> =>
+        clientApiFetch<BackendChatBlock>(endpoints.chat.blocks, {
+            method: 'POST',
+            body: JSON.stringify({ userId }),
+        }).then((block) => ({ data: toChatBlock(block) })),
+
+    unblockUser: async (userId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.chat.block(userId), {
+            method: 'DELETE',
+        }),
+
+    subscribeToUser: (onMessage: ChatMessageEventHandler): EventSource => {
+        const eventSource = new EventSource(
+            backendProxyEndpoint(endpoints.chat.stream),
+        );
+
+        eventSource.addEventListener('message', (event) => {
+            try {
+                const payload = JSON.parse(event.data) as BackendMessage;
+                onMessage(toChatMessage(payload));
+            } catch {
+                // Ignore malformed keepalive/non-message SSE payloads.
+            }
+        });
+
+        return eventSource;
+    },
+
     subscribeToRoom: (
         roomId: string,
         onMessage: ChatMessageEventHandler,
     ): EventSource => {
         const eventSource = new EventSource(
-            `/api/backend/chat/connect${buildQueryString({ roomId })}`,
+            backendProxyEndpoint(endpoints.chat.roomStream(roomId)),
         );
 
         eventSource.addEventListener('message', (event) => {
-            const payload = JSON.parse(event.data) as BackendMessage;
-            onMessage(toChatMessage(payload));
+            try {
+                const payload = JSON.parse(event.data) as BackendMessage;
+                onMessage(toChatMessage(payload));
+            } catch {
+                // Ignore malformed keepalive/non-message SSE payloads.
+            }
         });
 
         return eventSource;

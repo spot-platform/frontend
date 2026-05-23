@@ -6,6 +6,11 @@ import {
 import { serverApiFetch } from '@/lib/server-api';
 import type { LoginResult } from '@/features/auth/model/types';
 
+type BackendLoginResult = LoginResult & {
+    accessToken?: string;
+    refreshToken?: string;
+};
+
 type JsonRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const upstream = await serverApiFetch('/api/auth/login', {
+    const upstream = await serverApiFetch('/auth/login', {
         method: 'POST',
         body: JSON.stringify({
             email,
@@ -76,17 +81,25 @@ export async function POST(request: NextRequest) {
     }
 
     const loginResult = (isRecord(payload.data) ? payload.data : payload) as
-        | Partial<LoginResult>
+        | Partial<BackendLoginResult>
         | undefined;
 
-    if (!loginResult?.accessToken) {
+    const accessToken = getString(loginResult?.accessToken);
+
+    if (!loginResult || !accessToken) {
         return NextResponse.json(
             { message: '로그인 응답에 accessToken이 없습니다.' },
             { status: 502 },
         );
     }
 
-    const { accessToken, ...publicLoginResult } = loginResult;
+    const {
+        accessToken: _accessToken,
+        refreshToken,
+        ...publicLoginResult
+    } = loginResult;
+    void _accessToken;
+    void refreshToken;
 
     const response = NextResponse.json({
         ...publicLoginResult,

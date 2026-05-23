@@ -28,7 +28,7 @@ type UseLoginFormOptions = {
 
 export function useLoginForm({ nextPath }: UseLoginFormOptions) {
     const router = useRouter();
-    const setToken = useAuthStore((state) => state.setToken);
+    const setSession = useAuthStore((state) => state.setSession);
     const loginMutation = useLoginMutation();
     const dummyLoginMutation = useDummyLoginMutation();
     const [email, setEmail] = useState('');
@@ -42,7 +42,7 @@ export function useLoginForm({ nextPath }: UseLoginFormOptions) {
     );
     const oauthLinks = useMemo(
         () => ({
-            kakao: authApi.oauthStartPath('kakao', nextPath),
+            naver: authApi.oauthStartPath('naver', nextPath),
             google: authApi.oauthStartPath('google', nextPath),
         }),
         [nextPath],
@@ -51,7 +51,7 @@ export function useLoginForm({ nextPath }: UseLoginFormOptions) {
     const isPending = loginMutation.isPending || dummyLoginMutation.isPending;
 
     const handleLoginSuccess = (result: LoginResult) => {
-        setToken(result.accessToken, result.userId);
+        setSession(result.userId);
         const hasCompletedOnboarding =
             useAuthStore.getState().hasCompletedOnboarding;
         const destination = hasCompletedOnboarding

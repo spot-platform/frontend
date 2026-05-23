@@ -7,7 +7,7 @@ import { usePostFormPrefill } from '../model/use-post-form-prefill';
 import { readSimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
 import { SimulationInsightCard } from '@/features/simulation/ui/SimulationInsightCard';
 import type { SimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
-import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
+import { postApi } from '../api/post-api';
 import { OfferDetailsSection } from '../ui/post-form/OfferDetailsSection';
 import { PlanInputSection } from '../ui/post-form/PlanInputSection';
 import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
@@ -25,6 +25,17 @@ import type {
 
 const POINT_COST = 25000;
 const STEPS = ['기본 정보', 'Offer 상세', '플랜·준비물', '가격 설정'];
+
+const parsePositiveInt = (value: string): number | undefined => {
+    const trimmed = value.trim();
+
+    if (!/^\d+$/.test(trimmed)) {
+        return undefined;
+    }
+
+    const parsed = Number(trimmed);
+    return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined;
+};
 
 export function OfferFormClient() {
     const router = useRouter();
@@ -103,32 +114,50 @@ export function OfferFormClient() {
                 ? isStep2Valid
                 : isStep3Valid;
 
-    const addMySpot = useMySpotsStore((s) => s.addSpot);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (step < STEPS.length - 1) {
             setStep((s) => s + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            // 시뮬 context 가 있으면 그 좌표/카테고리를 우선 사용, 없으면 기본 수원 중심.
-            const fallbackLocation = {
-                lat: 37.2636,
-                lng: 127.0286,
-            };
-            const created = addMySpot({
-                title: title || spotName,
-                category: simContext?.category ?? '운동',
-                intent: 'offer',
-                location: simContext?.spotLocation ?? fallbackLocation,
-                participants: [
-                    { id: 'me', emoji: '👤', name: '나' },
-                    { id: 'demo-a', emoji: '🧘', name: '민지' },
-                    { id: 'demo-b', emoji: '💻', name: '지훈' },
-                ],
-            });
-            clearDraft();
-            // 완료 페이지는 생성된 spot id 를 URL 에 실어, 완료 후 맵에서 강조 표시.
-            router.push(`/post/complete?mySpot=${created.id}`);
+            setIsSubmitting(true);
+            setSubmitError(null);
+
+            try {
+                const created = await postApi.createOffer({
+                    type: 'OFFER',
+                    spotName,
+                    title,
+                    content,
+                    categories,
+                    photoUrls: photoPreviews,
+                    pointCost: POINT_COST,
+                    location,
+                    deadline,
+                    detailDescription,
+                    supporterPhotoUrl: supporterPhotoPreview ?? undefined,
+                    desiredPrice: parsePositiveInt(desiredPrice),
+                    maxPartnerCount: parsePositiveInt(maxPartnerCount),
+                    plan,
+                    preparation,
+                    priceBreakdown,
+                });
+
+                clearDraft();
+                router.push(
+                    `/chat?tab=team&spotId=${encodeURIComponent(created.spotId ?? created.id)}`,
+                );
+            } catch (error) {
+                setSubmitError(
+                    error instanceof Error
+                        ? error.message
+                        : '게시글 등록에 실패했어요.',
+                );
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -168,6 +197,11 @@ export function OfferFormClient() {
                 <p className="text-sm text-gray-500">
                     함께할 파트너들이 한눈에 이해할 수 있게 작성해주세요.
                 </p>
+                {submitError && (
+                    <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                        {submitError}
+                    </p>
+                )}
 
                 {step === 0 && (
                     <PostBaseInfoSection
@@ -232,10 +266,16 @@ export function OfferFormClient() {
             </div>
 
             <PostSubmitBar
-                label={step < STEPS.length - 1 ? '다음' : '결제하기'}
+                label={
+                    step < STEPS.length - 1
+                        ? '다음'
+                        : isSubmitting
+                          ? '등록 중...'
+                          : '등록하기'
+                }
                 onClick={handleNext}
                 onBack={handleBack}
-                disabled={!canNext}
+                disabled={!canNext || isSubmitting}
                 showBack
             />
         </DetailPageShell>

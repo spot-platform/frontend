@@ -24,6 +24,7 @@ const mockOpenPersonalCreate = vi.fn();
 const mockOpenFriendAdd = vi.fn();
 const mockSetSubNavOpen = vi.fn();
 const mockApplyRouteIntent = vi.fn();
+const mockLoadRooms = vi.fn();
 const mockSetSelectedContextId = vi.fn();
 const mockSetPersonalFilter = vi.fn();
 
@@ -34,6 +35,7 @@ type MainChatStoreState = {
     setSelectedContextId: typeof mockSetSelectedContextId;
     setPersonalFilter: typeof mockSetPersonalFilter;
     applyRouteIntent: typeof mockApplyRouteIntent;
+    loadRooms: typeof mockLoadRooms;
 };
 
 type ChatNavStoreState = {
@@ -54,6 +56,7 @@ vi.mock('next/navigation', () => ({
         push: mockPush,
         replace: mockReplace,
     }),
+    useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock('../model/use-main-chat-store', () => ({
@@ -114,9 +117,21 @@ vi.mock('@/shared/ui/SearchBar', () => ({
 }));
 
 vi.mock('@/shared/ui', () => ({
+    BottomSheet: ({
+        open,
+        children,
+    }: {
+        open: boolean;
+        children: React.ReactNode;
+    }) => (open ? <div data-testid="bottom-sheet">{children}</div> : null),
     Main: ({ children }: { children: React.ReactNode }) => (
         <div>{children}</div>
     ),
+}));
+
+vi.mock('@/shared/lib/cn', () => ({
+    cn: (...values: Array<string | false | null | undefined>) =>
+        values.filter(Boolean).join(' '),
 }));
 
 vi.mock('@/shared/ui/Tabs', () => ({
@@ -159,6 +174,8 @@ describe('MainChatPageClient', () => {
         mockOpenFriendAdd.mockReset();
         mockSetSubNavOpen.mockReset();
         mockApplyRouteIntent.mockReset();
+        mockLoadRooms.mockReset();
+        mockLoadRooms.mockResolvedValue(undefined);
         mockSetSelectedContextId.mockReset();
         mockSetPersonalFilter.mockReset();
         mockApplyRouteIntent.mockReturnValue({ roomId: null });
@@ -170,6 +187,7 @@ describe('MainChatPageClient', () => {
             setSelectedContextId: mockSetSelectedContextId,
             setPersonalFilter: mockSetPersonalFilter,
             applyRouteIntent: mockApplyRouteIntent,
+            loadRooms: mockLoadRooms,
         };
 
         mockChatNavState = {
@@ -223,7 +241,9 @@ describe('MainChatPageClient', () => {
             expect(mockOpenActionItem).toHaveBeenCalledWith(actionItem);
         });
 
-        expect(mockReplace).not.toHaveBeenCalled();
+        expect(mockReplace).toHaveBeenCalledWith('/chat?tab=team', {
+            scroll: false,
+        });
         expect(mockCloseChatNav).not.toHaveBeenCalled();
     });
 
@@ -246,7 +266,9 @@ describe('MainChatPageClient', () => {
         });
 
         expect(mockOpenActionItem).not.toHaveBeenCalled();
-        expect(mockReplace).not.toHaveBeenCalled();
+        expect(mockReplace).toHaveBeenCalledWith('/chat?tab=team', {
+            scroll: false,
+        });
     });
 
     it('renders the selected spot room row before its action items and opens the room on tap', () => {
@@ -298,7 +320,9 @@ describe('MainChatPageClient', () => {
 
     it('still renders the selected spot room row when there are no action items', () => {
         const room = mockMainChatState.rooms.find(
-            (candidate) => candidate.category === 'spot',
+            (candidate) =>
+                candidate.category === 'spot' &&
+                candidate.spot.authorId !== candidate.currentUserId,
         );
 
         expect(room).toBeDefined();
@@ -330,10 +354,56 @@ describe('MainChatPageClient', () => {
         render(<MainChatPageClient initialTopTab="team" />);
 
         expect(screen.getAllByText(room.title).at(-1)).not.toBeNull();
+        expect(screen.getByText('참여 중인 스팟')).not.toBeNull();
         expect(screen.getByText(/팀 채팅방 ·/)).not.toBeNull();
         expect(
-            screen.getByText('아직 등록된 투표·일정·파일·역제안이 없어요.'),
+            screen.getByText(
+                '아직 공유된 운영 항목이 없어요. 팀 채팅에서 새 소식을 기다려 주세요.',
+            ),
         ).not.toBeNull();
+    });
+
+    it('separates owner team chat ui from participant ui using spot.authorId', () => {
+        const room = mockMainChatState.rooms.find(
+            (candidate) => candidate.category === 'spot',
+        );
+
+        expect(room).toBeDefined();
+
+        if (!room || room.category !== 'spot') {
+            throw new Error('Expected a spot room to exist.');
+        }
+
+        const ownedRoom: SpotChatRoom = {
+            ...room,
+            spot: {
+                ...room.spot,
+                authorId: room.currentUserId,
+                votes: [],
+                files: [],
+            },
+        };
+        delete ownedRoom.reverseOffer;
+        delete ownedRoom.spot.schedule;
+
+        mockMainChatState.rooms = [
+            ownedRoom,
+            ...mockMainChatState.rooms.filter(
+                (candidate) => candidate.id !== room.id,
+            ),
+        ];
+        mockMainChatState.selectedContextId = room.id;
+        mockApplyRouteIntent.mockReturnValue({ roomId: room.id });
+
+        render(<MainChatPageClient initialTopTab="team" />);
+
+        expect(screen.getByText('내 스팟 관리 모드')).not.toBeNull();
+        expect(
+            screen.getByText(
+                '아직 등록된 운영 항목이 없어요. 아래 바에서 일정·투표·파일을 추가해 보세요.',
+            ),
+        ).not.toBeNull();
+        expect(screen.queryByLabelText('역제안 등록')).toBeNull();
     });
 
     it('shows the personal search ui only while personal search is open', () => {
@@ -365,7 +435,7 @@ describe('MainChatPageClient', () => {
         expect(screen.getByText('참여 중인 팀 채팅이 없어요.')).not.toBeNull();
     });
 
-    it('falls back to the personal tab when a spot intent resolves to a personal room', async () => {
+    it('keeps the team tab when a spot intent cannot resolve to a team room', async () => {
         const personalRoom = mockMainChatState.rooms.find(
             (candidate) => candidate.category === 'personal',
         );
@@ -390,13 +460,14 @@ describe('MainChatPageClient', () => {
 
         await waitFor(() => {
             expect(
-                screen
-                    .getByTestId('main-chat-top-tabs')
-                    .getAttribute('data-active'),
-            ).toBe('personal');
+                screen.getByText('참여 중인 팀 채팅이 없어요.'),
+            ).not.toBeNull();
         });
 
-        expect(screen.queryByTestId('chat-context-select')).toBeNull();
-        expect(screen.getByTestId('chat-room-list')).not.toBeNull();
+        expect(
+            screen
+                .getByTestId('chat-context-select')
+                .getAttribute('data-disabled'),
+        ).toBe('true');
     });
 });

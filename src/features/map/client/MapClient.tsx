@@ -204,10 +204,13 @@ export function MapClient() {
         [mySpots],
     );
 
-    const rawClusters = useMemo<ActivityCluster[]>(
-        () => [...mySpotClusters, ...lifecycleResult.clusters],
-        [mySpotClusters, lifecycleResult.clusters],
-    );
+    const realClusters = mySpotClusters;
+    const simulationClusters = lifecycleResult.clusters;
+    const rawClusters = useMemo<ActivityCluster[]>(() => {
+        if (activeLayer === 'real') return realClusters;
+        if (activeLayer === 'virtual') return simulationClusters;
+        return [...realClusters, ...simulationClusters];
+    }, [activeLayer, realClusters, simulationClusters]);
 
     // FilterChipBar 토글 시 이미 활성화된 클러스터도 즉시 반영되도록 display-side filter 적용.
     // swarm 모드에선 `filteredPersonas` 가 신규 스팟 풀만 제한하므로, 여기서 카테고리/intent 로 한 번 더 거름.
@@ -242,8 +245,8 @@ export function MapClient() {
     // v3 는 spot marker 가 아닌 cluster 중심이라 SpotPreviewSheet 은 사용하지 않음.
     void selectedSpotId;
 
-    const showSpots = activeLayer === 'mixed' || activeLayer === 'real';
-    const showPersonas = activeLayer === 'mixed' || activeLayer === 'virtual';
+    const showSpots = activeLayer !== 'virtual';
+    const showPersonas = activeLayer !== 'real';
 
     // 뷰포트 컬링: bbox 밖은 렌더 스킵. pad 는 panning 중 깜빡임 방지용 여유.
     const inViewport = useCallback(
