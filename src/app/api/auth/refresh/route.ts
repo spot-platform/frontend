@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const response = NextResponse.json(tokenResult);
+    const response = NextResponse.json({ refreshed: true });
 
     response.cookies.set('spot-auth-token', accessToken, {
         httpOnly: true,

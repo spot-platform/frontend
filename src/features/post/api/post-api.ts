@@ -2,6 +2,11 @@ import { clientApiFetch } from '@/lib/client-api';
 import { chatApi } from '@/features/chat/api/chat-api';
 import { endpoints } from '@/lib/endpoint';
 import type { PostSpotCategory } from '../model/types';
+import type {
+    PlanV3,
+    Preparation,
+    PriceBreakdown,
+} from '@/entities/spot/simulation-types';
 
 export type PostType = 'OFFER' | 'REQUEST' | 'RENT';
 
@@ -15,7 +20,14 @@ export type PostCompletionResponse = {
     redirectUrl?: string;
 };
 
-type BackendPostCompletionResponse = PostCompletionResponse & {
+type BackendPostCompletionResponse = Omit<
+    PostCompletionResponse,
+    'id' | 'spotId' | 'feedId' | 'chatRoomId'
+> & {
+    id: string | number;
+    spotId?: string | number;
+    feedId?: string | number;
+    chatRoomId?: string | number;
     spot?: { id?: string | number } | null;
     feed?: { id?: string | number; spotId?: string | number | null } | null;
     chatRoom?: { id?: string | number } | null;
@@ -33,6 +45,11 @@ type BasePostPayload = {
     deadline: string;
     detailDescription: string;
     maxPartnerCount?: number;
+    lat?: number;
+    lng?: number;
+    plan?: PlanV3;
+    preparation?: Preparation;
+    priceBreakdown?: PriceBreakdown;
 };
 
 type ApiPostPayload<T extends BasePostPayload> = Omit<T, 'categories'> & {
@@ -93,9 +110,19 @@ function resolveCreatedSpotId(created: BackendPostCompletionResponse): string {
 async function createRoomForCreatedPost(
     created: BackendPostCompletionResponse,
 ): Promise<PostCompletionResponse> {
+    const normalizedCreated: PostCompletionResponse = {
+        id: String(created.id),
+        type: created.type,
+        title: created.title,
+        spotId: created.spotId ? String(created.spotId) : undefined,
+        feedId: created.feedId ? String(created.feedId) : String(created.id),
+        chatRoomId: created.chatRoomId ? String(created.chatRoomId) : undefined,
+        redirectUrl: created.redirectUrl,
+    };
+
     if (created.chatRoomId || created.chatRoom?.id) {
         return {
-            ...created,
+            ...normalizedCreated,
             chatRoomId: String(created.chatRoomId ?? created.chatRoom?.id),
             spotId: resolveCreatedSpotId(created),
         };
@@ -105,7 +132,7 @@ async function createRoomForCreatedPost(
     const room = await chatApi.createRoom({ category: 'spot', spotId });
 
     return {
-        ...created,
+        ...normalizedCreated,
         spotId,
         chatRoomId: room.data.id,
     };
@@ -113,21 +140,16 @@ async function createRoomForCreatedPost(
 
 export const postApi = {
     createOffer: (payload: CreateOfferPostPayload) =>
-        clientApiFetch<BackendPostCompletionResponse>(endpoints.posts.offer, {
+        clientApiFetch<BackendPostCompletionResponse>(endpoints.feeds.offer, {
             method: 'POST',
             body: JSON.stringify(normalizeBasePayload(payload)),
         }).then(createRoomForCreatedPost),
 
     createRequest: (payload: CreateRequestPostPayload) =>
-        clientApiFetch<BackendPostCompletionResponse>(endpoints.posts.request, {
+        clientApiFetch<BackendPostCompletionResponse>(endpoints.feeds.request, {
             method: 'POST',
             body: JSON.stringify(normalizeBasePayload(payload)),
         }).then(createRoomForCreatedPost),
 
-    get: (postId: string) => clientApiFetch(endpoints.posts.detail(postId)),
-
-    match: (postId: string) =>
-        clientApiFetch<void>(endpoints.posts.match(postId), {
-            method: 'POST',
-        }),
+    get: (feedId: string) => clientApiFetch(endpoints.feeds.detail(feedId)),
 };

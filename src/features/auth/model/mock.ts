@@ -4,13 +4,14 @@ import type { LoginRequest, LoginResult, OAuthProvider } from './types';
 const MOCK_AUTH_USER = {
     userId: 'user-me',
     accessToken: 'mock-access-token-user-me',
-    refreshToken: 'mock-refresh-token-user-me',
 };
+
+export function getMockAccessToken() {
+    return MOCK_AUTH_USER.accessToken;
+}
 
 export function buildMockLoginResult(next?: string | null): LoginResult {
     return {
-        accessToken: MOCK_AUTH_USER.accessToken,
-        refreshToken: MOCK_AUTH_USER.refreshToken,
         userId: MOCK_AUTH_USER.userId,
         redirectTo: resolvePostLoginPath(next),
     };

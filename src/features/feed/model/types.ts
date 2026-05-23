@@ -106,6 +106,7 @@ export interface FeedItem {
     myApplicationRole?: FeedApplicationRole;
     myApplicationDeposit?: number;
     spotId?: string;
+    owner?: boolean;
     /**
      * 2026-04-30 — contextBuilder 시뮬레이션이 합성한 AI 피드 마커.
      * 실제 호스트가 만든 글이 아니므로 참여 액션 대신 "리퀘스트 열기" 안내로 대체.

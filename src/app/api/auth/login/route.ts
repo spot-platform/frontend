@@ -6,6 +6,11 @@ import {
 import { serverApiFetch } from '@/lib/server-api';
 import type { LoginResult } from '@/features/auth/model/types';
 
+type BackendLoginResult = LoginResult & {
+    accessToken?: string;
+    refreshToken?: string;
+};
+
 type JsonRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -76,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
     const loginResult = (isRecord(payload.data) ? payload.data : payload) as
-        | Partial<LoginResult>
+        | Partial<BackendLoginResult>
         | undefined;
 
     if (!loginResult?.accessToken) {
@@ -86,7 +91,8 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const { accessToken, ...publicLoginResult } = loginResult;
+    const { accessToken, refreshToken, ...publicLoginResult } = loginResult;
+    void refreshToken;
 
     const response = NextResponse.json({
         ...publicLoginResult,

@@ -5,6 +5,7 @@ import { serverApiFetch } from '@/lib/server-api';
 import type {
     Spot,
     SpotDetail,
+    SpotMapItem,
     SpotSettlementApproval,
     SpotStatus,
     SpotType,
@@ -35,11 +36,41 @@ export type SpotListParams = {
     size?: number;
 };
 
+export type SpotSearchParams = {
+    q: string;
+    scope?: 'ALL' | 'TITLE' | 'CONTENT' | string;
+    page?: number;
+    size?: number;
+};
+
+export type SpotMapParams = {
+    swLat?: number;
+    swLng?: number;
+    neLat?: number;
+    neLng?: number;
+    category?: string;
+    type?: SpotType | 'RENT' | string;
+    status?: SpotStatus | string;
+};
+
+export type UploadFilePayload = {
+    fileName: string;
+    fileUrl: string;
+    sizeBytes?: number;
+};
+
+export type AssignChecklistPayload = {
+    assigneeId?: string | null;
+};
+
 export type CreateSpotPayload = {
     type: SpotType;
     title: string;
     description: string;
     pointCost: number;
+    category?: string;
+    lat?: number;
+    lng?: number;
     // 2026-04-30 contextBuilder 통합. OFFER 는 작성 시 채움, REQUEST 는 옵셔널.
     plan?: import('@/entities/spot/simulation-types').PlanV3;
     priceBreakdown?: import('@/entities/spot/simulation-types').PriceBreakdown;
@@ -68,6 +99,11 @@ type BackendSpot = Omit<Spot, 'type' | 'status'> & {
     status: Spot['status'];
 };
 
+type BackendSpotMapItem = Omit<SpotMapItem, 'id' | 'type'> & {
+    id: string | number;
+    type: SpotMapItem['type'] | 'RENT';
+};
+
 type BackendParticipant = {
     userId: string;
     nickname?: string;
@@ -75,10 +111,16 @@ type BackendParticipant = {
     joinedAt: string;
 };
 
+type BackendScheduleSlot = {
+    date: string;
+    hour: number;
+    availableUserIds?: string[];
+};
+
 type BackendSchedule = {
-    id: number;
-    title: string;
-    scheduledAt: string;
+    spotId: number;
+    proposedSlots?: BackendScheduleSlot[];
+    confirmedSlot?: BackendScheduleSlot | null;
 };
 
 type BackendVote = {
@@ -111,9 +153,9 @@ type BackendFile = {
     id: number;
     uploaderId?: string;
     uploaderNickname?: string;
-    fileName: string;
+    fileName?: string;
     name?: string;
-    fileUrl: string;
+    fileUrl?: string;
     url?: string;
     sizeBytes?: number;
     uploadedAt: string;
@@ -131,6 +173,14 @@ function toSpot(spot: BackendSpot): Spot {
     return {
         ...spot,
         type: spot.type === 'RENT' ? 'OFFER' : spot.type,
+    };
+}
+
+function toSpotMapItem(item: BackendSpotMapItem): SpotMapItem {
+    return {
+        ...item,
+        id: String(item.id),
+        type: item.type === 'RENT' ? 'OFFER' : item.type,
     };
 }
 
@@ -157,36 +207,25 @@ function toParticipant(participant: BackendParticipant): SpotParticipant {
     };
 }
 
-function toScheduleSlot(schedule: BackendSchedule): ScheduleSlot {
-    const date = new Date(schedule.scheduledAt);
-
+function toScheduleSlot(schedule: BackendScheduleSlot): ScheduleSlot {
     return {
-        date: Number.isNaN(date.getTime())
-            ? schedule.scheduledAt.slice(0, 10)
-            : date.toISOString().slice(0, 10),
-        hour: Number.isNaN(date.getTime()) ? 0 : date.getUTCHours(),
-        availableUserIds: [],
+        date: schedule.date,
+        hour: schedule.hour,
+        availableUserIds: schedule.availableUserIds ?? [],
     };
 }
 
-function toSchedule(
-    spotId: string,
-    schedules: BackendSchedule[] | BackendSchedule | null,
-): SpotSchedule | null {
-    const scheduleList = Array.isArray(schedules)
-        ? schedules
-        : schedules
-          ? [schedules]
-          : [];
-
-    if (scheduleList.length === 0) {
+function toSchedule(schedule: BackendSchedule | null): SpotSchedule | null {
+    if (!schedule) {
         return null;
     }
 
     return {
-        spotId,
-        proposedSlots: scheduleList.map(toScheduleSlot),
-        confirmedSlot: toScheduleSlot(scheduleList[0]),
+        spotId: String(schedule.spotId),
+        proposedSlots: (schedule.proposedSlots ?? []).map(toScheduleSlot),
+        confirmedSlot: schedule.confirmedSlot
+            ? toScheduleSlot(schedule.confirmedSlot)
+            : undefined,
     };
 }
 
@@ -239,8 +278,8 @@ function toFile(spotId: string, file: BackendFile): SharedFile {
         id: String(file.id),
         spotId,
         uploaderNickname: file.uploaderNickname ?? file.uploaderId ?? '',
-        name: file.name ?? file.fileName,
-        url: file.url ?? file.fileUrl,
+        name: file.name ?? file.fileName ?? '',
+        url: file.url ?? file.fileUrl ?? '',
         sizeBytes: file.sizeBytes ?? 0,
         uploadedAt: file.uploadedAt,
     };
@@ -256,16 +295,20 @@ function toNote(spotId: string, note: BackendNote): ProgressNote {
     };
 }
 
-function firstSchedulePayload(slots: ScheduleSlot[]) {
-    const firstSlot = slots[0];
-
-    if (!firstSlot) {
-        throw new Error('등록할 일정이 없습니다.');
-    }
-
+function schedulePayload(slots: ScheduleSlot[]) {
     return {
-        title: '스팟 일정',
-        scheduledAt: `${firstSlot.date}T${String(firstSlot.hour).padStart(2, '0')}:00:00`,
+        proposedSlots: slots.map((slot) => ({
+            date: slot.date,
+            hour: slot.hour,
+            availableUserIds: slot.availableUserIds ?? [],
+        })),
+        confirmedSlot: slots[0]
+            ? {
+                  date: slots[0].date,
+                  hour: slots[0].hour,
+                  availableUserIds: slots[0].availableUserIds ?? [],
+              }
+            : null,
     };
 }
 
@@ -326,12 +369,12 @@ export const spotServerApi = {
                     throw new Error('스팟 일정 조회에 실패했어요.');
                 }
                 const payload = (await response.json()) as {
-                    data: BackendSchedule[];
+                    data: BackendSchedule;
                 };
                 return payload.data;
             },
         );
-        return { data: toSchedule(id, data) };
+        return { data: toSchedule(data) };
     },
 
     getVotes: async (id: string): Promise<{ data: SpotVote[] }> => {
@@ -413,6 +456,22 @@ export const spotsApi = {
             };
         }),
 
+    search: async (params: SpotSearchParams): Promise<PagedResponse<Spot>> =>
+        clientApiFetch<BackendPaged<BackendSpot>>(
+            `${endpoints.spots.search}${buildQueryString(params)}`,
+        ).then((response) => {
+            const paged = toPagedResponse(response);
+            return {
+                ...paged,
+                data: paged.data.map(toSpot),
+            };
+        }),
+
+    map: async (params?: SpotMapParams): Promise<{ data: SpotMapItem[] }> =>
+        clientApiFetch<BackendSpotMapItem[]>(
+            `${endpoints.spots.map}${buildQueryString(params)}`,
+        ).then((data) => ({ data: (data ?? []).map(toSpotMapItem) })),
+
     get: async (id: string): Promise<{ data: SpotDetail }> =>
         clientApiFetch<BackendSpot>(endpoints.spots.detail(id)).then(
             (data) => ({
@@ -447,8 +506,8 @@ export const spotsApi = {
         ).then((data) => ({ data: (data ?? []).map(toParticipant) })),
 
     getSchedule: async (id: string): Promise<{ data: SpotSchedule | null }> =>
-        clientApiFetch<BackendSchedule[]>(endpoints.spots.schedule(id)).then(
-            (data) => ({ data: toSchedule(id, data) }),
+        clientApiFetch<BackendSchedule>(endpoints.spots.schedule(id)).then(
+            (data) => ({ data: toSchedule(data) }),
         ),
 
     upsertSchedule: async (
@@ -457,9 +516,9 @@ export const spotsApi = {
     ): Promise<{ data: SpotSchedule }> =>
         clientApiFetch<BackendSchedule>(endpoints.spots.schedule(id), {
             method: 'PUT',
-            body: JSON.stringify(firstSchedulePayload(slots)),
+            body: JSON.stringify(schedulePayload(slots)),
         }).then((data) => ({
-            data: toSchedule(id, data) ?? {
+            data: toSchedule(data) ?? {
                 spotId: id,
                 proposedSlots: slots,
             },
@@ -516,12 +575,55 @@ export const spotsApi = {
             },
         })),
 
+    toggleChecklistItem: async (
+        id: string,
+        itemId: string,
+    ): Promise<{ data: SpotChecklist }> =>
+        clientApiFetch<BackendChecklistItem>(
+            endpoints.spots.checklistToggle(id, itemId),
+            { method: 'PATCH' },
+        ).then((data) => ({
+            data: toChecklist(id, data) ?? {
+                spotId: id,
+                items: [],
+            },
+        })),
+
+    assignChecklistItem: async (
+        id: string,
+        itemId: string,
+        payload: AssignChecklistPayload,
+    ): Promise<{ data: SpotChecklist }> =>
+        clientApiFetch<BackendChecklistItem>(
+            endpoints.spots.checklistAssignee(id, itemId),
+            {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    assigneeId: payload.assigneeId ?? null,
+                }),
+            },
+        ).then((data) => ({
+            data: toChecklist(id, data) ?? {
+                spotId: id,
+                items: [],
+            },
+        })),
+
     getFiles: async (id: string): Promise<{ data: SharedFile[] }> =>
         clientApiFetch<BackendFile[]>(endpoints.spots.files(id)).then(
             (data) => ({
                 data: (data ?? []).map((file) => toFile(id, file)),
             }),
         ),
+
+    uploadFile: async (
+        id: string,
+        payload: UploadFilePayload,
+    ): Promise<{ data: SharedFile }> =>
+        clientApiFetch<BackendFile>(endpoints.spots.files(id), {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        }).then((data) => ({ data: toFile(id, data) })),
 
     deleteFile: async (id: string, fileId: string): Promise<void> =>
         clientApiFetch<void>(endpoints.spots.file(id, fileId), {

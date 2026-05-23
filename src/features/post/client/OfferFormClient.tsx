@@ -134,6 +134,9 @@ export function OfferFormClient() {
                     supporterPhotoUrl: supporterPhotoPreview ?? undefined,
                     desiredPrice: parsePositiveInt(desiredPrice),
                     maxPartnerCount: parsePositiveInt(maxPartnerCount),
+                    plan,
+                    preparation,
+                    priceBreakdown,
                 });
 
                 clearDraft();

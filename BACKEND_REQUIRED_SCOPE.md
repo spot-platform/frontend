@@ -32,7 +32,7 @@
 | Auth | connected | 로그인/회원가입/중복확인/refresh/logout/OAuth start 경로를 v1 계약에 맞춤 |
 | Feed list/detail | connected | `/feeds`, `/feeds/{feedId}` 사용. 상세 mock fallback 제거 |
 | Feed bookmark/application | connected | bookmark, apply/cancel, application accept/reject API 함수 연결 |
-| Post create | connected | `/posts/offer`, `/posts/request` 연결. 숫자 optional field 정규화 포함 |
+| Post create | connected | OpenAPI 계약 기준 `/feeds/offer`, `/feeds/request` 연결. 숫자 optional field와 context-builder payload 정규화 포함 |
 | Notifications | connected | list/read/read-all API 및 알림 페이지 연결 |
 | Feed participation local fallback | removed | 신청/취소 시 mock point 차감, fake chat room 생성, local item mutation 제거 |
 

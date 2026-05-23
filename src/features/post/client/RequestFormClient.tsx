@@ -123,6 +123,9 @@ export function RequestFormClient() {
                     serviceStylePhotoUrl: stylePhotoPreview ?? undefined,
                     priceCapPerPerson: parsePositiveInt(priceCapPerPerson),
                     maxPartnerCount: parsePositiveInt(maxPartnerCount),
+                    plan,
+                    preparation,
+                    priceBreakdown,
                 });
 
                 clearDraft();

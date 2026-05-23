@@ -3,7 +3,10 @@ import {
     resolvePostLoginPath,
     sanitizeNextPath,
 } from '@/features/auth/model/safe-next';
-import { buildMockLoginResult } from '@/features/auth/model/mock';
+import {
+    buildMockLoginResult,
+    getMockAccessToken,
+} from '@/features/auth/model/mock';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -43,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json(loginResult);
 
-    response.cookies.set('spot-auth-token', loginResult.accessToken, {
+    response.cookies.set('spot-auth-token', getMockAccessToken(), {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',

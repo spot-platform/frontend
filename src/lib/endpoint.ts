@@ -45,16 +45,13 @@ export const endpoints = {
     me: {
         profile: backendEndpoint('/me'),
         password: backendEndpoint('/me/password'),
+        participations: backendEndpoint('/me/participations'),
+        involvedFeeds: backendEndpoint('/me/involved-feeds'),
+        feedApplications: backendEndpoint('/me/feed-applications'),
     },
     users: {
         root: backendEndpoint('/users'),
         exist: backendEndpoint('/users/exist'),
-    },
-    posts: {
-        offer: backendEndpoint('/posts/offer'),
-        request: backendEndpoint('/posts/request'),
-        detail: (postId: string) => backendEndpoint(`/posts/${postId}`),
-        match: (postId: string) => backendEndpoint(`/posts/${postId}/match`),
     },
     spots: {
         root: backendEndpoint('/spots'),
@@ -90,6 +87,8 @@ export const endpoints = {
     feeds: {
         root: backendEndpoint('/feeds'),
         detail: (feedId: string) => backendEndpoint(`/feeds/${feedId}`),
+        offer: backendEndpoint('/feeds/offer'),
+        request: backendEndpoint('/feeds/request'),
         bookmark: (feedId: string) =>
             backendEndpoint(`/feeds/${feedId}/bookmark`),
         applications: (feedId: string) =>
@@ -104,13 +103,19 @@ export const endpoints = {
             backendEndpoint(
                 `/feeds/${feedId}/applications/${applicationId}/reject`,
             ),
+        delete: (feedId: string) => backendEndpoint(`/feeds/${feedId}`),
     },
     chat: {
+        stream: backendEndpoint('/chat/stream'),
         rooms: backendEndpoint('/chat/rooms'),
         room: (roomId: string | number) =>
             backendEndpoint(`/chat/rooms/${roomId}`),
         roomRead: (roomId: string | number) =>
             backendEndpoint(`/chat/rooms/${roomId}/read`),
+        roomTyping: (roomId: string | number) =>
+            backendEndpoint(`/chat/rooms/${roomId}/typing`),
+        roomLeave: (roomId: string | number) =>
+            backendEndpoint(`/chat/rooms/${roomId}/members/me`),
         roomMessages: (roomId: string | number) =>
             backendEndpoint(`/chat/rooms/${roomId}/messages`),
         messageRead: (roomId: string | number, messageId: string | number) =>

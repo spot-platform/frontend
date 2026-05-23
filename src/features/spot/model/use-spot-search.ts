@@ -1,18 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { listMockSpots } from './mock';
+import { spotsApi } from '../api/spot-api';
 import type { Spot } from '@/entities/spot/types';
-
-function filterMock(spots: Spot[], query: string): Spot[] {
-    const q = query.toLowerCase();
-    return spots.filter(
-        (s) =>
-            s.title.toLowerCase().includes(q) ||
-            s.description.toLowerCase().includes(q) ||
-            s.authorNickname.toLowerCase().includes(q),
-    );
-}
 
 export function useSpotSearch(query: string) {
     const trimmed = query.trim();
@@ -22,8 +12,14 @@ export function useSpotSearch(query: string) {
         queryFn: async (): Promise<Spot[]> => {
             if (!trimmed) return [];
 
-            await new Promise((resolve) => setTimeout(resolve, 150));
-            return filterMock(listMockSpots().data, trimmed);
+            const response = await spotsApi.search({
+                q: trimmed,
+                scope: 'ALL',
+                page: 0,
+                size: 20,
+            });
+
+            return response.data;
         },
         enabled: trimmed.length > 0,
         staleTime: 1000 * 30,

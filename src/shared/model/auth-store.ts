@@ -10,7 +10,7 @@ type AuthState = {
     hasCompletedOnboarding: boolean;
     userPersona: UserPersona | null;
 
-    setToken: (token: string, userId: string) => void;
+    setSession: (userId: string) => void;
     clearAuth: () => void;
 
     setPersona: (persona: UserPersona) => void;
@@ -26,12 +26,12 @@ export const useAuthStore = create<AuthState>()(
             hasCompletedOnboarding: false,
             userPersona: null,
 
-            setToken: (token, userId) => {
+            setSession: (userId) => {
                 set((state) => {
                     const userChanged =
                         state.userId !== null && state.userId !== userId;
                     return {
-                        token,
+                        token: null,
                         userId,
                         isAuthenticated: true,
                         ...(userChanged
@@ -65,24 +65,18 @@ export const useAuthStore = create<AuthState>()(
         {
             name: 'spot-auth',
             partialize: (state) => ({
-                token: state.token,
                 userId: state.userId,
                 userPersona: state.userPersona,
                 hasCompletedOnboarding: state.hasCompletedOnboarding,
             }),
             onRehydrateStorage: () => (state) => {
-                const token = state?.token ?? null;
-
                 if (state) {
-                    state.isAuthenticated = Boolean(
-                        state.token && state.userId,
-                    );
+                    state.token = null;
+                    state.isAuthenticated = Boolean(state.userId);
                     state.hasCompletedOnboarding = Boolean(
                         state.hasCompletedOnboarding && state.userPersona,
                     );
                 }
-
-                void token;
             },
         },
     ),

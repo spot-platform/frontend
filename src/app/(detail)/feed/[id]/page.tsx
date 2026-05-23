@@ -9,7 +9,10 @@ import {
     IconStar,
 } from '@tabler/icons-react';
 import { notFound } from 'next/navigation';
-import { getServerFeedDetail } from '@/features/feed/api/feed-server-api';
+import {
+    getServerFeedApplications,
+    getServerFeedDetail,
+} from '@/features/feed/api/feed-server-api';
 import { FeedParticipationActions } from '@/features/feed/ui/detail/FeedParticipationActions';
 import { EditPlanPreparationCard } from '@/features/feed/ui/detail/EditPlanPreparationCard';
 import { PlanSection } from '@/features/feed/ui/detail/PlanSection';
@@ -17,7 +20,12 @@ import { PriceSection } from '@/features/feed/ui/detail/PriceSection';
 import { PreparationSection } from '@/features/feed/ui/detail/PreparationSection';
 import { VenueSection } from '@/features/feed/ui/detail/VenueSection';
 import { DetailHeader, DetailPageShell } from '@/shared/ui';
-import type { FeedItem, FeedManagementFlow } from '@/features/feed/model/types';
+import type {
+    FeedApplication,
+    FeedItem,
+    FeedManagementFlow,
+    SupporterApplication,
+} from '@/features/feed/model/types';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -351,18 +359,90 @@ function RequestDetailContent({
     );
 }
 
+function formatDeadlineLabel(deadline?: string) {
+    if (!deadline) return '마감일 미정';
+
+    return `마감 ${deadline}`;
+}
+
+function toSupporterApplication(
+    application: FeedApplication,
+    item: FeedItem,
+): SupporterApplication {
+    const nickname =
+        application.applicantProfile?.nickname ??
+        application.nickname ??
+        application.userId;
+
+    return {
+        id: application.userId,
+        nickname,
+        avatarUrl:
+            application.applicantProfile?.avatarUrl ??
+            application.avatarUrl ??
+            undefined,
+        category: item.category ?? '기타',
+        tagline: application.proposal,
+        tags: [application.appliedRole],
+        completedCount: 0,
+        rating: 0,
+        location: item.location,
+        proposal: application.proposal,
+        competitionScore: application.status === 'ACCEPTED' ? 100 : 50,
+        status:
+            application.status === 'ACCEPTED'
+                ? 'LEADING'
+                : application.status === 'REJECTED'
+                  ? 'WAITING'
+                  : 'REVIEWING',
+        relatedRequestId: item.id,
+    };
+}
+
+function buildFeedManagement(
+    item: FeedItem,
+    applications: FeedApplication[] | null,
+): FeedManagementFlow | undefined {
+    if (!applications) return undefined;
+
+    const confirmedPartnerProfiles = item.confirmedPartnerProfiles ?? [];
+    const requiredPartners = item.maxParticipants ?? applications.length;
+    const confirmedPartners =
+        item.partnerCount ?? confirmedPartnerProfiles.length;
+
+    return {
+        feedId: item.id,
+        stageLabel: item.status === 'OPEN' ? '지원 검토 중' : item.status,
+        demand: {
+            fundingGoal: item.price,
+            fundedAmount: Math.round(
+                item.price * ((item.progressPercent ?? 0) / 100),
+            ),
+            requiredPartners,
+            confirmedPartners,
+            confirmedPartnerProfiles,
+            deadlineLabel: formatDeadlineLabel(item.deadline),
+            hostNote: item.description ?? '',
+        },
+        applications: applications.map((application) =>
+            toSupporterApplication(application, item),
+        ),
+        insights: [],
+    };
+}
+
 export default async function FeedDetailPage({ params }: Props) {
     const { id } = await params;
     const cookieStore = await cookies();
-    const item = await getServerFeedDetail(id, {
-        accessToken: cookieStore.get('spot-auth-token')?.value,
-    });
+    const accessToken = cookieStore.get('spot-auth-token')?.value;
+    const item = await getServerFeedDetail(id, { accessToken });
 
     if (!item) {
         notFound();
     }
 
-    const management: FeedManagementFlow | undefined = undefined;
+    const applications = await getServerFeedApplications(id, { accessToken });
+    const management = buildFeedManagement(item, applications);
     const isOffer = item.type === 'OFFER' || item.type === 'RENT';
     const isRequest = item.type === 'REQUEST';
 
