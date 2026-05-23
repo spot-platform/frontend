@@ -4,10 +4,8 @@ import { CategoryTagSelector } from '../CategoryTagSelector';
 import { FormCard } from '../FormCard';
 import { FormField } from '../FormField';
 import { ImageUploadGrid } from '../ImageUploadGrid';
-import {
-    MapLocationPicker,
-    type SelectedPostLocation,
-} from './MapLocationPicker';
+import type { SelectedPostLocation } from '../../model/types';
+import { MapLocationPicker } from './MapLocationPicker';
 
 type PostBaseInfoSectionProps = {
     spotName: string;

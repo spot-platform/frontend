@@ -28,6 +28,7 @@ import { formatReverseOfferApprovalProgress } from '../model/types';
 import {
     CHAT_CURRENT_USER_ID,
     getChatDirectoryCandidates,
+    isSupporterForSpot,
 } from '../model/mock';
 import type {
     ChatReverseOfferFinancialSnapshot,
@@ -230,16 +231,15 @@ function VoteCreatePanel({
     const filledOptions = options.filter((o) => o.trim());
     const canSubmit = question.trim() && filledOptions.length >= 2;
 
-    function handleSubmit() {
+    async function handleSubmit() {
         if (!canSubmit) return;
-        // store에 직접 투표 데이터 주입
         setSelectedContextId(room.id);
-        createTeamVote(
+        const createdRoom = await createTeamVote(
             question.trim(),
             options.filter((o) => o.trim()),
             multiSelect,
         );
-        onClose();
+        if (createdRoom) onClose();
     }
 
     return (
@@ -417,9 +417,23 @@ function ScheduleCreatePanel({
         });
     }
 
-    function handleSave() {
-        updateSpotSchedule(room.id, slots);
-        onClose();
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+
+    async function handleSave() {
+        if (isSaving) return;
+
+        setIsSaving(true);
+        setSaveError(null);
+
+        try {
+            await updateSpotSchedule(room.id, slots);
+            onClose();
+        } catch {
+            setSaveError('일정 저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     const myCount = slots.filter((s) =>
@@ -553,14 +567,20 @@ function ScheduleCreatePanel({
                 </span>
             </div>
 
+            {saveError && (
+                <p className="mb-3 rounded-2xl border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs text-red-100">
+                    {saveError}
+                </p>
+            )}
+
             <Button
                 fullWidth
                 size="lg"
-                disabled={myCount === 0}
+                disabled={myCount === 0 || isSaving}
                 className="bg-white text-brand-900 hover:bg-brand-50 disabled:opacity-40 focus-visible:ring-white/40"
                 onClick={handleSave}
             >
-                저장하기
+                {isSaving ? '저장 중...' : '저장하기'}
             </Button>
         </div>
     );
@@ -570,9 +590,9 @@ function ScheduleCreatePanel({
    파일 업로드 패널
 ───────────────────────────────────────────────────────────── */
 function FileCreatePanel({ onClose }: { onClose: () => void }) {
-    const { createTeamFileShare } = useMainChatStore();
     const inputRef = useRef<HTMLInputElement>(null);
     const [files, setFiles] = useState<File[]>([]);
+    const [uploadError, setUploadError] = useState<string | null>(null);
 
     function handleFiles(incoming: FileList | null) {
         if (!incoming) return;
@@ -610,13 +630,12 @@ function FileCreatePanel({ onClose }: { onClose: () => void }) {
         return '📎';
     }
 
-    function handleUpload() {
+    async function handleUpload() {
         if (files.length === 0) return;
-        // mock: 파일 이름/크기만 store에 반영 (실제 업로드 없음)
-        for (const file of files) {
-            createTeamFileShare(file.name, file.size);
-        }
-        onClose();
+
+        setUploadError(
+            '파일 업로드는 저장소 URL 계약이 필요해서 아직 실제 등록하지 않았어요.',
+        );
     }
 
     return (
@@ -678,6 +697,12 @@ function FileCreatePanel({ onClose }: { onClose: () => void }) {
                 </div>
             )}
 
+            {uploadError && (
+                <p className="mb-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
+                    {uploadError}
+                </p>
+            )}
+
             <Button
                 fullWidth
                 size="lg"
@@ -687,6 +712,13 @@ function FileCreatePanel({ onClose }: { onClose: () => void }) {
             >
                 업로드 ({files.length}개)
             </Button>
+            <button
+                type="button"
+                onClick={onClose}
+                className="mt-3 w-full rounded-2xl px-4 py-2 text-xs text-white/40 hover:bg-white/5 hover:text-white/60"
+            >
+                닫기
+            </button>
         </div>
     );
 }
@@ -819,6 +851,26 @@ function TeamCreationPanel({
         return (
             <div className="rounded-2xl bg-white/10 px-4 py-4 text-center text-sm text-white/60 pb-2">
                 스팟 채팅방을 선택한 후 항목을 추가할 수 있어요.
+            </div>
+        );
+    }
+
+    const isOwner =
+        selectedSpotRoom.spot.authorId === selectedSpotRoom.currentUserId;
+    const isSupporter = isSupporterForSpot(selectedSpotRoom);
+
+    if (['vote', 'schedule', 'file'].includes(step) && !isOwner) {
+        return (
+            <div className="rounded-2xl bg-white/10 px-4 py-4 text-center text-sm text-white/60 pb-2">
+                투표·일정·파일은 스팟 오너만 추가할 수 있어요.
+            </div>
+        );
+    }
+
+    if (step === 'reverse-offer' && (isOwner || !isSupporter)) {
+        return (
+            <div className="rounded-2xl bg-white/10 px-4 py-4 text-center text-sm text-white/60 pb-2">
+                역제안은 참여 중인 서포터만 등록할 수 있어요.
             </div>
         );
     }
@@ -1064,7 +1116,18 @@ function VoteActionPanel({
     item: Extract<SpotActionItem, { kind: 'vote' }>;
     onClose: () => void;
 }) {
-    const totalVotes = item.vote.options.reduce(
+    const { castTeamVote, rooms } = useMainChatStore();
+    const spotRoom = rooms.find(
+        (room) => room.id === item.roomId && room.category === 'spot',
+    );
+    const currentUserId =
+        spotRoom?.category === 'spot' ? spotRoom.currentUserId : '';
+    const liveVote =
+        spotRoom?.category === 'spot'
+            ? (spotRoom.spot.votes.find((vote) => vote.id === item.vote.id) ??
+              item.vote)
+            : item.vote;
+    const totalVotes = liveVote.options.reduce(
         (sum, o) => sum + o.voterIds.length,
         0,
     );
@@ -1080,21 +1143,28 @@ function VoteActionPanel({
             </p>
             <p className="mb-4 text-center text-xs text-white/40">
                 {item.roomTitle} · 총 {totalVotes}표 ·{' '}
-                {item.vote.multiSelect ? '복수 선택' : '단일 선택'}
+                {liveVote.multiSelect ? '복수 선택' : '단일 선택'}
             </p>
             <div className="flex flex-col gap-2 mb-4">
-                {item.vote.options.map((option) => {
+                {liveVote.options.map((option) => {
                     const pct =
                         totalVotes > 0
                             ? Math.round(
                                   (option.voterIds.length / totalVotes) * 100,
                               )
                             : 0;
-                    const voted = option.voterIds.includes('user-me');
+                    const voted = option.voterIds.includes(currentUserId);
                     return (
                         <button
                             key={option.id}
                             type="button"
+                            onClick={() => {
+                                void castTeamVote(
+                                    item.roomId,
+                                    liveVote.id,
+                                    option.id,
+                                );
+                            }}
                             className={`relative flex items-center justify-between overflow-hidden rounded-2xl border px-4 py-3 text-left transition ${
                                 voted
                                     ? 'border-amber-400/40 bg-amber-500/10'
@@ -1151,6 +1221,8 @@ function ScheduleActionPanel({
             : [];
     const [slots, setSlots] = useState<ScheduleSlot[]>(existingSlots);
     const [pageOffset, setPageOffset] = useState(0);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
     const currentUserId = spotRoom?.currentUserId ?? 'user-me';
     const totalParticipants =
         spotRoom?.category === 'spot' ? spotRoom.spot.participants.length : 1;
@@ -1194,6 +1266,22 @@ function ScheduleActionPanel({
             }
             return [...prev, { date, hour, availableUserIds: [currentUserId] }];
         });
+    }
+
+    async function handleSave() {
+        if (isSaving) return;
+
+        setIsSaving(true);
+        setSaveError(null);
+
+        try {
+            await updateSpotSchedule(item.roomId, slots);
+            onClose();
+        } catch {
+            setSaveError('일정 저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     const isConfirmed =
@@ -1338,16 +1426,20 @@ function ScheduleActionPanel({
                 </span>
             </div>
 
+            {saveError && (
+                <p className="mb-3 rounded-2xl border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs text-red-100">
+                    {saveError}
+                </p>
+            )}
+
             <Button
                 fullWidth
                 size="lg"
-                className="bg-white text-brand-900 hover:bg-brand-50 focus-visible:ring-white/40"
-                onClick={() => {
-                    updateSpotSchedule(item.roomId, slots);
-                    onClose();
-                }}
+                disabled={isSaving}
+                className="bg-white text-brand-900 hover:bg-brand-50 disabled:opacity-40 focus-visible:ring-white/40"
+                onClick={handleSave}
             >
-                저장하기
+                {isSaving ? '저장 중...' : '저장하기'}
             </Button>
         </div>
     );

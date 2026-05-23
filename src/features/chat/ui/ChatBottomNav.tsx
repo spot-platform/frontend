@@ -25,6 +25,7 @@ interface ChatBottomNavPersonalProps {
 interface ChatBottomNavTeamProps {
     mode: 'team';
     onAddItem: (step: CreationStep) => void;
+    showOwnerActions: boolean;
     showReverseOffer: boolean;
     disabled?: boolean;
 }
@@ -109,24 +110,37 @@ export function ChatBottomNav(props: ChatBottomNavProps) {
                     </>
                 ) : (
                     <>
-                        <NavButton
-                            icon={<IconCalendarEvent size={20} stroke={1.75} />}
-                            label="일정 추가"
-                            onClick={() => props.onAddItem('schedule')}
-                            disabled={props.disabled}
-                        />
-                        <NavButton
-                            icon={<IconChartBar size={20} stroke={1.75} />}
-                            label="투표 추가"
-                            onClick={() => props.onAddItem('vote')}
-                            disabled={props.disabled}
-                        />
-                        <NavButton
-                            icon={<IconFileText size={20} stroke={1.75} />}
-                            label="파일 추가"
-                            onClick={() => props.onAddItem('file')}
-                            disabled={props.disabled}
-                        />
+                        {props.showOwnerActions && (
+                            <>
+                                <NavButton
+                                    icon={
+                                        <IconCalendarEvent
+                                            size={20}
+                                            stroke={1.75}
+                                        />
+                                    }
+                                    label="일정 추가"
+                                    onClick={() => props.onAddItem('schedule')}
+                                    disabled={props.disabled}
+                                />
+                                <NavButton
+                                    icon={
+                                        <IconChartBar size={20} stroke={1.75} />
+                                    }
+                                    label="투표 추가"
+                                    onClick={() => props.onAddItem('vote')}
+                                    disabled={props.disabled}
+                                />
+                                <NavButton
+                                    icon={
+                                        <IconFileText size={20} stroke={1.75} />
+                                    }
+                                    label="파일 추가"
+                                    onClick={() => props.onAddItem('file')}
+                                    disabled={props.disabled}
+                                />
+                            </>
+                        )}
                         {props.showReverseOffer && (
                             <NavButton
                                 icon={

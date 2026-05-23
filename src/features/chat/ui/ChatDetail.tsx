@@ -65,6 +65,10 @@ function isBackendChatRoomId(id: string): boolean {
     return /^\d+$/.test(id);
 }
 
+function isOwnedSpotRoom(room: SpotChatRoom): boolean {
+    return room.spot.authorId === room.currentUserId;
+}
+
 function formatTime(iso: string): string {
     return new Intl.DateTimeFormat('ko-KR', {
         hour: 'numeric',
@@ -581,6 +585,12 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     const messageCount = messages.filter(
         (message) => message.kind !== 'system',
     ).length;
+    const canManageOwnerActions =
+        currentRoom.category === 'spot' && isOwnedSpotRoom(currentRoom);
+    const canCreateReverseOffer =
+        currentRoom.category === 'spot' &&
+        !canManageOwnerActions &&
+        isSupporterForSpot(currentRoom);
     const showMobileChatNavPanel =
         chatNavExpanded &&
         (chatNavMode.kind === 'room-info' ||
@@ -993,21 +1003,42 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                             </p>
                             <div className="grid grid-cols-2 gap-2">
                                 {[
-                                    {
-                                        step: 'vote' as const,
-                                        label: '투표',
-                                        description: '선택지를 제안해요',
-                                        icon: <IconChartBar size={18} />,
-                                        tone: 'bg-amber-50 text-amber-700',
-                                    },
-                                    {
-                                        step: 'schedule' as const,
-                                        label: '일정',
-                                        description: '가능한 시간 조율',
-                                        icon: <IconCalendarEvent size={18} />,
-                                        tone: 'bg-brand-50 text-brand-800',
-                                    },
-                                    ...(isSupporterForSpot(currentRoom)
+                                    ...(canManageOwnerActions
+                                        ? [
+                                              {
+                                                  step: 'vote' as const,
+                                                  label: '투표',
+                                                  description:
+                                                      '선택지를 제안해요',
+                                                  icon: (
+                                                      <IconChartBar size={18} />
+                                                  ),
+                                                  tone: 'bg-amber-50 text-amber-700',
+                                              },
+                                              {
+                                                  step: 'schedule' as const,
+                                                  label: '일정',
+                                                  description:
+                                                      '가능한 시간 조율',
+                                                  icon: (
+                                                      <IconCalendarEvent
+                                                          size={18}
+                                                      />
+                                                  ),
+                                                  tone: 'bg-brand-50 text-brand-800',
+                                              },
+                                              {
+                                                  step: 'file' as const,
+                                                  label: '파일',
+                                                  description: '첨부 파일 공유',
+                                                  icon: (
+                                                      <IconFileText size={18} />
+                                                  ),
+                                                  tone: 'bg-muted text-text-secondary',
+                                              },
+                                          ]
+                                        : []),
+                                    ...(canCreateReverseOffer
                                         ? [
                                               {
                                                   step: 'reverse-offer' as const,
@@ -1023,13 +1054,6 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                               },
                                           ]
                                         : []),
-                                    {
-                                        step: 'file' as const,
-                                        label: '파일',
-                                        description: '첨부 파일 공유',
-                                        icon: <IconFileText size={18} />,
-                                        tone: 'bg-muted text-text-secondary',
-                                    },
                                 ].map(
                                     ({
                                         step,

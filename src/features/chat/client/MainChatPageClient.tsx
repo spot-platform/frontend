@@ -822,6 +822,9 @@ export function MainChatPageClient({
             ) : (
                 <ChatBottomNav
                     mode="team"
+                    showOwnerActions={
+                        !!selectedSpotRoom && isOwnedSpotRoom(selectedSpotRoom)
+                    }
                     showReverseOffer={
                         !!selectedSpotRoom &&
                         !isOwnedSpotRoom(selectedSpotRoom) &&

@@ -58,4 +58,40 @@ describe('MapLocationPicker', () => {
             screen.getByText(/lat\s+37\.263600\s+· lng\s+127\.028600/),
         ).toBeTruthy();
     });
+
+    it('selects the current center with a keyboard-accessible button', () => {
+        const handleChange = vi.fn();
+
+        render(<MapLocationPicker value={null} onChange={handleChange} />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '현재 중심점 선택' }),
+        );
+
+        expect(handleChange).toHaveBeenCalledWith({
+            lat: 37.2636,
+            lng: 127.0286,
+            label: '지도 선택 위치 (37.26360, 127.02860)',
+        });
+    });
+
+    it('selects a required feed location from manual coordinates', () => {
+        const handleChange = vi.fn();
+
+        render(<MapLocationPicker value={null} onChange={handleChange} />);
+
+        fireEvent.change(screen.getByLabelText('선택할 위치의 위도'), {
+            target: { value: '37.5123' },
+        });
+        fireEvent.change(screen.getByLabelText('선택할 위치의 경도'), {
+            target: { value: '127.0456' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: '좌표로 선택' }));
+
+        expect(handleChange).toHaveBeenCalledWith({
+            lat: 37.5123,
+            lng: 127.0456,
+            label: '지도 선택 위치 (37.51230, 127.04560)',
+        });
+    });
 });
