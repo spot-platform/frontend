@@ -122,6 +122,7 @@ function toChatRoom(room: BackendRoom): ChatRoom {
             description: room.lastMessagePreview ?? '백엔드 채팅방입니다.',
             metaLabel: '팀 채팅',
             updatedAt,
+            unreadCount: room.unreadCount ?? 0,
             messages: [],
             spot: {
                 id: room.spotId ?? id,
