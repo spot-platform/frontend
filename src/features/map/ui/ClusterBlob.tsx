@@ -38,6 +38,38 @@ const CORE_SELECTED = 26;
 const CORE_IDLE = 22;
 const SAT_COUNT = 5;
 
+function getVariantTone(
+    variant: ActivityCluster['variant'],
+    selected: boolean,
+) {
+    if (variant === 'ai-feed') {
+        return {
+            fill: '#8B5CF6',
+            opacity: 0.86,
+            countClassName: 'bg-violet-500 text-white',
+        };
+    }
+    if (variant === 'discovery') {
+        return {
+            fill: 'var(--color-persona)',
+            opacity: 0.42,
+            countClassName: 'bg-background/90 text-muted-foreground',
+        };
+    }
+    if (variant === 'mine' || variant === 'user-feed' || selected) {
+        return {
+            fill: 'var(--color-primary)',
+            opacity: variant === 'user-feed' ? 0.94 : 0.88,
+            countClassName: 'bg-primary text-primary-foreground',
+        };
+    }
+    return {
+        fill: 'var(--color-persona)',
+        opacity: 0.72,
+        countClassName: 'bg-foreground text-background',
+    };
+}
+
 function ClusterBlobImpl({
     cluster,
     selected,
@@ -49,6 +81,8 @@ function ClusterBlobImpl({
     const count = cluster.personas.length;
     const core = selected ? CORE_SELECTED : CORE_IDLE;
     const dying = !!cluster.isDying;
+    const tone = getVariantTone(cluster.variant, selected);
+    const isDiscovery = cluster.variant === 'discovery';
 
     // 물리적 도착자 수 증가 감지 → join burst 트리거.
     // (assigned 수 아님 — 이동 완료 후 "딱 도착한 순간" 이 사용자에게 의미 있는 이벤트)
@@ -210,17 +244,8 @@ function ClusterBlobImpl({
                 <g
                     filter={`url(#${filterId})`}
                     style={{
-                        // variant='mine' 이면 항상 primary 톤 (본인 모임 강조).
-                        fill:
-                            cluster.variant === 'mine' || selected
-                                ? 'var(--color-primary)'
-                                : 'var(--color-persona)',
-                        opacity:
-                            cluster.variant === 'mine'
-                                ? 0.9
-                                : selected
-                                  ? 0.85
-                                  : 0.72,
+                        fill: tone.fill,
+                        opacity: tone.opacity,
                     }}
                 >
                     <motion.circle
@@ -230,49 +255,57 @@ function ClusterBlobImpl({
                         animate={
                             reduceMotion
                                 ? { r: core }
-                                : { r: [core, core + 2, core] }
+                                : isDiscovery
+                                  ? { r: [core - 2, core + 3, core - 1] }
+                                  : { r: [core, core + 2, core] }
                         }
                         transition={{
-                            duration: 3.4,
+                            duration: isDiscovery ? 2.7 : 3.4,
                             repeat: Infinity,
                             ease: 'easeInOut',
                         }}
                     />
-                    {Array.from({ length: SAT_COUNT }).map((_, i) => {
-                        const angle = (i / SAT_COUNT) * Math.PI * 2 + i * 0.35;
-                        const baseR = core * 1.05;
-                        const sx = CX + Math.cos(angle) * baseR;
-                        const sy = CY + Math.sin(angle) * baseR;
-                        const drift = 5;
-                        return (
-                            <motion.circle
-                                key={`sat-${i}`}
-                                initial={{ cx: sx, cy: sy, r: 8 }}
-                                animate={
-                                    reduceMotion
-                                        ? { cx: sx, cy: sy, r: 8 }
-                                        : {
-                                              cx: [
-                                                  sx,
-                                                  sx + Math.cos(angle) * drift,
-                                                  sx,
-                                              ],
-                                              cy: [
-                                                  sy,
-                                                  sy + Math.sin(angle) * drift,
-                                                  sy,
-                                              ],
-                                              r: [8, 10, 8],
-                                          }
-                                }
-                                transition={{
-                                    duration: 2.8 + i * 0.22,
-                                    repeat: Infinity,
-                                    ease: 'easeInOut',
-                                }}
-                            />
-                        );
-                    })}
+                    {!isDiscovery &&
+                        Array.from({ length: SAT_COUNT }).map((_, i) => {
+                            const angle =
+                                (i / SAT_COUNT) * Math.PI * 2 + i * 0.35;
+                            const baseR = core * 1.05;
+                            const sx = CX + Math.cos(angle) * baseR;
+                            const sy = CY + Math.sin(angle) * baseR;
+                            const drift = 5;
+                            return (
+                                <motion.circle
+                                    key={`sat-${i}`}
+                                    initial={{ cx: sx, cy: sy, r: 8 }}
+                                    animate={
+                                        reduceMotion
+                                            ? { cx: sx, cy: sy, r: 8 }
+                                            : {
+                                                  cx: [
+                                                      sx,
+                                                      sx +
+                                                          Math.cos(angle) *
+                                                              drift,
+                                                      sx,
+                                                  ],
+                                                  cy: [
+                                                      sy,
+                                                      sy +
+                                                          Math.sin(angle) *
+                                                              drift,
+                                                      sy,
+                                                  ],
+                                                  r: [8, 10, 8],
+                                              }
+                                    }
+                                    transition={{
+                                        duration: 2.8 + i * 0.22,
+                                        repeat: Infinity,
+                                        ease: 'easeInOut',
+                                    }}
+                                />
+                            );
+                        })}
                     {absorbing.map((dot) => {
                         const startX = CX + dot.fromX * 55;
                         const startY = CY + dot.fromY * 55;
@@ -284,49 +317,47 @@ function ClusterBlobImpl({
                 </g>
             </svg>
 
-            <div
-                className={cn(
-                    'absolute flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-[6px] font-mono text-[11px] font-bold shadow-md',
-                    'border-2 border-map-bg',
-                    cluster.variant === 'mine' || selected
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-foreground text-background',
-                )}
-                style={{ top: CY - core - 8, left: CX + core - 6 }}
-            >
-                {count}
-            </div>
-
-            {cluster.variant === 'mine' && (
-                <div
-                    className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-2 py-[3px] text-[10px] font-bold leading-none tracking-tight text-primary-foreground shadow-md"
-                    style={{ top: CY - core - 26 }}
-                >
-                    {cluster.variantLabel ?? '내 모임'}
-                </div>
+            {isDiscovery && !reduceMotion && (
+                <motion.div
+                    className="pointer-events-none absolute rounded-full border border-foreground/20"
+                    style={{
+                        top: CY - core * 1.08,
+                        left: CX - core * 1.08,
+                        width: core * 2.16,
+                        height: core * 2.16,
+                    }}
+                    animate={{
+                        scale: [0.92, 1.18, 0.96],
+                        opacity: [0.22, 0.04, 0.18],
+                        borderRadius: ['48%', '43%', '52%'],
+                    }}
+                    transition={{
+                        duration: 2.8,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                    }}
+                />
             )}
 
-            <div
-                className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold tracking-tight text-foreground/75 drop-shadow-sm dark:text-foreground/80"
-                style={{ top: CY + core + 10 }}
-            >
-                {cluster.category}
-            </div>
-
-            {selected && !dying && (
-                <div
-                    className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-[10px] bg-foreground px-3 py-[7px] text-[12px] font-bold leading-none tracking-tight text-background shadow-lg"
-                    style={{ top: CY - core - 46 }}
-                >
-                    {cluster.category}
-                    <div className="mt-1 text-[10px] font-medium opacity-60">
-                        {count}명 모여있음
+            {!isDiscovery && (
+                <>
+                    <div
+                        className={cn(
+                            'absolute flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-[6px] font-mono text-[11px] font-bold shadow-md',
+                            'border-2 border-map-bg',
+                            tone.countClassName,
+                        )}
+                        style={{ top: CY - core - 8, left: CX + core - 6 }}
+                    >
+                        {count}
                     </div>
                     <div
-                        className="absolute left-1/2 h-0 w-0 -translate-x-1/2 border-x-[4px] border-t-[4px] border-x-transparent border-t-foreground"
-                        style={{ bottom: -4 }}
-                    />
-                </div>
+                        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold tracking-tight text-foreground/75 drop-shadow-sm dark:text-foreground/80"
+                        style={{ top: CY + core + 10 }}
+                    >
+                        {cluster.category}
+                    </div>
+                </>
             )}
         </motion.div>
     );

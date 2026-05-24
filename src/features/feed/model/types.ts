@@ -1,5 +1,5 @@
 // FeedItem - 피드 목록에 표시되는 아이템 타입
-
+import type { GeoCoord } from '@/entities/spot/types';
 import type {
     PlanV3,
     Preparation,
@@ -106,6 +106,10 @@ export interface FeedItem {
     myApplicationRole?: FeedApplicationRole;
     myApplicationDeposit?: number;
     spotId?: string;
+    coord?: GeoCoord;
+    /** Backend feed list exposes the selected map point as top-level lat/lng. */
+    lat?: number;
+    lng?: number;
     owner?: boolean;
     /**
      * 2026-04-30 — contextBuilder 시뮬레이션이 합성한 AI 피드 마커.

@@ -1,15 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import {
     type BottomSheetSnapPoint,
     PersistentDrawer,
 } from '@frontend/design-system';
 import { useAuthStore } from '@/shared/model/auth-store';
 import { buildSpotCardLookup } from '@/features/simulation/model/spot-card-adapter';
-import { feedApi } from '../api/feed-api';
-import { feedKeys } from '../model/use-feed';
+import { useLayerAwareFeedList } from '../model/use-feed';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import type { SpotCategory } from '@/entities/spot/categories';
 import { FeedCard } from './FeedCard';
@@ -55,10 +53,7 @@ export function FeedBottomSheet({
     const role = userPersona?.role ?? null;
     const searchQuery = useFilterStore((s) => s.searchQuery);
     const normalizedQuery = searchQuery.trim().toLowerCase();
-    const { data: feedData } = useQuery({
-        queryKey: feedKeys.list(),
-        queryFn: () => feedApi.list(),
-    });
+    const { data: feedData } = useLayerAwareFeedList();
     const feedItems = feedData?.data ?? [];
     const spotCardLookup = useMemo(() => buildSpotCardLookup([]), []);
 

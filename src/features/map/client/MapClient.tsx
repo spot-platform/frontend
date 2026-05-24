@@ -20,10 +20,6 @@ import { useLayerStore } from '@/features/layer/model/use-layer-store';
 import { useSimRun } from '@/features/simulation/model/use-sim-run';
 import { useSimDomain } from '@/features/simulation/model/sim-domain-adapter';
 import { useMySpotsStore } from '@/features/spot/model/my-spots-store';
-import {
-    saveSimulationConversionContext,
-    getSuggestedPriceKrw,
-} from '@/features/simulation/model/simulation-conversion-context';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import { useMapUrlState } from '@/features/map/model/use-map-url-state';
 import { ClusterBlob } from '@/features/map/ui/ClusterBlob';
@@ -31,7 +27,11 @@ import { PersonaDotMarkerBlob } from '@/features/map/ui/PersonaDotMarkerBlob';
 import { MapBottomStack } from '@/features/map/ui/MapBottomStack';
 import { SpotInfoCard } from '@/features/map/ui/SpotInfoCard';
 import { MySpotInfoCard } from '@/features/map/ui/MySpotInfoCard';
+import { MapFeedInfoCard } from '@/features/map/ui/MapFeedInfoCard';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
+import { useLayerAwareFeedList } from '@/features/feed/model/use-feed';
+import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
+import { resolveFeedCoordinate } from '@/features/feed/model/feed-location';
 import type { TickerEvent } from '@/features/map/model/ticker-adapter';
 import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
 import { useTheme } from '@/shared/model/use-theme';
@@ -140,6 +140,16 @@ export function MapClient() {
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
     const searchQuery = useFilterStore((s) => s.searchQuery);
+    const { data: feedData } = useLayerAwareFeedList();
+    const visibleFeedItems = useMemo(
+        () =>
+            filterVisibleFeedItems(feedData?.data ?? [], {
+                feedType,
+                categories,
+                searchQuery,
+            }),
+        [feedData?.data, feedType, categories, searchQuery],
+    );
 
     const activeLayer = useLayerStore((s) => s.activeLayer);
 
@@ -242,6 +252,13 @@ export function MapClient() {
         [updateUrl],
     );
 
+    const handleFeedMarkerSelect = useCallback(
+        (feedId: string) => {
+            updateUrl({ cluster: `feed-${feedId}` });
+        },
+        [updateUrl],
+    );
+
     // v3 는 spot marker 가 아닌 cluster 중심이라 SpotPreviewSheet 은 사용하지 않음.
     void selectedSpotId;
 
@@ -275,7 +292,10 @@ export function MapClient() {
                 clickable: true,
                 render: () => (
                     <ClusterBlob
-                        cluster={cluster}
+                        cluster={{
+                            ...cluster,
+                            variant: cluster.variant ?? 'discovery',
+                        }}
                         selected={selectedClusterId === cluster.id}
                         onSelectAction={handleClusterSelect}
                     />
@@ -333,9 +353,62 @@ export function MapClient() {
         inViewport,
     ]);
 
+    const feedMarkerOverlays: MapOverlayItem[] = useMemo(() => {
+        return visibleFeedItems.flatMap((item) => {
+            const coord = resolveFeedCoordinate(item);
+            if (!coord || !inViewport(coord)) return [];
+
+            const markerCount = Math.max(
+                1,
+                item.confirmedPartnerProfiles?.length ??
+                    item.partnerCount ??
+                    item.applicantCount ??
+                    1,
+            );
+            const personas = Array.from(
+                { length: markerCount },
+                (_, index) => ({
+                    id: `${item.id}-${index}`,
+                    name: item.authorNickname,
+                    emoji: item.type === 'REQUEST' ? '🙋' : '📍',
+                }),
+            );
+            const cluster: ActivityCluster = {
+                id: `feed-${item.id}`,
+                centerCoord: coord,
+                category: item.category ?? '피드',
+                intent: item.type === 'REQUEST' ? 'request' : 'offer',
+                personas,
+                variant: item.isAi ? 'ai-feed' : 'user-feed',
+            };
+
+            return [
+                {
+                    key: `feed-marker-${item.id}`,
+                    position: coord,
+                    clickable: true,
+                    render: () => (
+                        <ClusterBlob
+                            cluster={cluster}
+                            selected={selectedClusterId === `feed-${item.id}`}
+                            onSelectAction={() =>
+                                handleFeedMarkerSelect(item.id)
+                            }
+                        />
+                    ),
+                } satisfies MapOverlayItem,
+            ];
+        });
+    }, [
+        visibleFeedItems,
+        selectedClusterId,
+        handleFeedMarkerSelect,
+        inViewport,
+    ]);
+
     const overlays: MapOverlayItem[] = useMemo(
-        () => [...clusterOverlays, ...personaOverlays],
-        [clusterOverlays, personaOverlays],
+        () => [...clusterOverlays, ...feedMarkerOverlays, ...personaOverlays],
+        [clusterOverlays, feedMarkerOverlays, personaOverlays],
     );
 
     const [tickerEvent, setTickerEvent] = useState<TickerEvent | null>(null);
@@ -457,6 +530,27 @@ export function MapClient() {
                         );
                     }
 
+                    // 실제 사용자/AI 추천 피드 마커 — 바로 상세 이동하지 않고 요약 카드 먼저 노출.
+                    if (selectedClusterId.startsWith('feed-')) {
+                        const feedId = selectedClusterId.slice('feed-'.length);
+                        const selectedFeed = visibleFeedItems.find(
+                            (item) => item.id === feedId,
+                        );
+                        if (!selectedFeed) return null;
+                        return (
+                            <MapFeedInfoCard
+                                key={`feed-info-${selectedFeed.id}`}
+                                item={selectedFeed}
+                                onCloseAction={() =>
+                                    updateUrl({ cluster: null })
+                                }
+                                onDetailAction={() =>
+                                    router.push(`/feed/${selectedFeed.id}`)
+                                }
+                            />
+                        );
+                    }
+
                     // 시뮬 lifecycle 기반 클러스터.
                     const selectedLifecycle = lifecycleResult.lifecycles.find(
                         (lc) => lc.spotId === selectedClusterId,
@@ -467,62 +561,8 @@ export function MapClient() {
                             key={`spot-${selectedLifecycle.spotId}`}
                             lifecycle={selectedLifecycle}
                             personaLookup={basePersonaLookup}
+                            variant="discovery"
                             onCloseAction={() => updateUrl({ cluster: null })}
-                            onCreateSimilarAction={() => {
-                                // 시뮬 → post 전환: prefill + insight 컨텍스트 둘 다 전달.
-                                // 단순 prefill(URL 쿼리) 로는 담기 힘든 분석 지표(평균 참여자,
-                                // 가격 벤치마크 등) 는 sessionStorage 에 JSON 으로 저장해
-                                // post 폼 쪽 SimulationInsightCard 가 읽어 '적용' 제안으로 노출.
-                                const sameCategory =
-                                    lifecycleResult.lifecycles.filter(
-                                        (l) =>
-                                            l.category ===
-                                            selectedLifecycle.category,
-                                    );
-                                const nowMs = performance.now();
-                                const similarActive = sameCategory.filter(
-                                    (l) => nowMs < l.closedAtMs,
-                                ).length;
-                                const avgParticipants =
-                                    sameCategory.length > 0
-                                        ? Math.max(
-                                              2,
-                                              Math.round(
-                                                  sameCategory.reduce(
-                                                      (s, l) =>
-                                                          s +
-                                                          l.participants.length,
-                                                      0,
-                                                  ) / sameCategory.length,
-                                              ),
-                                          )
-                                        : selectedLifecycle.participants.length;
-                                saveSimulationConversionContext({
-                                    sourceSpotId: selectedLifecycle.spotId,
-                                    category: selectedLifecycle.category,
-                                    intent: selectedLifecycle.intent,
-                                    title: selectedLifecycle.title,
-                                    similarActiveCount: similarActive,
-                                    avgParticipants,
-                                    suggestedPriceKrw: getSuggestedPriceKrw(
-                                        selectedLifecycle.category,
-                                    ),
-                                    typicalLifespanMs:
-                                        selectedLifecycle.closedAtMs -
-                                        selectedLifecycle.createdAtMs,
-                                    spotLocation: selectedLifecycle.location,
-                                });
-
-                                const qs = new URLSearchParams();
-                                qs.set('title', selectedLifecycle.title);
-                                qs.set('category', selectedLifecycle.category);
-                                qs.set('fromSpot', selectedLifecycle.spotId);
-                                const path =
-                                    selectedLifecycle.intent === 'offer'
-                                        ? '/post/offer'
-                                        : '/post/request';
-                                router.push(`${path}?${qs.toString()}`);
-                            }}
                         />
                     );
                 })()}

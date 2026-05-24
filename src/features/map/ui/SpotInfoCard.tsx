@@ -18,6 +18,7 @@ type SpotInfoCardProps = {
     lifecycle: SpotLifecycle;
     personaLookup: Map<string, Persona>;
     onCloseAction?: () => void;
+    variant?: 'discovery' | 'actionable';
     /** "이런 모임 열기" 클릭 시 호출. 시뮬→포스트 생성 플로우로 연결. */
     onCreateSimilarAction?: () => void;
 };
@@ -63,6 +64,7 @@ export function SpotInfoCard({
     lifecycle,
     personaLookup,
     onCloseAction,
+    variant = 'actionable',
     onCreateSimilarAction,
 }: SpotInfoCardProps) {
     const router = useRouter();
@@ -175,26 +177,37 @@ export function SpotInfoCard({
                 </div>
             )}
 
-            <button
-                type="button"
-                onClick={() =>
-                    router.push(`/feed/${encodeURIComponent(lifecycle.spotId)}`)
-                }
-                className="mt-3 w-full rounded-xl border border-border-soft bg-card px-3 py-2 text-[12px] font-semibold text-text-secondary transition-colors hover:bg-muted"
-            >
-                자세히 보기
-            </button>
-
-            {onCreateSimilarAction && status !== 'CLOSED' && (
+            {variant === 'discovery' ? (
+                <div className="mt-3 rounded-xl border border-dashed border-border-soft bg-muted/45 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                    동네에서 감지된 발견 신호예요. 실제 피드는 아니어서 자세히
+                    보기나 리퀘스트 전환 없이 주변 활동 분위기만 보여줘요.
+                </div>
+            ) : (
                 <button
                     type="button"
-                    onClick={onCreateSimilarAction}
-                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-[12px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
+                    onClick={() =>
+                        router.push(
+                            `/feed/${encodeURIComponent(lifecycle.spotId)}`,
+                        )
+                    }
+                    className="mt-3 w-full rounded-xl border border-border-soft bg-card px-3 py-2 text-[12px] font-semibold text-text-secondary transition-colors hover:bg-muted"
                 >
-                    <span aria-hidden>✨</span>
-                    <span>나도 이런 모임 열기</span>
+                    자세히 보기
                 </button>
             )}
+
+            {variant !== 'discovery' &&
+                onCreateSimilarAction &&
+                status !== 'CLOSED' && (
+                    <button
+                        type="button"
+                        onClick={onCreateSimilarAction}
+                        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 text-[12px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
+                    >
+                        <span aria-hidden>✨</span>
+                        <span>나도 이런 모임 열기</span>
+                    </button>
+                )}
         </motion.div>
     );
 }

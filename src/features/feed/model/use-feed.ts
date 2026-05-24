@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { payKeys } from '@/features/pay';
 import {
@@ -5,6 +6,8 @@ import {
     type FeedApplyPayload,
     type FeedListParams,
 } from '../api/feed-api';
+import { useLayerStore } from '@/features/layer/model/use-layer-store';
+import { getFeedListIsAiParamByLayer } from './feed-layer-filter';
 
 export const feedKeys = {
     all: ['feed'] as const,
@@ -22,6 +25,17 @@ export function useFeedList(params?: FeedListParams) {
         queryKey: feedKeys.list(params),
         queryFn: () => feedApi.list(params),
     });
+}
+
+export function useLayerAwareFeedList(params?: FeedListParams) {
+    const activeLayer = useLayerStore((state) => state.activeLayer);
+    const isAi = getFeedListIsAiParamByLayer(activeLayer);
+    const layerParams = useMemo<FeedListParams | undefined>(() => {
+        if (isAi === undefined) return params;
+        return { ...params, isAi };
+    }, [params, isAi]);
+
+    return useFeedList(layerParams);
 }
 
 export function useFeedApplications(feedId: string, enabled: boolean) {
