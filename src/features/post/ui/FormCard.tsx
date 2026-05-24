@@ -2,13 +2,18 @@ import type { ReactNode } from 'react';
 
 interface FormCardProps {
     title: string;
+    showTitle?: boolean;
     children: ReactNode;
 }
 
-export function FormCard({ title, children }: FormCardProps) {
+export function FormCard({ title, showTitle = true, children }: FormCardProps) {
+    const titleClass = showTitle
+        ? 'text-base font-bold text-gray-900'
+        : 'sr-only';
+
     return (
-        <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 flex flex-col gap-4">
-            <h3 className="text-sm font-bold text-gray-700">{title}</h3>
+        <div className="flex flex-col gap-6 bg-white">
+            <h3 className={titleClass}>{title}</h3>
             {children}
         </div>
     );

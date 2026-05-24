@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { IconPlus, IconX } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
 
 interface ImageUploadSlotProps {
     preview: string | null;
@@ -49,7 +49,7 @@ export function ImageUploadSlot({
     return (
         <div className="relative">
             <div
-                className={`${sizeClass} relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 overflow-hidden`}
+                className={`${sizeClass} relative overflow-hidden rounded-xl bg-gray-50`}
             >
                 {preview ? (
                     <Image
@@ -62,10 +62,9 @@ export function ImageUploadSlot({
                     <button
                         type="button"
                         onClick={() => inputRef.current?.click()}
-                        className="flex h-full w-full flex-col items-center justify-center gap-1 text-gray-300"
+                        className="flex h-full w-full items-center justify-center rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-400 transition-colors hover:border-gray-300 hover:bg-gray-50"
                     >
-                        <IconPlus size={20} stroke={1.5} />
-                        <span className="text-[10px]">사진 추가</span>
+                        사진 추가
                     </button>
                 )}
             </div>
