@@ -32,7 +32,9 @@ export function detectPwaInstallPlatform(
     userAgent: string,
 ): PwaInstallPlatform {
     const normalized = userAgent.toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(normalized);
+    const isIOS =
+        /iphone|ipad|ipod/.test(normalized) ||
+        (normalized.includes('macintosh') && normalized.includes('mobile'));
     const isAndroid = normalized.includes('android');
     const isChromium = /chrome|crios|edg|samsungbrowser/.test(normalized);
 

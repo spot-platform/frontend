@@ -239,6 +239,9 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
     const [selectedFilter, setSelectedFilter] = useState<ChatFilter>('all');
 
     const { personalRooms, feedRooms, spotRooms, allRooms } = useMemo(() => {
+        const byUpdatedAtDesc = (left: ChatRoom, right: ChatRoom) =>
+            new Date(right.updatedAt).getTime() -
+            new Date(left.updatedAt).getTime();
         const personal: PersonalChatRoom[] = [];
         const feed: SpotChatRoom[] = [];
         const spot: SpotChatRoom[] = [];
@@ -248,14 +251,10 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             else spot.push(room);
         }
         return {
-            personalRooms: personal,
-            feedRooms: feed,
-            spotRooms: spot,
-            allRooms: [...personal, ...feed, ...spot].sort(
-                (left, right) =>
-                    new Date(right.updatedAt).getTime() -
-                    new Date(left.updatedAt).getTime(),
-            ),
+            personalRooms: [...personal].sort(byUpdatedAtDesc),
+            feedRooms: [...feed].sort(byUpdatedAtDesc),
+            spotRooms: [...spot].sort(byUpdatedAtDesc),
+            allRooms: [...personal, ...feed, ...spot].sort(byUpdatedAtDesc),
         };
     }, [rooms]);
 

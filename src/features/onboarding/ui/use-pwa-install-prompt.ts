@@ -89,10 +89,15 @@ export function usePwaInstallPrompt() {
         }
 
         setInstallState('prompting');
-        await installPrompt.prompt();
-        const choice = await installPrompt.userChoice;
-        setInstallState(choice.outcome);
-        setInstallPrompt(null);
+        try {
+            await installPrompt.prompt();
+            const choice = await installPrompt.userChoice;
+            setInstallState(choice.outcome);
+        } catch {
+            setInstallState('idle');
+        } finally {
+            setInstallPrompt(null);
+        }
     }, [installPrompt, isInstalled]);
 
     return {

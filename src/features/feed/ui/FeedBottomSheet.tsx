@@ -12,7 +12,8 @@ import { useFilterStore } from '@/features/map/model/use-filter-store';
 import type { SpotCategory } from '@/entities/spot/categories';
 import { FeedCard } from './FeedCard';
 import { AttractivenessMiniGauge } from './preference/AttractivenessMiniGauge';
-import { isSearchExcludedFeedItem, type FeedItem } from '../model/types';
+import { filterVisibleFeedItems } from '../model/feed-filter';
+import type { FeedItem } from '../model/types';
 
 type FeedBottomSheetProps = {
     open: boolean;
@@ -52,35 +53,14 @@ export function FeedBottomSheet({
     const userPersona = useAuthStore((state) => state.userPersona);
     const role = userPersona?.role ?? null;
     const searchQuery = useFilterStore((s) => s.searchQuery);
-    const normalizedQuery = searchQuery.trim().toLowerCase();
     const { data: feedData } = useLayerAwareFeedList();
     const feedItems = feedData?.data ?? [];
     const spotCardLookup = useMemo(() => buildSpotCardLookup([]), []);
 
-    const filtered = feedItems.filter((item) => {
-        if (feedType === 'offer' && item.type !== 'OFFER') return false;
-        if (feedType === 'request' && item.type !== 'REQUEST') return false;
-        if (
-            categories.length > 0 &&
-            (!item.category ||
-                !categories.includes(item.category as SpotCategory))
-        )
-            return false;
-        if (normalizedQuery.length > 0) {
-            if (isSearchExcludedFeedItem(item)) return false;
-
-            const haystack = [
-                item.title,
-                item.description ?? '',
-                item.category ?? '',
-                item.location,
-                item.authorNickname,
-            ]
-                .join(' ')
-                .toLowerCase();
-            if (!haystack.includes(normalizedQuery)) return false;
-        }
-        return true;
+    const filtered = filterVisibleFeedItems(feedItems, {
+        feedType,
+        categories,
+        searchQuery,
     });
 
     return (

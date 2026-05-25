@@ -7,7 +7,7 @@ const ONBOARDING_PERSONA_STORAGE_KEY = 'spot-onboarding-personas';
 type StoredOnboardingPersonas = Record<string, UserPersona>;
 
 function canUseLocalStorage() {
-    return typeof window !== 'undefined' && Boolean(window.localStorage);
+    return typeof window !== 'undefined';
 }
 
 function readStoredOnboardingPersonas(): StoredOnboardingPersonas {
@@ -41,6 +41,21 @@ function persistOnboardingPersona(persona: UserPersona) {
         );
     } catch {
         // localStorage 접근 실패(private mode 등)는 온보딩 흐름을 막지 않는다.
+    }
+}
+
+function removeStoredOnboardingPersona(userId: string) {
+    if (!canUseLocalStorage()) return;
+
+    try {
+        const personas = readStoredOnboardingPersonas();
+        delete personas[userId];
+        window.localStorage.setItem(
+            ONBOARDING_PERSONA_STORAGE_KEY,
+            JSON.stringify(personas),
+        );
+    } catch {
+        // localStorage 접근 실패(private mode 등)는 온보딩 리셋을 막지 않는다.
     }
 }
 
@@ -114,7 +129,17 @@ export const useAuthStore = create<AuthState>()(
             },
 
             resetPersona: () => {
-                set({ userPersona: null, hasCompletedOnboarding: false });
+                set((state) => {
+                    const targetUserId =
+                        state.userPersona?.userId ?? state.userId;
+                    if (targetUserId)
+                        removeStoredOnboardingPersona(targetUserId);
+
+                    return {
+                        userPersona: null,
+                        hasCompletedOnboarding: false,
+                    };
+                });
             },
         }),
         {

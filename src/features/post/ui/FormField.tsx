@@ -4,6 +4,7 @@ interface FormFieldProps {
     label: string;
     required?: boolean;
     labelSize?: 'display' | 'compact';
+    htmlFor?: string;
     children: ReactNode;
 }
 
@@ -11,6 +12,7 @@ export function FormField({
     label,
     required,
     labelSize = 'display',
+    htmlFor,
     children,
 }: FormFieldProps) {
     const labelClass =
@@ -20,7 +22,7 @@ export function FormField({
 
     return (
         <div className="flex flex-col gap-3">
-            <label className={labelClass}>
+            <label htmlFor={htmlFor} className={labelClass}>
                 {label}
                 {required && <span className="text-red-400 ml-0.5">*</span>}
             </label>

@@ -59,4 +59,19 @@ describe('useAuthStore onboarding persistence', () => {
         expect(useAuthStore.getState().hasCompletedOnboarding).toBe(false);
         expect(useAuthStore.getState().userPersona).toBeNull();
     });
+
+    it('removes the persisted onboarding persona when persona is reset', () => {
+        useAuthStore.getState().setSession(persona.userId);
+        useAuthStore.getState().setPersona(persona);
+
+        useAuthStore.getState().resetPersona();
+        useAuthStore.getState().setSession(persona.userId);
+
+        const stored = JSON.parse(
+            window.localStorage.getItem(ONBOARDING_PERSONA_STORAGE_KEY) ?? '{}',
+        );
+        expect(stored[persona.userId]).toBeUndefined();
+        expect(useAuthStore.getState().hasCompletedOnboarding).toBe(false);
+        expect(useAuthStore.getState().userPersona).toBeNull();
+    });
 });

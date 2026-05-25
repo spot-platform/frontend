@@ -23,6 +23,11 @@ describe('PWA install onboarding helpers', () => {
                 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 Chrome/120 Safari/537.36',
             ),
         ).toBe('desktop');
+        expect(
+            detectPwaInstallPlatform(
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1',
+            ),
+        ).toBe('ios-safari');
     });
 
     it('keeps manual install guide copy available when browser prompt is unavailable', () => {

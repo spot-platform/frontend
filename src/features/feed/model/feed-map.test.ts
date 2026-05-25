@@ -42,6 +42,17 @@ describe('feed map helpers', () => {
         });
     });
 
+    it('normalizes string coordinates from backend coordinate payloads', () => {
+        const item = makeFeed({
+            coordinate: { lat: '37.2636', lng: '127.0286' },
+        } as Partial<FeedItem>);
+
+        expect(resolveFeedCoordinate(item)).toEqual({
+            lat: 37.2636,
+            lng: 127.0286,
+        });
+    });
+
     it('falls back to primaryPin coordinates used by contextBuilder feed fixtures', () => {
         const item = makeFeed({
             primaryPin: {

@@ -145,6 +145,59 @@ describe('ChatDrawer', () => {
         expect(screen.getByText('한강 러닝 스팟')).not.toBeNull();
     });
 
+    it('sorts each chat filter by the latest updated room first', () => {
+        mockRooms = [
+            createPersonalRoom({
+                id: 'personal-old',
+                title: '오래된 개인',
+                updatedAt: '2026-05-24T10:00:00.000Z',
+            }),
+            createPersonalRoom({
+                id: 'personal-new',
+                title: '최신 개인',
+                updatedAt: '2026-05-24T13:00:00.000Z',
+            }),
+            createSpotRoom({
+                id: 'spot-old',
+                title: '오래된 스팟',
+                updatedAt: '2026-05-24T09:00:00.000Z',
+                sourceFeedId: undefined,
+                spot: { id: 'spot-old' } as SpotChatRoom['spot'],
+            }),
+            createSpotRoom({
+                id: 'spot-new',
+                title: '최신 스팟',
+                updatedAt: '2026-05-24T14:00:00.000Z',
+                sourceFeedId: undefined,
+                spot: { id: 'spot-new' } as SpotChatRoom['spot'],
+            }),
+        ];
+
+        render(<ChatDrawer open onClose={mockOnClose} />);
+
+        fireEvent.click(screen.getByRole('button', { name: '개인 채팅 필터' }));
+        const personalRows = screen.getAllByRole('button');
+        expect(
+            personalRows.findIndex((row) =>
+                row.textContent?.includes('최신 개인'),
+            ),
+        ).toBeLessThan(
+            personalRows.findIndex((row) =>
+                row.textContent?.includes('오래된 개인'),
+            ),
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: '스팟 채팅 필터' }));
+        const spotRows = screen.getAllByRole('button');
+        expect(
+            spotRows.findIndex((row) => row.textContent?.includes('최신 스팟')),
+        ).toBeLessThan(
+            spotRows.findIndex((row) =>
+                row.textContent?.includes('오래된 스팟'),
+            ),
+        );
+    });
+
     it('does not request chat rooms while the drawer is closed', () => {
         render(<ChatDrawer open={false} onClose={mockOnClose} />);
 
