@@ -1,6 +1,6 @@
 'use client';
 
-// 3-step onboarding wizard (INTRO → SELECT → PREVIEW). Saves finalized persona to auth-store and routes to /map.
+// Onboarding wizard (INTRO → SELECT → INSTALL → PREVIEW). Saves finalized persona to auth-store and routes to /map.
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ import { useAuthStore } from '@/shared/model/auth-store';
 import { ArchetypeSelector } from '../ui/ArchetypeSelector';
 import { InterestTagPicker } from '../ui/InterestTagPicker';
 import { PersonaPreview } from '../ui/PersonaPreview';
+import { PwaInstallGuide } from '../ui/PwaInstallGuide';
 import { RoleSelector } from '../ui/RoleSelector';
 import { WorldIntroSlide } from '../ui/WorldIntroSlide';
 import { ONBOARDING_STEPS } from '../model/types';
@@ -151,6 +152,16 @@ export function OnboardingPageClient() {
                                     onToggle={toggleInterest}
                                 />
                             </section>
+                        </motion.div>
+                    )}
+
+                    {step === 'INSTALL' && (
+                        <motion.div
+                            key="install"
+                            {...STEP_TRANSITION}
+                            className="flex flex-col gap-4"
+                        >
+                            <PwaInstallGuide />
                         </motion.div>
                     )}
 

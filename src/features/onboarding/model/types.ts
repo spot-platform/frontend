@@ -5,11 +5,12 @@ import type {
     UserPersonaRole,
 } from '@/entities/persona/types';
 
-export type OnboardingStep = 'INTRO' | 'SELECT' | 'PREVIEW';
+export type OnboardingStep = 'INTRO' | 'SELECT' | 'INSTALL' | 'PREVIEW';
 
 export const ONBOARDING_STEPS: readonly OnboardingStep[] = [
     'INTRO',
     'SELECT',
+    'INSTALL',
     'PREVIEW',
 ] as const;
 
