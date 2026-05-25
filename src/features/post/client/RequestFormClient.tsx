@@ -13,6 +13,7 @@ import { PostBaseInfoSection } from '../ui/post-form/PostBaseInfoSection';
 import { PostSubmitBar } from '../ui/post-form/PostSubmitBar';
 import { PreparationInputSection } from '../ui/post-form/PreparationInputSection';
 import { PriceInputSection } from '../ui/post-form/PriceInputSection';
+import { PostErrorMessage } from '../ui/FormControls';
 import { PostStepIndicator } from '../ui/PostStepIndicator';
 import { ReceiptCard } from '../ui/ReceiptCard';
 import { RequestDetailsSection } from '../ui/post-form/RequestDetailsSection';
@@ -197,11 +198,7 @@ export function RequestFormClient() {
                 <p className="text-sm text-gray-500">
                     함께할 파트너들이 한눈에 이해할 수 있게 작성해주세요.
                 </p>
-                {submitError && (
-                    <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                        {submitError}
-                    </p>
-                )}
+                {submitError && <PostErrorMessage message={submitError} />}
 
                 {step === 0 && (
                     <PostBaseInfoSection

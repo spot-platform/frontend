@@ -1,5 +1,5 @@
-import { Textarea } from '@frontend/design-system';
 import { FormCard } from '../FormCard';
+import { PostTextarea } from '../FormControls';
 import { FormField } from '../FormField';
 import { ImageUploadSlot } from '../ImageUploadSlot';
 
@@ -21,10 +21,9 @@ export function RequestDetailsSection({
     onPreferredScheduleChange,
 }: RequestDetailsSectionProps) {
     return (
-        <FormCard title="Request 상세 정보">
-            <FormField label="스팟 상세 설명" required>
-                <Textarea
-                    className="resize-none"
+        <FormCard title="Request 상세 정보" showTitle={false}>
+            <FormField label="필요한 도움을 입력해주세요." required>
+                <PostTextarea
                     rows={5}
                     placeholder={`어떤 서포터를 찾고 있는지 구체적으로 설명해주세요.\n예) "홈카페 분위기 연출을 도와줄 바리스타 경력자를 찾고 있어요."`}
                     value={detailDescription}
@@ -34,9 +33,9 @@ export function RequestDetailsSection({
                 />
             </FormField>
 
-            <FormField label="선호 일정">
-                <Textarea
-                    className="resize-none"
+            <FormField label="선호 일정을 입력해주세요. (선택)">
+                <PostTextarea
+                    variant="compact"
                     rows={2}
                     placeholder={`언제 활동하고 싶으신가요?\n예) "주말 오전 가능해요." / "평일 저녁 선호해요."`}
                     value={preferredSchedule}

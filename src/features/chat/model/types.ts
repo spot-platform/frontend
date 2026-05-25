@@ -151,6 +151,7 @@ interface ChatRoomBase {
     description: string;
     metaLabel: string;
     updatedAt: string;
+    unreadCount?: number;
     messages: ChatMessage[];
 }
 

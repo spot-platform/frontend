@@ -1,5 +1,5 @@
-import { Textarea } from '@frontend/design-system';
 import { FormCard } from '../FormCard';
+import { PostTextarea } from '../FormControls';
 import { FormField } from '../FormField';
 import { ImageUploadSlot } from '../ImageUploadSlot';
 
@@ -25,10 +25,9 @@ export function OfferDetailsSection({
     onAutoCloseChange,
 }: OfferDetailsSectionProps) {
     return (
-        <FormCard title="Offer 상세 정보">
-            <FormField label="스팟 상세 설명" required>
-                <Textarea
-                    className="resize-none"
+        <FormCard title="Offer 상세 정보" showTitle={false}>
+            <FormField label="스팟 상세 설명을 입력해주세요." required>
+                <PostTextarea
                     rows={5}
                     placeholder={`어떤 활동인지 구체적으로 설명해주세요.\n예) "핸드드립, 에스프레소, 라떼아트 순서로 진행. 원두 샘플 증정."`}
                     value={detailDescription}
@@ -38,9 +37,9 @@ export function OfferDetailsSection({
                 />
             </FormField>
 
-            <FormField label="원하는 서포터 자격/조건">
-                <Textarea
-                    className="resize-none"
+            <FormField label="원하는 서포터 조건을 입력해주세요. (선택)">
+                <PostTextarea
+                    variant="compact"
                     rows={3}
                     placeholder={`이런 서포터를 찾고 있어요.\n예) "커피 관련 경험이 있거나 관심 있는 분 환영해요."`}
                     value={qualifications}

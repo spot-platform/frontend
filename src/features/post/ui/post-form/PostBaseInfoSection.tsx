@@ -1,7 +1,7 @@
-import { Input, Textarea } from '@frontend/design-system';
 import type { PostSpotCategory } from '../../model/types';
 import { CategoryTagSelector } from '../CategoryTagSelector';
 import { FormCard } from '../FormCard';
+import { PostTextInput, PostTextarea } from '../FormControls';
 import { FormField } from '../FormField';
 import { ImageUploadGrid } from '../ImageUploadGrid';
 import type { SelectedPostLocation } from '../../model/types';
@@ -43,30 +43,30 @@ export function PostBaseInfoSection({
     onDeadlineChange,
 }: PostBaseInfoSectionProps) {
     return (
-        <FormCard title="기본 정보 입력">
+        <FormCard title="기본 정보 입력" showTitle={false}>
             <FormField label="스팟 이름" required>
-                <Input
+                <PostTextInput
                     type="text"
-                    placeholder="예) '홈카페 클래스' / '다이슨 공기청정기 공동구매'"
+                    placeholder="스팟 이름을 입력해주세요"
                     value={spotName}
                     onChange={(event) => onSpotNameChange(event.target.value)}
                 />
             </FormField>
 
-            <FormField label="게시글 제목" required>
-                <Input
+            <FormField label="글 제목을 입력해주세요." required>
+                <PostTextInput
                     type="text"
-                    placeholder="파트너들이 한눈에 이해할 수 있는 제목을 작성해주세요."
+                    placeholder="제목을 입력해주세요"
                     value={title}
                     onChange={(event) => onTitleChange(event.target.value)}
                 />
             </FormField>
 
-            <FormField label="게시글 내용" required>
-                <Textarea
-                    className="resize-none"
-                    rows={3}
-                    placeholder="활동 내용이나 파트너에게 전하고 싶은 내용을 작성해주세요."
+            <FormField label="내용을 입력해주세요." required>
+                <PostTextarea
+                    className="min-h-60"
+                    rows={8}
+                    placeholder="어떤 이야기를 나누고 싶으신가요?"
                     value={content}
                     onChange={(event) => onContentChange(event.target.value)}
                 />
@@ -80,7 +80,7 @@ export function PostBaseInfoSection({
             </FormField>
 
             <FormField label="모집 마감일" required>
-                <Input
+                <PostTextInput
                     type="date"
                     value={deadline}
                     min={new Date().toISOString().slice(0, 10)}
@@ -95,7 +95,7 @@ export function PostBaseInfoSection({
                 />
             </FormField>
 
-            <FormField label="스팟 사진 (최대 4장)">
+            <FormField label="사진을 추가해주세요. (선택)">
                 <ImageUploadGrid
                     previews={photoPreviews}
                     maxCount={4}

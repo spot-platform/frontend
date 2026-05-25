@@ -8,18 +8,24 @@ import type {
     IncludedItem,
     PriceBreakdown,
 } from '@/entities/spot/simulation-types';
-
-type PriceInputSectionProps = {
-    value?: PriceBreakdown;
-    onChange: (next: PriceBreakdown | undefined) => void;
-    optional?: boolean;
-};
+import {
+    PostAddButton,
+    PostRemoveButton,
+    PostTextInput,
+    PostTextarea,
+} from '../FormControls';
 
 const MECHANISMS: { value: AddOnMechanism; label: string }[] = [
     { value: 'fixed', label: '정액 추가' },
     { value: 'funding', label: 'N분의1 펀딩' },
     { value: 'realcost', label: '실비 분담' },
 ];
+
+type PriceInputSectionProps = {
+    value?: PriceBreakdown;
+    onChange: (next: PriceBreakdown | undefined) => void;
+    optional?: boolean;
+};
 
 function ensurePrice(value: PriceBreakdown | undefined): PriceBreakdown {
     return (
@@ -86,7 +92,7 @@ export function PriceInputSection({
         });
 
     return (
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-5">
             <header>
                 <h3 className="text-sm font-semibold text-gray-800">
                     가격 분해
@@ -105,25 +111,27 @@ export function PriceInputSection({
 
             <label className="flex items-center justify-between gap-3">
                 <span className="text-sm text-gray-700">참가비 (원)</span>
-                <input
+                <PostTextInput
                     type="number"
                     min={0}
                     value={price.base_fee}
                     onChange={(e) =>
                         update({ base_fee: Number(e.target.value) || 0 })
                     }
-                    className="w-32 rounded-md border border-gray-300 px-2 py-1 text-right tabular-nums"
+                    variant="compact"
+                    align="right"
+                    className="w-36"
                 />
             </label>
 
             <div>
-                <p className="mb-1.5 text-xs font-semibold text-gray-600">
+                <p className="mb-2 text-xs font-semibold text-gray-600">
                     포함 항목
                 </p>
-                <ul className="flex flex-col gap-1.5">
+                <ul className="flex flex-col gap-2">
                     {price.included_items.map((it, idx) => (
                         <li key={idx} className="flex items-center gap-2">
-                            <input
+                            <PostTextInput
                                 type="text"
                                 placeholder="이름"
                                 value={it.name}
@@ -132,9 +140,10 @@ export function PriceInputSection({
                                         name: e.target.value,
                                     })
                                 }
-                                className="w-32 rounded-md border border-gray-300 px-2 py-1 text-sm"
+                                variant="compact"
+                                className="w-32"
                             />
-                            <input
+                            <PostTextInput
                                 type="text"
                                 placeholder="설명"
                                 value={it.value}
@@ -143,39 +152,32 @@ export function PriceInputSection({
                                         value: e.target.value,
                                     })
                                 }
-                                className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
+                                variant="compact"
+                                className="min-w-0 flex-1"
                             />
-                            <button
-                                type="button"
+                            <PostRemoveButton
                                 onClick={() => removeIncluded(idx)}
-                                className="shrink-0 text-xs text-gray-400 hover:text-gray-700"
-                            >
-                                삭제
-                            </button>
+                            />
                         </li>
                     ))}
                 </ul>
-                <button
-                    type="button"
-                    onClick={addIncluded}
-                    className="mt-1.5 rounded-md border border-dashed border-gray-300 px-3 py-1 text-xs font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700"
-                >
-                    + 포함 항목 추가
-                </button>
+                <PostAddButton onClick={addIncluded} className="mt-2">
+                    포함 항목 추가
+                </PostAddButton>
             </div>
 
             <div>
-                <p className="mb-1.5 text-xs font-semibold text-gray-600">
+                <p className="mb-2 text-xs font-semibold text-gray-600">
                     선택 옵션 (추가 결제)
                 </p>
                 <ul className="flex flex-col gap-2">
                     {price.optional_addons.map((a, idx) => (
                         <li
                             key={idx}
-                            className="flex flex-col gap-1.5 rounded-lg border border-gray-200 px-3 py-2"
+                            className="flex flex-col gap-2 rounded-2xl bg-gray-50/70 px-3 py-3"
                         >
                             <div className="flex items-center gap-2">
-                                <input
+                                <PostTextInput
                                     type="text"
                                     placeholder="이름"
                                     value={a.name}
@@ -184,9 +186,10 @@ export function PriceInputSection({
                                             name: e.target.value,
                                         })
                                     }
-                                    className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
+                                    variant="compact"
+                                    className="min-w-0 flex-1"
                                 />
-                                <input
+                                <PostTextInput
                                     type="number"
                                     min={0}
                                     placeholder="가격"
@@ -196,7 +199,9 @@ export function PriceInputSection({
                                             price: Number(e.target.value) || 0,
                                         })
                                     }
-                                    className="w-24 rounded-md border border-gray-300 px-2 py-1 text-right text-sm tabular-nums"
+                                    variant="compact"
+                                    align="right"
+                                    className="w-28"
                                 />
                                 <select
                                     value={a.mechanism}
@@ -206,7 +211,7 @@ export function PriceInputSection({
                                                 .value as AddOnMechanism,
                                         })
                                     }
-                                    className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                                    className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
                                 >
                                     {MECHANISMS.map((m) => (
                                         <option key={m.value} value={m.value}>
@@ -214,15 +219,11 @@ export function PriceInputSection({
                                         </option>
                                     ))}
                                 </select>
-                                <button
-                                    type="button"
+                                <PostRemoveButton
                                     onClick={() => removeAddon(idx)}
-                                    className="shrink-0 text-xs text-gray-400 hover:text-gray-700"
-                                >
-                                    삭제
-                                </button>
+                                />
                             </div>
-                            <input
+                            <PostTextInput
                                 type="text"
                                 placeholder="설명 (선택)"
                                 value={a.explanation ?? ''}
@@ -231,26 +232,22 @@ export function PriceInputSection({
                                         explanation: e.target.value || null,
                                     })
                                 }
-                                className="rounded-md border border-gray-200 px-2 py-1 text-xs"
+                                variant="compact"
                             />
                         </li>
                     ))}
                 </ul>
-                <button
-                    type="button"
-                    onClick={addAddon}
-                    className="mt-1.5 rounded-md border border-dashed border-gray-300 px-3 py-1 text-xs font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700"
-                >
-                    + 선택 옵션 추가
-                </button>
+                <PostAddButton onClick={addAddon} className="mt-2">
+                    선택 옵션 추가
+                </PostAddButton>
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
                 <p className="text-xs font-semibold text-gray-600">환불 정책</p>
                 <div className="flex items-center gap-2">
                     <label className="flex items-center gap-1 text-xs text-gray-500">
                         시간 전까지 전액
-                        <input
+                        <PostTextInput
                             type="number"
                             min={0}
                             value={price.refund_policy?.cutoff_hours ?? 24}
@@ -266,11 +263,13 @@ export function PriceInputSection({
                                     },
                                 })
                             }
-                            className="w-16 rounded-md border border-gray-300 px-2 py-1 text-right text-sm tabular-nums"
+                            variant="compact"
+                            align="right"
+                            className="w-20"
                         />
                     </label>
                 </div>
-                <input
+                <PostTextInput
                     type="text"
                     placeholder="환불 안내 (선택)"
                     value={price.refund_policy?.note ?? ''}
@@ -286,22 +285,22 @@ export function PriceInputSection({
                             },
                         })
                     }
-                    className="rounded-md border border-gray-200 px-2 py-1 text-sm"
+                    variant="compact"
                 />
             </div>
 
-            <label className="flex flex-col gap-1">
+            <label className="flex flex-col gap-2">
                 <span className="text-xs font-semibold text-gray-600">
                     한 줄 요약
                 </span>
-                <textarea
+                <PostTextarea
                     rows={2}
                     placeholder="가격 한 줄 요약 (예: 참가비 25,000원에 원두/우유 포함)"
                     value={price.summary_line ?? ''}
                     onChange={(e) =>
                         update({ summary_line: e.target.value || null })
                     }
-                    className="rounded-md border border-gray-200 px-2 py-1 text-sm leading-relaxed"
+                    variant="compact"
                 />
             </label>
         </section>

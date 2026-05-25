@@ -3,6 +3,12 @@
 'use client';
 
 import type { Preparation } from '@/entities/spot/simulation-types';
+import {
+    PostAddButton,
+    PostRemoveButton,
+    PostTextInput,
+    PostTextarea,
+} from '../FormControls';
 
 type PreparationInputSectionProps = {
     value?: Preparation;
@@ -73,14 +79,14 @@ export function PreparationInputSection({
                 <span className="text-xs font-semibold text-gray-600">
                     날씨 대비 (선택)
                 </span>
-                <input
+                <PostTextInput
                     type="text"
                     placeholder="우천 시 대처 방법 등"
                     value={prep.weather_contingency ?? ''}
                     onChange={(e) =>
                         update({ weather_contingency: e.target.value || null })
                     }
-                    className="rounded-md border border-gray-200 px-2 py-1 text-sm"
+                    variant="compact"
                 />
             </label>
 
@@ -88,14 +94,14 @@ export function PreparationInputSection({
                 <span className="text-xs font-semibold text-gray-600">
                     호스트 팁 (선택)
                 </span>
-                <textarea
+                <PostTextarea
                     rows={2}
                     placeholder="참가자에게 미리 알려주고 싶은 한 줄"
                     value={prep.host_tip ?? ''}
                     onChange={(e) =>
                         update({ host_tip: e.target.value || null })
                     }
-                    className="rounded-md border border-gray-200 px-2 py-1 text-sm leading-relaxed"
+                    variant="compact"
                 />
             </label>
         </section>
@@ -121,7 +127,7 @@ function StringList({
             <ul className="flex flex-col gap-1">
                 {items.map((it, idx) => (
                     <li key={idx} className="flex items-center gap-2">
-                        <input
+                        <PostTextInput
                             type="text"
                             placeholder={placeholder}
                             value={it}
@@ -130,27 +136,25 @@ function StringList({
                                 next[idx] = e.target.value;
                                 onChange(next);
                             }}
-                            className="min-w-0 flex-1 rounded-md border border-gray-300 px-2 py-1 text-sm"
+                            variant="compact"
+                            className="min-w-0 flex-1"
                         />
-                        <button
-                            type="button"
+                        <PostRemoveButton
                             onClick={() =>
                                 onChange(items.filter((_, i) => i !== idx))
                             }
-                            className="shrink-0 text-xs text-gray-400 hover:text-gray-700"
                         >
                             삭제
-                        </button>
+                        </PostRemoveButton>
                     </li>
                 ))}
             </ul>
-            <button
-                type="button"
+            <PostAddButton
                 onClick={() => onChange([...items, ''])}
-                className="mt-1.5 rounded-md border border-dashed border-gray-300 px-3 py-1 text-xs font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700"
+                className="mt-2"
             >
-                + 항목 추가
-            </button>
+                항목 추가
+            </PostAddButton>
         </div>
     );
 }

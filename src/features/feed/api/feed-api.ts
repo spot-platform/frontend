@@ -9,6 +9,7 @@ import type {
 } from '../model/types';
 import type { PagedResponse } from '@/entities/spot/types';
 import type { PlanV3, Preparation } from '@/entities/spot/simulation-types';
+import { resolveFeedCoordinate } from '../model/feed-location';
 
 export type FeedApplyPayload = {
     proposal: string;
@@ -24,6 +25,7 @@ export type FeedListParams = {
     status?: FeedItemStatus;
     category?: string;
     sort?: string;
+    isAi?: boolean;
     page?: number;
     size?: number;
 };
@@ -35,12 +37,24 @@ type BackendFeedList = {
 
 export type BackendFeedItem = Omit<
     FeedItem,
-    'id' | 'spotId' | 'confirmedPartnerProfiles' | 'isAi'
+    | 'id'
+    | 'spotId'
+    | 'coord'
+    | 'lat'
+    | 'lng'
+    | 'confirmedPartnerProfiles'
+    | 'isAi'
 > & {
     id: string | number;
     spotId?: string | number;
     ai?: boolean;
     isAi?: boolean;
+    coordinate?: {
+        lat?: number | string | null;
+        lng?: number | string | null;
+    } | null;
+    lat?: number | string | null;
+    lng?: number | string | null;
     confirmedPartnerProfiles?: Array<{
         id: string;
         nickname: string;
@@ -94,10 +108,15 @@ export function toFeedApplication(
 }
 
 export function toFeedItem(item: BackendFeedItem): FeedItem {
+    const coord = resolveFeedCoordinate(item);
+
     return {
         ...item,
         id: String(item.id),
         spotId: item.spotId == null ? undefined : String(item.spotId),
+        coord: coord ?? undefined,
+        lat: coord?.lat,
+        lng: coord?.lng,
         confirmedPartnerProfiles: item.confirmedPartnerProfiles?.map(
             (profile) => ({
                 id: profile.id,

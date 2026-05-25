@@ -1,13 +1,12 @@
-import { Input } from '@frontend/design-system';
 import {
     buildOfferGoalAmount,
-    buildOfferParticipationRows,
     buildRequestGoalAmount,
-    buildRequestParticipationRows,
     formatKrw,
+    parseBudgetAmount,
     parsePartnerCount,
 } from '../model/pricing-preview';
 import { FormCard } from './FormCard';
+import { PostTextInput } from './FormControls';
 import { FormField } from './FormField';
 
 type BaseReceiptCardProps = {
@@ -89,20 +88,19 @@ export function ReceiptCard(props: ReceiptCardProps) {
                   props.priceCapPerPerson,
               )
             : null;
-    const offerRows =
-        props.type === 'OFFER'
-            ? buildOfferParticipationRows(
-                  props.desiredPrice,
-                  props.maxPartnerCount,
-              )
-            : [];
-    const requestRows =
+    const offerPerPersonPreview =
+        props.type === 'OFFER' &&
+        offerGoalAmount !== null &&
+        maxPartnerCount !== null
+            ? {
+                  amount: Math.floor(offerGoalAmount / maxPartnerCount),
+                  remainder: offerGoalAmount % maxPartnerCount,
+              }
+            : null;
+    const requestPerPersonPreview =
         props.type === 'REQUEST'
-            ? buildRequestParticipationRows(
-                  props.maxPartnerCount,
-                  props.priceCapPerPerson,
-              )
-            : [];
+            ? parseBudgetAmount(props.priceCapPerPerson)
+            : null;
 
     return (
         <FormCard title="가격 흐름 / 정산 미리보기">
@@ -133,8 +131,12 @@ export function ReceiptCard(props: ReceiptCardProps) {
                 <div className="grid gap-3 sm:grid-cols-2">
                     {props.type === 'REQUEST' ? (
                         <>
-                            <FormField label="최대 파트너 수" required>
-                                <Input
+                            <FormField
+                                label="최대 파트너 수"
+                                labelSize="compact"
+                                required
+                            >
+                                <PostTextInput
                                     type="number"
                                     min={1}
                                     step={1}
@@ -145,10 +147,15 @@ export function ReceiptCard(props: ReceiptCardProps) {
                                             event.target.value,
                                         )
                                     }
+                                    variant="box"
                                 />
                             </FormField>
-                            <FormField label="1인당 최대 금액" required>
-                                <Input
+                            <FormField
+                                label="1인당 최대 금액"
+                                labelSize="compact"
+                                required
+                            >
+                                <PostTextInput
                                     type="number"
                                     min={0}
                                     step={1000}
@@ -159,13 +166,18 @@ export function ReceiptCard(props: ReceiptCardProps) {
                                             event.target.value,
                                         )
                                     }
+                                    variant="box"
                                 />
                             </FormField>
                         </>
                     ) : (
                         <>
-                            <FormField label="희망 예산" required>
-                                <Input
+                            <FormField
+                                label="희망 예산"
+                                labelSize="compact"
+                                required
+                            >
+                                <PostTextInput
                                     type="number"
                                     min={0}
                                     step={1000}
@@ -176,10 +188,15 @@ export function ReceiptCard(props: ReceiptCardProps) {
                                             event.target.value,
                                         )
                                     }
+                                    variant="box"
                                 />
                             </FormField>
-                            <FormField label="최대 파트너 수" required>
-                                <Input
+                            <FormField
+                                label="최대 파트너 수"
+                                labelSize="compact"
+                                required
+                            >
+                                <PostTextInput
                                     type="number"
                                     min={1}
                                     step={1}
@@ -190,6 +207,7 @@ export function ReceiptCard(props: ReceiptCardProps) {
                                             event.target.value,
                                         )
                                     }
+                                    variant="box"
                                 />
                             </FormField>
                         </>
@@ -207,8 +225,8 @@ export function ReceiptCard(props: ReceiptCardProps) {
                             </p>
                             <p className="mt-1 text-sm leading-relaxed text-gray-500">
                                 {props.type === 'OFFER'
-                                    ? '희망 예산을 기준으로 참여 인원별 1인당 금액이 어떻게 나뉘는지 바로 확인할 수 있어요.'
-                                    : '1인당 최대 금액과 참여 인원에 따라 예상 예산 규모가 어떻게 커지는지 바로 볼 수 있어요.'}
+                                    ? '희망 예산과 최대 파트너 수를 기준으로 1인당 예상 금액만 가볍게 확인할 수 있어요.'
+                                    : '최대 파트너 수와 1인당 상한을 기준으로 목표 예산과 1인당 금액만 보여줘요.'}
                             </p>
                         </div>
                         <div className="shrink-0 rounded-xl bg-white px-4 py-3 sm:min-w-44">
@@ -271,51 +289,36 @@ export function ReceiptCard(props: ReceiptCardProps) {
                     <div className="border-t border-gray-200/80 px-4 py-4">
                         <div className="flex items-center justify-between gap-3">
                             <p className="text-sm font-semibold text-gray-900">
-                                {props.type === 'OFFER'
-                                    ? '참여 인원별 1인당 금액'
-                                    : '참여 인원별 예산 흐름'}
+                                1인당 예상 금액
                             </p>
                             <span className="text-xs font-medium text-gray-400">
-                                {props.type === 'OFFER'
-                                    ? '입력과 동시에 계산'
-                                    : '상한 금액 기준 자동 계산'}
+                                누적 목록 없이 요약
                             </span>
                         </div>
 
                         {props.type === 'OFFER' ? (
-                            offerRows.length > 0 ? (
-                                <div className="mt-4 divide-y divide-gray-200/80">
-                                    {offerRows.map((row) => (
-                                        <PreviewRow
-                                            key={row.participantCount}
-                                            label={`${row.participantCount}명 참여 시`}
-                                            value={`${row.remainder > 0 ? '약 ' : ''}${formatKrw(row.perPersonAmount)} / 1인`}
-                                            description={
-                                                row.participantCount === 1
-                                                    ? '혼자 진행하면 전체 희망 예산을 그대로 부담해요.'
-                                                    : row.remainder > 0
-                                                      ? `${row.participantCount}명이 함께하면 1원 단위 차이는 마지막 정산에서 조정될 수 있어요.`
-                                                      : `${row.participantCount}명이 함께하면 1인당 금액이 동일하게 나뉘어요.`
-                                            }
-                                        />
-                                    ))}
-                                </div>
+                            offerPerPersonPreview ? (
+                                <PreviewRow
+                                    label={`${maxPartnerCount}명 기준`}
+                                    value={`${offerPerPersonPreview.remainder > 0 ? '약 ' : ''}${formatKrw(offerPerPersonPreview.amount)} / 1인`}
+                                    description={
+                                        offerPerPersonPreview.remainder > 0
+                                            ? '1원 단위 차이는 마지막 정산에서 조정될 수 있어요.'
+                                            : '최대 파트너 수로 나눴을 때의 1인당 예상 금액이에요.'
+                                    }
+                                />
                             ) : (
-                                <EmptyPreview message="희망 예산과 최대 파트너 수를 입력하면 참여 인원별 1인당 금액을 바로 보여드릴게요." />
+                                <EmptyPreview message="희망 예산과 최대 파트너 수를 입력하면 1인당 예상 금액을 바로 보여드릴게요." />
                             )
-                        ) : requestRows.length > 0 ? (
-                            <div className="mt-4 divide-y divide-gray-200/80">
-                                {requestRows.map((row) => (
-                                    <PreviewRow
-                                        key={row.participantCount}
-                                        label={`${row.participantCount}명 참여 시`}
-                                        value={formatKrw(row.currentBudget)}
-                                        description={`1인당 최대 ${formatKrw(row.perPersonCap)} 기준으로 현재 맞춰본 예산이에요.`}
-                                    />
-                                ))}
-                            </div>
+                        ) : requestPerPersonPreview !== null &&
+                          maxPartnerCount !== null ? (
+                            <PreviewRow
+                                label={`${maxPartnerCount}명까지 모집`}
+                                value={`${formatKrw(requestPerPersonPreview)} / 1인`}
+                                description="목표 예산은 최대 파트너 수 x 1인당 최대 금액으로만 계산해요."
+                            />
                         ) : (
-                            <EmptyPreview message="최대 파트너 수와 1인당 최대 금액을 입력하면 목표 예산과 참여 인원별 누적 예산을 바로 볼 수 있어요." />
+                            <EmptyPreview message="최대 파트너 수와 1인당 최대 금액을 입력하면 1인당 금액을 바로 볼 수 있어요." />
                         )}
                     </div>
                 </div>

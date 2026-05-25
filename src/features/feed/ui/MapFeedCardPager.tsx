@@ -10,10 +10,9 @@ import {
 import { IconHeart } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
-import type { SpotCategory } from '@/entities/spot/categories';
-import { useFeedList } from '@/features/feed/model/use-feed';
+import { useLayerAwareFeedList } from '@/features/feed/model/use-feed';
+import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
 import type { FeedItem } from '@/features/feed/model/types';
-import { isSearchExcludedFeedItem } from '@/features/feed/model/types';
 import { FeedCard } from '@/features/feed/ui/FeedCard';
 
 export type FeedCardPagerSnap = 'peek' | 'expanded';
@@ -58,38 +57,17 @@ export function MapFeedCardPager({
         dir: ExitDirection;
     } | null>(null);
 
-    const { data: feedData } = useFeedList();
-    const feedItems = feedData?.data ?? [];
+    const { data: feedData } = useLayerAwareFeedList();
 
-    const filtered = useMemo(() => {
-        const q = searchQuery.trim().toLowerCase();
-        return feedItems.filter((item) => {
-            if (feedType === 'offer' && item.type !== 'OFFER') return false;
-            if (feedType === 'request' && item.type !== 'REQUEST') return false;
-            if (
-                categoriesSelected.length > 0 &&
-                (!item.category ||
-                    !categoriesSelected.includes(item.category as SpotCategory))
-            ) {
-                return false;
-            }
-            if (q.length > 0) {
-                if (isSearchExcludedFeedItem(item)) return false;
-
-                const haystack = [
-                    item.title,
-                    item.description ?? '',
-                    item.category ?? '',
-                    item.location,
-                    item.authorNickname,
-                ]
-                    .join(' ')
-                    .toLowerCase();
-                if (!haystack.includes(q)) return false;
-            }
-            return true;
-        });
-    }, [feedItems, feedType, categoriesSelected, searchQuery]);
+    const filtered = useMemo(
+        () =>
+            filterVisibleFeedItems(feedData?.data ?? [], {
+                feedType,
+                categories: categoriesSelected,
+                searchQuery,
+            }),
+        [feedData?.data, feedType, categoriesSelected, searchQuery],
+    );
 
     const total = filtered.length;
     const safePromoted = Math.min(promotedCount, total);

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { IconChevronDown, IconChevronRight, IconX } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
+import { cn } from '@/shared/lib/cn';
 import { useMainChatStore } from '../model/use-main-chat-store';
 import type { ChatRoom, PersonalChatRoom, SpotChatRoom } from '../model/types';
 
@@ -13,7 +14,37 @@ type ChatDrawerProps = {
 };
 
 const spring = { type: 'spring', stiffness: 380, damping: 34 } as const;
-const PREVIEW_COUNT = 2;
+
+type ChatFilter = 'all' | 'personal' | 'feed' | 'spot';
+
+type ChatFilterOption = {
+    value: ChatFilter;
+    label: string;
+    count: number;
+};
+
+const EMPTY_STATE: Record<ChatFilter, { title: string; description: string }> =
+    {
+        all: {
+            title: '아직 열린 채팅이 없어요',
+            description:
+                '피드에 신청하거나 스팟에 참여하면 대화가 여기에 모여요.',
+        },
+        personal: {
+            title: '아직 개인 채팅이 없어요',
+            description: '상대 프로필에서 1:1 대화를 시작하면 여기에 표시돼요.',
+        },
+        feed: {
+            title: '아직 피드 채팅이 없어요',
+            description:
+                '피드에서 시작된 대화는 스팟으로 전환되기 전까지 여기에 보여요.',
+        },
+        spot: {
+            title: '아직 스팟 채팅이 없어요',
+            description:
+                '피드가 스팟으로 확정되면 같은 채팅이 스팟 채팅으로 이동해요.',
+        },
+    };
 
 function RoomAvatar({ room }: { room: ChatRoom }) {
     const initial =
@@ -58,13 +89,31 @@ function formatTime(iso: string): string {
     return `${diffDays}일 전`;
 }
 
+function getRoomFilter(room: ChatRoom): Exclude<ChatFilter, 'all'> {
+    if (room.category === 'personal') return 'personal';
+    return room.sourceFeedId ? 'feed' : 'spot';
+}
+
+function getRoomLabel(room: ChatRoom): string {
+    const filter = getRoomFilter(room);
+    if (filter === 'personal') return '개인';
+    if (filter === 'feed') return '피드';
+    return '스팟';
+}
+
+function getUnreadCount(room: ChatRoom): number {
+    return 'unreadCount' in room ? (room.unreadCount ?? 0) : 0;
+}
+
 function RoomRow({ room, onClick }: { room: ChatRoom; onClick: () => void }) {
-    const unread = room.category === 'personal' ? room.unreadCount : 0;
+    const unread = getUnreadCount(room);
+    const lastText = getLastText(room) || room.description;
+
     return (
         <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100"
         >
             <RoomAvatar room={room} />
             <div className="min-w-0 flex-1">
@@ -79,9 +128,14 @@ function RoomRow({ room, onClick }: { room: ChatRoom; onClick: () => void }) {
                         {formatTime(room.updatedAt)}
                     </span>
                 </div>
-                <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
-                    {getLastText(room)}
-                </p>
+                <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                    <span className="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500">
+                        {getRoomLabel(room)}
+                    </span>
+                    <p className="truncate text-[12.5px] leading-snug text-zinc-500">
+                        {lastText}
+                    </p>
+                </div>
             </div>
             {unread > 0 && (
                 <span className="flex h-4.5 min-w-4.5 shrink-0 items-center justify-center rounded-full bg-brand-600 px-1.5 text-[10px] font-semibold text-white tabular-nums">
@@ -92,63 +146,82 @@ function RoomRow({ room, onClick }: { room: ChatRoom; onClick: () => void }) {
     );
 }
 
-type SectionProps = {
-    title: string;
-    count: number;
+type FilterBarProps = {
+    options: ChatFilterOption[];
+    selected: ChatFilter;
+    onSelect: (filter: ChatFilter) => void;
+};
+
+function FilterBar({ options, selected, onSelect }: FilterBarProps) {
+    return (
+        <div className="sticky top-[calc(env(safe-area-inset-top)+3.75rem)] z-10 bg-white px-5 pb-3">
+            <div className="flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {options.map((option) => {
+                    const isSelected = option.value === selected;
+                    return (
+                        <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => onSelect(option.value)}
+                            aria-label={`${option.label} 채팅 필터`}
+                            aria-pressed={isSelected}
+                            className={cn(
+                                'flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold transition-colors',
+                                isSelected
+                                    ? 'border-zinc-900 bg-zinc-900 text-white shadow-sm'
+                                    : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 hover:bg-zinc-50',
+                            )}
+                        >
+                            <span>{option.label}</span>
+                            <span
+                                className={cn(
+                                    'rounded-full px-1.5 py-0.5 text-[10px] tabular-nums',
+                                    isSelected
+                                        ? 'bg-white/18 text-white'
+                                        : 'bg-zinc-100 text-zinc-500',
+                                )}
+                            >
+                                {option.count > 99 ? '99+' : option.count}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+type ChatListProps = {
+    filter: ChatFilter;
     rooms: ChatRoom[];
     onRoomClick: (room: ChatRoom) => void;
 };
 
-function ChatSection({ title, count, rooms, onRoomClick }: SectionProps) {
-    const [expanded, setExpanded] = useState(false);
-    const visible = expanded ? rooms : rooms.slice(0, PREVIEW_COUNT);
-    const hasMore = rooms.length > PREVIEW_COUNT;
+function ChatList({ filter, rooms, onRoomClick }: ChatListProps) {
+    if (rooms.length === 0) {
+        const empty = EMPTY_STATE[filter];
+        return (
+            <div className="mx-5 mt-8 rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/60 px-5 py-8 text-center">
+                <p className="text-[14px] font-semibold text-zinc-700">
+                    {empty.title}
+                </p>
+                <p className="mx-auto mt-2 max-w-[260px] text-[12.5px] leading-relaxed text-zinc-400">
+                    {empty.description}
+                </p>
+            </div>
+        );
+    }
 
     return (
-        <section>
-            <div className="flex items-baseline justify-between px-5 pb-2.5">
-                <h3 className="text-[11.5px] font-semibold tracking-[0.02em] text-zinc-500">
-                    {title}
-                </h3>
-                <span className="text-[11px] font-medium text-zinc-400 tabular-nums">
-                    {count}
-                </span>
-            </div>
-            {rooms.length === 0 ? (
-                <p className="mx-5 rounded-2xl border border-dashed border-zinc-200 px-4 py-5 text-center text-[12px] text-zinc-400">
-                    아직 채팅이 없어요
-                </p>
-            ) : (
-                <div className="flex flex-col gap-0.5 px-3">
-                    {visible.map((room) => (
-                        <RoomRow
-                            key={room.id}
-                            room={room}
-                            onClick={() => onRoomClick(room)}
-                        />
-                    ))}
-                    {hasMore && (
-                        <button
-                            type="button"
-                            onClick={() => setExpanded((p) => !p)}
-                            className="mt-1.5 flex w-full items-center justify-center gap-1 rounded-xl py-2 text-[11.5px] font-medium text-brand-700 transition-colors hover:bg-brand-50"
-                        >
-                            {expanded ? (
-                                <>
-                                    접기{' '}
-                                    <IconChevronDown size={12} stroke={1.75} />
-                                </>
-                            ) : (
-                                <>
-                                    {rooms.length - PREVIEW_COUNT}개 더보기{' '}
-                                    <IconChevronRight size={12} stroke={1.75} />
-                                </>
-                            )}
-                        </button>
-                    )}
-                </div>
-            )}
-        </section>
+        <div className="flex flex-col gap-0.5 px-3">
+            {rooms.map((room) => (
+                <RoomRow
+                    key={room.id}
+                    room={room}
+                    onClick={() => onRoomClick(room)}
+                />
+            ))}
+        </div>
     );
 }
 
@@ -163,7 +236,12 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
         void loadRooms();
     }, [loadRooms, open]);
 
-    const { personalRooms, feedRooms, spotRooms } = useMemo(() => {
+    const [selectedFilter, setSelectedFilter] = useState<ChatFilter>('all');
+
+    const { personalRooms, feedRooms, spotRooms, allRooms } = useMemo(() => {
+        const byUpdatedAtDesc = (left: ChatRoom, right: ChatRoom) =>
+            new Date(right.updatedAt).getTime() -
+            new Date(left.updatedAt).getTime();
         const personal: PersonalChatRoom[] = [];
         const feed: SpotChatRoom[] = [];
         const spot: SpotChatRoom[] = [];
@@ -172,8 +250,35 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
             else if (room.sourceFeedId) feed.push(room);
             else spot.push(room);
         }
-        return { personalRooms: personal, feedRooms: feed, spotRooms: spot };
+        return {
+            personalRooms: [...personal].sort(byUpdatedAtDesc),
+            feedRooms: [...feed].sort(byUpdatedAtDesc),
+            spotRooms: [...spot].sort(byUpdatedAtDesc),
+            allRooms: [...personal, ...feed, ...spot].sort(byUpdatedAtDesc),
+        };
     }, [rooms]);
+
+    const filterOptions = useMemo<ChatFilterOption[]>(
+        () => [
+            { value: 'all', label: '전체', count: allRooms.length },
+            { value: 'personal', label: '개인', count: personalRooms.length },
+            { value: 'feed', label: '피드', count: feedRooms.length },
+            { value: 'spot', label: '스팟', count: spotRooms.length },
+        ],
+        [
+            allRooms.length,
+            feedRooms.length,
+            personalRooms.length,
+            spotRooms.length,
+        ],
+    );
+
+    const visibleRooms = useMemo(() => {
+        if (selectedFilter === 'personal') return personalRooms;
+        if (selectedFilter === 'feed') return feedRooms;
+        if (selectedFilter === 'spot') return spotRooms;
+        return allRooms;
+    }, [allRooms, feedRooms, personalRooms, selectedFilter, spotRooms]);
 
     useEffect(() => {
         if (!open) return;
@@ -219,24 +324,17 @@ export function ChatDrawer({ open, onClose }: ChatDrawerProps) {
                         </button>
                     </div>
 
+                    <FilterBar
+                        options={filterOptions}
+                        selected={selectedFilter}
+                        onSelect={setSelectedFilter}
+                    />
+
                     <div className="min-h-0 flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
-                        <div className="flex flex-col gap-8 px-1 pb-8 pt-2">
-                            <ChatSection
-                                title="개인 채팅"
-                                count={personalRooms.length}
-                                rooms={personalRooms}
-                                onRoomClick={handleRoomClick}
-                            />
-                            <ChatSection
-                                title="피드 채팅"
-                                count={feedRooms.length}
-                                rooms={feedRooms}
-                                onRoomClick={handleRoomClick}
-                            />
-                            <ChatSection
-                                title="스팟 채팅"
-                                count={spotRooms.length}
-                                rooms={spotRooms}
+                        <div className="px-1 pb-8 pt-2">
+                            <ChatList
+                                filter={selectedFilter}
+                                rooms={visibleRooms}
                                 onRoomClick={handleRoomClick}
                             />
                         </div>

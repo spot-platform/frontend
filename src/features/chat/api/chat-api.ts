@@ -39,7 +39,8 @@ type BackendChatBlock = Omit<ChatBlock, 'id'> & {
 
 type BackendRoom = {
     id: number | string;
-    spotId?: string | null;
+    feedId?: number | string | null;
+    spotId?: number | string | null;
     type?: 'GROUP' | 'PERSONAL';
     title?: string;
     subtitle?: string;
@@ -105,7 +106,10 @@ function toChatBlock(block: BackendChatBlock): ChatBlock {
 
 function toChatRoom(room: BackendRoom): ChatRoom {
     const id = String(room.id);
-    const isSpotRoom = room.type === 'GROUP' || Boolean(room.spotId);
+    const feedId = room.feedId == null ? undefined : String(room.feedId);
+    const spotId = room.spotId == null ? undefined : String(room.spotId);
+    const isSpotRoom =
+        room.type === 'GROUP' || Boolean(feedId) || Boolean(spotId);
     const updatedAt =
         room.lastMessageAt ?? room.createdAt ?? new Date().toISOString();
 
@@ -122,9 +126,11 @@ function toChatRoom(room: BackendRoom): ChatRoom {
             description: room.lastMessagePreview ?? '백엔드 채팅방입니다.',
             metaLabel: '팀 채팅',
             updatedAt,
+            unreadCount: room.unreadCount ?? 0,
             messages: [],
+            sourceFeedId: feedId,
             spot: {
-                id: room.spotId ?? id,
+                id: spotId ?? id,
                 type: 'REQUEST',
                 status: 'OPEN',
                 title: room.spotId ? `스팟 ${room.spotId}` : `팀 채팅 ${id}`,

@@ -2,6 +2,63 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserPersona } from '@/entities/persona/types';
 
+const ONBOARDING_PERSONA_STORAGE_KEY = 'spot-onboarding-personas';
+
+type StoredOnboardingPersonas = Record<string, UserPersona>;
+
+function canUseLocalStorage() {
+    return typeof window !== 'undefined';
+}
+
+function readStoredOnboardingPersonas(): StoredOnboardingPersonas {
+    if (!canUseLocalStorage()) return {};
+
+    try {
+        const raw = window.localStorage.getItem(ONBOARDING_PERSONA_STORAGE_KEY);
+        if (!raw) return {};
+
+        const parsed = JSON.parse(raw) as unknown;
+        return parsed && typeof parsed === 'object'
+            ? (parsed as StoredOnboardingPersonas)
+            : {};
+    } catch {
+        return {};
+    }
+}
+
+function getStoredOnboardingPersona(userId: string): UserPersona | null {
+    return readStoredOnboardingPersonas()[userId] ?? null;
+}
+
+function persistOnboardingPersona(persona: UserPersona) {
+    if (!canUseLocalStorage()) return;
+
+    try {
+        const personas = readStoredOnboardingPersonas();
+        window.localStorage.setItem(
+            ONBOARDING_PERSONA_STORAGE_KEY,
+            JSON.stringify({ ...personas, [persona.userId]: persona }),
+        );
+    } catch {
+        // localStorage 접근 실패(private mode 등)는 온보딩 흐름을 막지 않는다.
+    }
+}
+
+function removeStoredOnboardingPersona(userId: string) {
+    if (!canUseLocalStorage()) return;
+
+    try {
+        const personas = readStoredOnboardingPersonas();
+        delete personas[userId];
+        window.localStorage.setItem(
+            ONBOARDING_PERSONA_STORAGE_KEY,
+            JSON.stringify(personas),
+        );
+    } catch {
+        // localStorage 접근 실패(private mode 등)는 온보딩 리셋을 막지 않는다.
+    }
+}
+
 type AuthState = {
     token: string | null;
     userId: string | null;
@@ -28,18 +85,30 @@ export const useAuthStore = create<AuthState>()(
 
             setSession: (userId) => {
                 set((state) => {
+                    const storedPersona = getStoredOnboardingPersona(userId);
                     const userChanged =
                         state.userId !== null && state.userId !== userId;
+                    const shouldRestoreOnboarding =
+                        Boolean(storedPersona) ||
+                        (state.userId === userId &&
+                            state.hasCompletedOnboarding);
+
                     return {
                         token: null,
                         userId,
                         isAuthenticated: true,
-                        ...(userChanged
+                        ...(shouldRestoreOnboarding
                             ? {
-                                  userPersona: null,
-                                  hasCompletedOnboarding: false,
+                                  userPersona:
+                                      storedPersona ?? state.userPersona,
+                                  hasCompletedOnboarding: true,
                               }
-                            : {}),
+                            : userChanged
+                              ? {
+                                    userPersona: null,
+                                    hasCompletedOnboarding: false,
+                                }
+                              : {}),
                     };
                 });
             },
@@ -55,11 +124,22 @@ export const useAuthStore = create<AuthState>()(
             },
 
             setPersona: (persona) => {
+                persistOnboardingPersona(persona);
                 set({ userPersona: persona, hasCompletedOnboarding: true });
             },
 
             resetPersona: () => {
-                set({ userPersona: null, hasCompletedOnboarding: false });
+                set((state) => {
+                    const targetUserId =
+                        state.userPersona?.userId ?? state.userId;
+                    if (targetUserId)
+                        removeStoredOnboardingPersona(targetUserId);
+
+                    return {
+                        userPersona: null,
+                        hasCompletedOnboarding: false,
+                    };
+                });
             },
         }),
         {
@@ -73,6 +153,15 @@ export const useAuthStore = create<AuthState>()(
                 if (state) {
                     state.token = null;
                     state.isAuthenticated = false;
+
+                    if (state.userPersona) {
+                        persistOnboardingPersona(state.userPersona);
+                    }
+
+                    const storedPersona = state.userId
+                        ? getStoredOnboardingPersona(state.userId)
+                        : null;
+                    state.userPersona = storedPersona ?? state.userPersona;
                     state.hasCompletedOnboarding = Boolean(
                         state.hasCompletedOnboarding && state.userPersona,
                     );

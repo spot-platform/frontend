@@ -3,13 +3,26 @@ import type { ReactNode } from 'react';
 interface FormFieldProps {
     label: string;
     required?: boolean;
+    labelSize?: 'display' | 'compact';
+    htmlFor?: string;
     children: ReactNode;
 }
 
-export function FormField({ label, required, children }: FormFieldProps) {
+export function FormField({
+    label,
+    required,
+    labelSize = 'display',
+    htmlFor,
+    children,
+}: FormFieldProps) {
+    const labelClass =
+        labelSize === 'display'
+            ? 'text-[1.375rem] leading-snug font-bold tracking-[-0.02em] text-gray-950'
+            : 'text-sm font-semibold text-gray-700';
+
     return (
-        <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-700">
+        <div className="flex flex-col gap-3">
+            <label htmlFor={htmlFor} className={labelClass}>
                 {label}
                 {required && <span className="text-red-400 ml-0.5">*</span>}
             </label>

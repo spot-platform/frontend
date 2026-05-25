@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { IconPlus, IconX } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
 
 interface ImageUploadGridProps {
     previews: string[];
@@ -70,10 +70,9 @@ export function ImageUploadGrid({
                 <button
                     type="button"
                     onClick={() => inputRef.current?.click()}
-                    className="aspect-square rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center gap-1 text-gray-300"
+                    className="aspect-square rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-400 transition-colors hover:border-gray-300 hover:bg-gray-50"
                 >
-                    <IconPlus size={20} stroke={1.5} />
-                    <span className="text-[10px]">추가</span>
+                    사진 추가
                 </button>
             )}
 
@@ -85,7 +84,7 @@ export function ImageUploadGrid({
             }).map((_, i) => (
                 <div
                     key={`empty-${i}`}
-                    className="aspect-square rounded-xl border-2 border-dashed border-gray-100 bg-gray-50"
+                    className="aspect-square rounded-xl bg-gray-50"
                 />
             ))}
 
