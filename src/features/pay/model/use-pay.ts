@@ -9,10 +9,11 @@ export const payKeys = {
     withdrawals: (params?: object) => ['pay', 'withdrawals', params] as const,
 };
 
-export function usePointBalance() {
+export function usePointBalance(options: { enabled?: boolean } = {}) {
     return useQuery({
         queryKey: payKeys.balance,
         queryFn: payApi.balance,
+        enabled: options.enabled ?? true,
     });
 }
 

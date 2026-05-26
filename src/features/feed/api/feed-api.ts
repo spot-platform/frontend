@@ -132,17 +132,18 @@ export const feedApi = {
     list: async (params?: FeedListParams): Promise<PagedResponse<FeedItem>> =>
         clientApiFetch<BackendFeedList>(
             `${endpoints.feeds.root}${buildQueryString(params)}`,
+            { redirectOnUnauthorized: false },
         ).then((response) => ({
             data: (response.data ?? []).map(toFeedItem),
             meta: response.meta,
         })),
 
     get: async (feedId: string): Promise<{ data: FeedItem }> =>
-        clientApiFetch<BackendFeedItem>(endpoints.feeds.detail(feedId)).then(
-            (data) => ({
-                data: toFeedItem(data),
-            }),
-        ),
+        clientApiFetch<BackendFeedItem>(endpoints.feeds.detail(feedId), {
+            redirectOnUnauthorized: false,
+        }).then((data) => ({
+            data: toFeedItem(data),
+        })),
 
     apply: async (
         feedId: string,

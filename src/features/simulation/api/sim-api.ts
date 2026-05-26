@@ -10,7 +10,9 @@ import type { SimulationSpotDetail } from '@/entities/spot/simulation-types';
 export const DEMO_RUN_ID = 'demo_run_001';
 
 export function fetchSimManifest(runId: string): Promise<SimManifest> {
-    return clientApiFetch<SimManifest>(endpoints.sim.manifest(runId));
+    return clientApiFetch<SimManifest>(endpoints.sim.manifest(runId), {
+        redirectOnUnauthorized: false,
+    });
 }
 
 export function fetchSimMovements(
@@ -23,6 +25,7 @@ export function fetchSimMovements(
             fromTick,
             toTick,
         })}`,
+        { redirectOnUnauthorized: false },
     );
 }
 
@@ -36,6 +39,7 @@ export function fetchSimLifecycle(
             fromTick,
             toTick,
         })}`,
+        { redirectOnUnauthorized: false },
     );
 }
 

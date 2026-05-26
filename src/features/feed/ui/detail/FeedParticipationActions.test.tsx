@@ -205,6 +205,8 @@ describe('FeedParticipationActions', () => {
             throw new Error('Expected feed item 2 to exist.');
         }
 
+        mockAuthUserId.current = 'user-applicant';
+
         render(
             <FeedParticipationActions
                 item={item}
@@ -241,6 +243,8 @@ describe('FeedParticipationActions', () => {
             throw new Error('Expected feed item 2 to exist.');
         }
 
+        mockAuthUserId.current = 'user-applicant';
+
         render(
             <FeedParticipationActions
                 item={item}
@@ -276,6 +280,8 @@ describe('FeedParticipationActions', () => {
             throw new Error('Expected feed item 2 to exist.');
         }
 
+        mockAuthUserId.current = 'user-applicant';
+
         render(
             <FeedParticipationActions
                 item={item}
@@ -300,6 +306,32 @@ describe('FeedParticipationActions', () => {
             expect.stringContaining('/chat'),
         );
         expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it('redirects unauthenticated applicants to login before opening the participation sheet', () => {
+        const item = MOCK_FEED.find((feed) => feed.id === '2');
+
+        expect(item).toBeDefined();
+
+        if (!item) {
+            throw new Error('Expected feed item 2 to exist.');
+        }
+
+        render(
+            <FeedParticipationActions
+                item={item}
+                management={MOCK_FEED_MANAGEMENT['2']}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '파트너로 참여하기' }),
+        );
+
+        expect(screen.queryByTestId('bottom-sheet')).toBeNull();
+        expect(mockPush).toHaveBeenCalledWith(
+            expect.stringMatching(/^\/login\?next=/),
+        );
     });
 
     it('shows owner approval actions when the logged-in user matches authorProfile.id', async () => {

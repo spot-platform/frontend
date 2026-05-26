@@ -116,4 +116,26 @@ describe('clientApiFetch auth recovery', () => {
             '/login?next=%2Fmap%3Flayer%3Dfeed',
         );
     });
+
+    it('does not refresh, clear auth, or redirect on public unauthenticated requests', async () => {
+        window.localStorage.setItem('spot-auth', 'persisted-auth');
+        const fetchMock = vi
+            .fn<typeof fetch>()
+            .mockResolvedValueOnce(
+                Response.json({ message: 'login required' }, { status: 401 }),
+            );
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(
+            clientApiFetch('/feeds', { redirectOnUnauthorized: false }),
+        ).rejects.toThrow('login required');
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledWith(
+            '/api/backend/v1/feeds',
+            expect.objectContaining({ cache: 'no-store' }),
+        );
+        expect(window.localStorage.getItem('spot-auth')).toBe('persisted-auth');
+        expect(window.location.assign).not.toHaveBeenCalled();
+    });
 });

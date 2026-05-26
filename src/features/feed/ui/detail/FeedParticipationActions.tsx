@@ -101,11 +101,10 @@ export function FeedParticipationActions({
     management?: FeedManagementFlow;
 }) {
     const router = useRouter();
-    const balanceQuery = usePointBalance();
+    const currentUserId = useAuthStore((state) => state.userId);
     const showBottomNavMessage = useBottomNavMessageStore(
         (state) => state.showMessage,
     );
-    const currentUserId = useAuthStore((state) => state.userId);
     const isOwner = Boolean(
         currentUserId && item.authorProfile?.id === currentUserId,
     );
@@ -119,6 +118,9 @@ export function FeedParticipationActions({
     >(null);
     const [selectedRole, setSelectedRole] =
         useState<FeedParticipationRole | null>(null);
+    const balanceQuery = usePointBalance({
+        enabled: selectedRole != null && currentUserId != null,
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [supporterGoalInput, setSupporterGoalInput] = useState('');
     const [cancelOpen, setCancelOpen] = useState(false);
@@ -234,7 +236,19 @@ export function FeedParticipationActions({
         setSupporterGoalInput(String(defaultTargetAmount));
     }, [defaultTargetAmount, selectedRole]);
 
-    const openSheet = (role: FeedParticipationRole) => setSelectedRole(role);
+    const requireLogin = () => {
+        const next = `${window.location.pathname}${window.location.search}`;
+        router.push(`/login?next=${encodeURIComponent(next)}`);
+    };
+
+    const openSheet = (role: FeedParticipationRole) => {
+        if (!currentUserId) {
+            requireLogin();
+            return;
+        }
+
+        setSelectedRole(role);
+    };
     const closeSheet = () => {
         if (isSubmitting) {
             return;
