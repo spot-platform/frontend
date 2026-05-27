@@ -68,20 +68,38 @@ function redirectToLogin() {
 
 type ClientApiFetchOptions = RequestInit & {
     redirectOnUnauthorized?: boolean;
+    refreshOnUnauthorized?: boolean;
+    retryUnauthenticatedOnUnauthorized?: boolean;
 };
 
 export async function clientApiFetch<T>(
     path: string,
-    { redirectOnUnauthorized = true, ...init }: ClientApiFetchOptions = {},
+    {
+        redirectOnUnauthorized = true,
+        refreshOnUnauthorized = true,
+        retryUnauthenticatedOnUnauthorized = false,
+        ...init
+    }: ClientApiFetchOptions = {},
 ): Promise<T> {
     let response = await requestBackend(path, init);
+    const canRecoverUnauthorized =
+        response.status === 401 && typeof window !== 'undefined';
 
     if (
-        redirectOnUnauthorized &&
-        response.status === 401 &&
-        typeof window !== 'undefined' &&
+        canRecoverUnauthorized &&
+        refreshOnUnauthorized &&
         (await refreshAccessToken())
     ) {
+        response = await requestBackend(path, init);
+    }
+
+    if (
+        !response.ok &&
+        response.status === 401 &&
+        typeof window !== 'undefined' &&
+        retryUnauthenticatedOnUnauthorized
+    ) {
+        await clearBrowserAuth();
         response = await requestBackend(path, init);
     }
 
