@@ -31,7 +31,10 @@ type MapFeedCardPagerProps = {
     onSnapChange: (snap: FeedCardPagerSnap) => void;
     promotedCount: number;
     onPromotedCountChange: (count: number) => void;
+    items?: FeedItem[];
     onBookmark?: (item: FeedItem) => void;
+    onTutorialCardPromote?: () => void;
+    onTutorialCardDismiss?: () => void;
 };
 
 type ExitDirection = 'down' | 'left' | 'right';
@@ -41,7 +44,10 @@ export function MapFeedCardPager({
     onSnapChange,
     promotedCount,
     onPromotedCountChange,
+    items,
     onBookmark,
+    onTutorialCardPromote,
+    onTutorialCardDismiss,
 }: MapFeedCardPagerProps) {
     const router = useRouter();
     const prefersReducedMotion = useReducedMotion();
@@ -57,16 +63,23 @@ export function MapFeedCardPager({
         dir: ExitDirection;
     } | null>(null);
 
-    const { data: feedData } = useLayerAwareFeedList();
+    const { data: feedData } = useLayerAwareFeedList(
+        { size: 100 },
+        { enabled: items == null },
+    );
+    const sourceItems = useMemo(
+        () => items ?? feedData?.data ?? [],
+        [items, feedData?.data],
+    );
 
     const filtered = useMemo(
         () =>
-            filterVisibleFeedItems(feedData?.data ?? [], {
+            filterVisibleFeedItems(sourceItems, {
                 feedType,
                 categories: categoriesSelected,
                 searchQuery,
             }),
-        [feedData?.data, feedType, categoriesSelected, searchQuery],
+        [sourceItems, feedType, categoriesSelected, searchQuery],
     );
 
     const total = filtered.length;
@@ -82,7 +95,9 @@ export function MapFeedCardPager({
         : STACK_BOTTOM_PEEK_DVH;
 
     function promoteOne() {
-        if (safePromoted < total) setPromotedCount(safePromoted + 1);
+        if (safePromoted >= total) return;
+        setPromotedCount(safePromoted + 1);
+        onTutorialCardPromote?.();
     }
     function bookmarkTopPromoted() {
         const top = promotedItems[promotedItems.length - 1];
@@ -93,6 +108,7 @@ export function MapFeedCardPager({
         onBookmark?.(top);
         requestAnimationFrame(() => {
             if (safePromoted > 0) setPromotedCount(safePromoted - 1);
+            onTutorialCardDismiss?.();
         });
     }
     function openDetailTopPromoted() {

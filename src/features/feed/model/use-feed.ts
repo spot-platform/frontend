@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from '@tanstack/react-query';
 import { payKeys } from '@/features/pay';
 import {
     feedApi,
@@ -14,28 +19,82 @@ export const feedKeys = {
     lists: () => [...feedKeys.all, 'list'] as const,
     list: (params?: FeedListParams) =>
         [...feedKeys.lists(), params ?? {}] as const,
+    infiniteList: (params?: FeedListParams) =>
+        [...feedKeys.lists(), 'infinite', params ?? {}] as const,
     details: () => [...feedKeys.all, 'detail'] as const,
     detail: (id: string) => [...feedKeys.details(), id] as const,
     applications: (feedId: string) =>
         [...feedKeys.detail(feedId), 'applications'] as const,
 };
 
-export function useFeedList(params?: FeedListParams) {
+const DEFAULT_FEED_PAGE_SIZE = 10;
+
+function getNextFeedPageParam(
+    lastPage: Awaited<ReturnType<typeof feedApi.list>>,
+): number | undefined {
+    const currentPage = lastPage.meta?.page ?? 0;
+    const pageSize = lastPage.meta?.size ?? DEFAULT_FEED_PAGE_SIZE;
+    const total = lastPage.meta?.total;
+
+    if (lastPage.meta?.hasNext === true) {
+        return currentPage + 1;
+    }
+
+    if (lastPage.meta?.hasNext === false) {
+        return undefined;
+    }
+
+    if (typeof total === 'number') {
+        const loadedCount = (currentPage + 1) * pageSize;
+        return loadedCount < total ? currentPage + 1 : undefined;
+    }
+
+    return lastPage.data.length >= pageSize ? currentPage + 1 : undefined;
+}
+
+export function useFeedList(
+    params?: FeedListParams,
+    options: { enabled?: boolean } = {},
+) {
     return useQuery({
         queryKey: feedKeys.list(params),
         queryFn: () => feedApi.list(params),
+        enabled: options.enabled,
     });
 }
 
-export function useLayerAwareFeedList(params?: FeedListParams) {
+export function useInfiniteFeedList(params?: FeedListParams) {
+    return useInfiniteQuery({
+        queryKey: feedKeys.infiniteList(params),
+        initialPageParam: params?.page ?? 0,
+        queryFn: ({ pageParam }) =>
+            feedApi.list({
+                ...params,
+                page: pageParam,
+                size: params?.size ?? DEFAULT_FEED_PAGE_SIZE,
+            }),
+        getNextPageParam: getNextFeedPageParam,
+    });
+}
+
+function useLayerAwareFeedParams(params?: FeedListParams) {
     const activeLayer = useLayerStore((state) => state.activeLayer);
     const isAi = getFeedListIsAiParamByLayer(activeLayer);
-    const layerParams = useMemo<FeedListParams | undefined>(() => {
+    return useMemo<FeedListParams | undefined>(() => {
         if (isAi === undefined) return params;
         return { ...params, isAi };
     }, [params, isAi]);
+}
 
-    return useFeedList(layerParams);
+export function useLayerAwareFeedList(
+    params?: FeedListParams,
+    options?: { enabled?: boolean },
+) {
+    return useFeedList(useLayerAwareFeedParams(params), options);
+}
+
+export function useLayerAwareInfiniteFeedList(params?: FeedListParams) {
+    return useInfiniteFeedList(useLayerAwareFeedParams(params));
 }
 
 export function useFeedApplications(feedId: string, enabled: boolean) {

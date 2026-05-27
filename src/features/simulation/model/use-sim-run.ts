@@ -17,6 +17,7 @@ import type {
     AgentTimelineMap,
     GeoCoord,
     LifecycleEvent,
+    Movement,
     PlaceMap,
     SimAgent,
     SimManifest,
@@ -79,6 +80,12 @@ export type UseSimRunResult = {
     playbackStartMsRef: React.RefObject<number>;
     /** 현재 tick 길이(ms). 어댑터가 tick→ms 변환 시 사용. */
     tickDurationMsRef: React.RefObject<number>;
+    /** 현재까지 로드된 movement 버퍼. 도메인 어댑터가 별도 fetch 없이 seed를 점진 갱신할 때 사용. */
+    bufferedMovementsRef: React.RefObject<Movement[]>;
+    /** 현재까지 로드된 lifecycle 이벤트 버퍼. */
+    bufferedLifecycleEventsRef: React.RefObject<LifecycleEvent[]>;
+    /** 새 chunk가 버퍼에 반영될 때 증가하는 버전. ref 소비자가 재계산 트리거로 사용. */
+    bufferedChunkVersion: number;
 };
 
 const DEFAULT_EMIT_THROTTLE_MS = 200;
@@ -114,6 +121,11 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const lifecycleByTickRef = useRef<Map<number, LifecycleEvent[]>>(new Map());
     const loadedWindowRef = useRef<{ from: number; to: number } | null>(null);
     const inflightChunkRef = useRef<Promise<void> | null>(null);
+    const bufferedMovementsRef = useRef<Movement[]>([]);
+    const bufferedLifecycleEventsRef = useRef<LifecycleEvent[]>([]);
+    const loadedChunkKeysRef = useRef<Set<string>>(new Set());
+    const chunkPromiseMapRef = useRef<Map<string, Promise<void>>>(new Map());
+    const [bufferedChunkVersion, setBufferedChunkVersion] = useState(0);
 
     const tickDurationMsRef = useRef<number>(tickDurationMs ?? 1000);
     const playbackStartMsRef = useRef<number>(0);
@@ -149,6 +161,14 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                     m.places.map((p) => [p.place_id, p] as const),
                 );
                 agentsRef.current = m.agents;
+                timelinesRef.current = new Map();
+                lifecycleByTickRef.current = new Map();
+                loadedWindowRef.current = null;
+                bufferedMovementsRef.current = [];
+                bufferedLifecycleEventsRef.current = [];
+                loadedChunkKeysRef.current = new Set();
+                chunkPromiseMapRef.current = new Map();
+                setBufferedChunkVersion(0);
 
                 // 초기 좌표: home 으로 세팅(지터 적용).
                 const init = new Map<string, GeoCoord>();
@@ -200,26 +220,50 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         to: number,
         rid: string,
     ): Promise<void> {
-        const [moveChunk, lifeChunk] = await Promise.all([
-            fetchSimMovements(rid, from, to),
-            fetchSimLifecycle(rid, from, to),
-        ]);
+        const key = `${rid}:${from}:${to}`;
+        if (loadedChunkKeysRef.current.has(key)) return;
 
-        timelinesRef.current = buildAgentTimelines(
-            moveChunk.movements,
-            timelinesRef.current,
-        );
+        const existing = chunkPromiseMapRef.current.get(key);
+        if (existing) return existing;
 
-        const lcMap = lifecycleByTickRef.current;
-        for (const ev of lifeChunk.events) {
-            const arr = lcMap.get(ev.tick);
-            if (arr) arr.push(ev);
-            else lcMap.set(ev.tick, [ev]);
-        }
+        const promise = (async () => {
+            const [moveChunk, lifeChunk] = await Promise.all([
+                fetchSimMovements(rid, from, to),
+                fetchSimLifecycle(rid, from, to),
+            ]);
 
-        loadedWindowRef.current = loadedWindowRef.current
-            ? { from: loadedWindowRef.current.from, to }
-            : { from, to };
+            loadedChunkKeysRef.current.add(key);
+            bufferedMovementsRef.current = [
+                ...bufferedMovementsRef.current,
+                ...moveChunk.movements,
+            ];
+            bufferedLifecycleEventsRef.current = [
+                ...bufferedLifecycleEventsRef.current,
+                ...lifeChunk.events,
+            ];
+
+            timelinesRef.current = buildAgentTimelines(
+                moveChunk.movements,
+                timelinesRef.current,
+            );
+
+            const lcMap = lifecycleByTickRef.current;
+            for (const ev of lifeChunk.events) {
+                const arr = lcMap.get(ev.tick);
+                if (arr) arr.push(ev);
+                else lcMap.set(ev.tick, [ev]);
+            }
+
+            loadedWindowRef.current = loadedWindowRef.current
+                ? { from: loadedWindowRef.current.from, to }
+                : { from, to };
+            setBufferedChunkVersion((version) => version + 1);
+        })().finally(() => {
+            chunkPromiseMapRef.current.delete(key);
+        });
+
+        chunkPromiseMapRef.current.set(key, promise);
+        return promise;
     }
 
     function maybePrefetch(tFloat: number, m: SimManifest, rid: string): void {
@@ -382,6 +426,9 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             seek,
             playbackStartMsRef,
             tickDurationMsRef,
+            bufferedMovementsRef,
+            bufferedLifecycleEventsRef,
+            bufferedChunkVersion,
         }),
         [
             manifest,
@@ -394,6 +441,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             play,
             pause,
             seek,
+            bufferedChunkVersion,
         ],
     );
 }

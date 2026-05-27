@@ -28,6 +28,11 @@ import { MapBottomStack } from '@/features/map/ui/MapBottomStack';
 import { SpotInfoCard } from '@/features/map/ui/SpotInfoCard';
 import { MySpotInfoCard } from '@/features/map/ui/MySpotInfoCard';
 import { MapFeedInfoCard } from '@/features/map/ui/MapFeedInfoCard';
+import {
+    MAP_TUTORIAL_STEPS,
+    MapTutorialOverlay,
+    type MapTutorialMarkerInfo,
+} from '@/features/map/ui/MapTutorialOverlay';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
 import { useLayerAwareFeedList } from '@/features/feed/model/use-feed';
 import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
@@ -42,6 +47,69 @@ import type { MapOverlayItem } from '@/features/map/ui/MapCanvas';
 import type { ViewportBbox } from '@/features/map/ui/MapV3Canvas';
 
 // (구) swarm bbox 상수는 useSimRun 으로 전면 교체된 이후 더 이상 사용되지 않음.
+
+const MAP_TUTORIAL_STORAGE_KEY = 'spot.mapTutorial.dismissed.v1';
+const MAP_FEED_QUERY_SIZE = 100;
+
+function toMapFeedTypeParam(feedType: 'all' | 'offer' | 'request') {
+    if (feedType === 'offer') return 'OFFER' as const;
+    if (feedType === 'request') return 'REQUEST' as const;
+    return undefined;
+}
+
+const TUTORIAL_MARKERS: Array<{
+    info: MapTutorialMarkerInfo;
+    cluster: Omit<ActivityCluster, 'centerCoord'>;
+}> = [
+    {
+        info: {
+            id: 'tutorial-hotspot',
+            label: '핫스팟',
+            description: '주변의 관심 포인트를 가볍게 보여줘요.',
+        },
+        cluster: {
+            id: 'tutorial-hotspot',
+            category: '핫스팟',
+            intent: 'offer',
+            personas: [
+                { id: 'tutorial-hotspot-1', name: '핫스팟', emoji: '✨' },
+            ],
+            variant: 'discovery',
+            isPulse: true,
+        },
+    },
+    {
+        info: {
+            id: 'tutorial-ai-feed',
+            label: 'AI 추천 피드',
+            description:
+                'AI가 시뮬레이션에서 자주 참여할 만한 피드를 보여줘요.',
+        },
+        cluster: {
+            id: 'tutorial-ai-feed',
+            category: 'AI 추천',
+            intent: 'request',
+            personas: [{ id: 'tutorial-ai-1', name: 'AI 추천', emoji: '🤖' }],
+            variant: 'ai-feed',
+        },
+    },
+    {
+        info: {
+            id: 'tutorial-user-feed',
+            label: '사용자 피드',
+            description: '실제 사용자가 만든 피드를 확인하고 참여해요.',
+        },
+        cluster: {
+            id: 'tutorial-user-feed',
+            category: '사용자 피드',
+            intent: 'offer',
+            personas: [
+                { id: 'tutorial-user-1', name: '사용자 피드', emoji: '📍' },
+            ],
+            variant: 'user-feed',
+        },
+    },
+];
 
 const MapV3Canvas = dynamic(
     () => import('@/features/map/ui/MapV3Canvas').then((m) => m.MapV3Canvas),
@@ -64,6 +132,11 @@ export function MapClient() {
         useState<BottomSheetSnapPoint>('half');
     const [pagerSnap, setPagerSnap] = useState<FeedCardPagerSnap>('peek');
     const [pagerPromotedCount, setPagerPromotedCount] = useState(0);
+    const [tutorialOpen, setTutorialOpen] = useState(false);
+    const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+    const [selectedTutorialMarkerId, setSelectedTutorialMarkerId] = useState<
+        string | null
+    >(null);
     // 카드 페이저는 더 이상 맵/다른 UI 에 영향 주지 않음. expanded 는 뭉치 살짝 커지는 정도.
     const isStackExpanded = false;
     void pagerSnap;
@@ -84,6 +157,86 @@ export function MapClient() {
         resolvedTheme === 'dark' || resolvedTheme === 'light'
             ? resolvedTheme
             : initialDomTheme;
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (window.localStorage.getItem(MAP_TUTORIAL_STORAGE_KEY) === 'true') {
+            return;
+        }
+        setTutorialStepIndex(0);
+        setSelectedTutorialMarkerId(null);
+        setTutorialOpen(true);
+    }, []);
+
+    const openMapTutorial = useCallback(() => {
+        setFeedListOpen(false);
+        setPagerSnap('peek');
+        setPagerPromotedCount(0);
+        setTutorialStepIndex(0);
+        setSelectedTutorialMarkerId(null);
+        setTutorialOpen(true);
+    }, []);
+
+    const closeMapTutorial = useCallback(() => {
+        if (typeof window !== 'undefined') {
+            window.localStorage.setItem(MAP_TUTORIAL_STORAGE_KEY, 'true');
+        }
+        setTutorialOpen(false);
+        setSelectedTutorialMarkerId(null);
+        setPagerPromotedCount(0);
+        setPagerSnap('peek');
+    }, []);
+
+    const changeTutorialStep = useCallback((nextStepIndex: number) => {
+        const nextStep = MAP_TUTORIAL_STEPS[nextStepIndex];
+        setTutorialStepIndex(nextStepIndex);
+        setSelectedTutorialMarkerId(null);
+
+        if (nextStep?.id === 'deck') {
+            setFeedListOpen(false);
+            setPagerSnap('expanded');
+            setPagerPromotedCount(0);
+            return;
+        }
+
+        if (nextStep?.id === 'card') {
+            setFeedListOpen(false);
+            setPagerSnap('expanded');
+            setPagerPromotedCount((count) => Math.max(count, 1));
+            return;
+        }
+
+        if (nextStep?.id === 'controls') {
+            setPagerPromotedCount(0);
+            setPagerSnap('peek');
+        }
+    }, []);
+
+    const showCardTutorialStep = useCallback(() => {
+        if (
+            !tutorialOpen ||
+            MAP_TUTORIAL_STEPS[tutorialStepIndex]?.id !== 'deck'
+        ) {
+            return;
+        }
+
+        setTutorialStepIndex(2);
+        setSelectedTutorialMarkerId(null);
+    }, [tutorialOpen, tutorialStepIndex]);
+
+    const completeDeckTutorial = useCallback(() => {
+        if (
+            !tutorialOpen ||
+            MAP_TUTORIAL_STEPS[tutorialStepIndex]?.id !== 'card'
+        ) {
+            return;
+        }
+
+        setPagerPromotedCount(0);
+        setPagerSnap('peek');
+        setTutorialStepIndex(3);
+        setSelectedTutorialMarkerId(null);
+    }, [tutorialOpen, tutorialStepIndex]);
 
     // sim run 재생: useMockPersonaSwarm 대체. manifest+lifecycle/movement 청크 기반.
     // tickDurationMs 는 시각적으로 차분한 속도를 위해 길게 잡는다(48 tick × 2.5s ≈ 2분).
@@ -125,12 +278,14 @@ export function MapClient() {
     const simDomain = useSimDomain({
         manifest: sim.manifest,
         isReady: sim.isReady,
-        runId: sim.manifest?.run_id ?? '',
         currentTick: sim.currentTick,
         subscribe: sim.subscribe,
         positionsRef: sim.positionsRef,
         playbackStartMsRef: sim.playbackStartMsRef,
         tickDurationMsRef: sim.tickDurationMsRef,
+        bufferedMovementsRef: sim.bufferedMovementsRef,
+        bufferedLifecycleEventsRef: sim.bufferedLifecycleEventsRef,
+        bufferedChunkVersion: sim.bufferedChunkVersion,
     });
 
     const basePersonas = simDomain.personas;
@@ -140,7 +295,19 @@ export function MapClient() {
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
     const searchQuery = useFilterStore((s) => s.searchQuery);
-    const { data: feedData } = useLayerAwareFeedList();
+    const mapFeedParams = useMemo(
+        () => ({
+            type: toMapFeedTypeParam(feedType),
+            category: categories.length === 1 ? categories[0] : undefined,
+            sort: 'latest',
+            nearLat: center.lat,
+            nearLng: center.lng,
+            page: 0,
+            size: MAP_FEED_QUERY_SIZE,
+        }),
+        [center.lat, center.lng, feedType, categories],
+    );
+    const { data: feedData } = useLayerAwareFeedList(mapFeedParams);
     const visibleFeedItems = useMemo(
         () =>
             filterVisibleFeedItems(feedData?.data ?? [], {
@@ -154,11 +321,16 @@ export function MapClient() {
     const activeLayer = useLayerStore((s) => s.activeLayer);
 
     const handleMapClick = useCallback(() => {
+        if (tutorialOpen && tutorialStepIndex === 0) {
+            return;
+        }
+
         updateUrl({ spot: null, persona: null, cluster: null });
+        setSelectedTutorialMarkerId(null);
         // 맵 클릭은 카드 페이저도 peek 으로 리셋 — promote 모두 흡수.
         setPagerSnap('peek');
         setPagerPromotedCount(0);
-    }, [updateUrl]);
+    }, [tutorialOpen, tutorialStepIndex, updateUrl]);
 
     const basePersonaLookup = useMemo(
         () => new Map(basePersonas.map((p) => [p.id, p])),
@@ -353,6 +525,14 @@ export function MapClient() {
         inViewport,
     ]);
 
+    const selectedTutorialMarker = useMemo(
+        () =>
+            TUTORIAL_MARKERS.find(
+                ({ info }) => info.id === selectedTutorialMarkerId,
+            )?.info ?? null,
+        [selectedTutorialMarkerId],
+    );
+
     const feedMarkerOverlays: MapOverlayItem[] = useMemo(() => {
         return visibleFeedItems.flatMap((item) => {
             const coord = resolveFeedCoordinate(item);
@@ -451,12 +631,49 @@ export function MapClient() {
             <MapFooter
                 onCenterToUser={setCenter}
                 onToggleListView={handleToggleListView}
+                onOpenHelp={openMapTutorial}
                 hidden={isStackExpanded}
             />
             <ChatLever
                 onOpen={() => updateUrl({ chat: true })}
                 hidden={isStackExpanded}
             />
+
+            {tutorialOpen && tutorialStepIndex === 0 && (
+                <div className="pointer-events-none fixed left-1/2 top-[34dvh] z-[85] flex w-[340px] -translate-x-1/2 -translate-y-1/2 items-center justify-between">
+                    {TUTORIAL_MARKERS.map(({ info, cluster }) => (
+                        <button
+                            key={info.id}
+                            type="button"
+                            aria-label={`${info.label} 설명 보기`}
+                            className="pointer-events-auto relative h-24 w-24 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary [&_*]:pointer-events-none"
+                            onPointerDown={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setSelectedTutorialMarkerId(info.id);
+                            }}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setSelectedTutorialMarkerId(info.id);
+                            }}
+                        >
+                            <span className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 [&>div]:!left-1/2 [&>div]:!top-1/2">
+                                <ClusterBlob
+                                    cluster={{
+                                        ...cluster,
+                                        centerCoord: center,
+                                    }}
+                                    selected={
+                                        selectedTutorialMarkerId === info.id
+                                    }
+                                    onSelectAction={() => undefined}
+                                />
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            )}
 
             <ChatDrawer
                 open={chatDrawerOpen}
@@ -468,6 +685,9 @@ export function MapClient() {
                 onSnapChange={setPagerSnap}
                 promotedCount={pagerPromotedCount}
                 onPromotedCountChange={setPagerPromotedCount}
+                items={visibleFeedItems}
+                onTutorialCardPromote={showCardTutorialStep}
+                onTutorialCardDismiss={completeDeckTutorial}
                 onBookmark={(item) => {
                     // TODO: 다음 PR에서 useAddFavorite mutation 연결
                     console.info('[bookmark]', item.id, item.title);
@@ -571,6 +791,15 @@ export function MapClient() {
             <PostTypeSheet
                 open={postTypeSheetOpen}
                 onClose={() => setPostTypeSheetOpen(false)}
+            />
+
+            <MapTutorialOverlay
+                open={tutorialOpen}
+                stepIndex={tutorialStepIndex}
+                steps={MAP_TUTORIAL_STEPS}
+                selectedMarker={selectedTutorialMarker}
+                onStepChange={changeTutorialStep}
+                onClose={closeMapTutorial}
             />
         </>
     );

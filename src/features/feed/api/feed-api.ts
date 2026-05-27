@@ -26,6 +26,8 @@ export type FeedListParams = {
     category?: string;
     sort?: string;
     isAi?: boolean;
+    nearLat?: number;
+    nearLng?: number;
     page?: number;
     size?: number;
 };

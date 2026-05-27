@@ -1,5 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clientApiFetch } from './client-api';
+import { buildQueryString, clientApiFetch } from './client-api';
+
+describe('client API query strings', () => {
+    it('serializes feed paging and nearby query parameters for the backend proxy', () => {
+        expect(
+            buildQueryString({
+                type: 'REQUEST',
+                sort: 'latest',
+                nearLat: 37.2636,
+                nearLng: 127.0286,
+                page: 0,
+                size: 10,
+            }),
+        ).toBe(
+            '?type=REQUEST&sort=latest&nearLat=37.2636&nearLng=127.0286&page=0&size=10',
+        );
+    });
+});
 
 const originalLocation = window.location;
 
