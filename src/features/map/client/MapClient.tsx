@@ -39,6 +39,10 @@ import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
 import { resolveFeedCoordinate } from '@/features/feed/model/feed-location';
 import type { TickerEvent } from '@/features/map/model/ticker-adapter';
 import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
+import {
+    decideMarkerVisualMode,
+    shouldRenderPersonaDots as shouldRenderPersonaDotsForBudget,
+} from '@/features/map/model/marker-visual-mode';
 import { useTheme } from '@/shared/model/use-theme';
 import type { GeoCoord } from '@/entities/spot/types';
 import type { Persona } from '@/entities/persona/types';
@@ -50,6 +54,12 @@ import type { ViewportBbox } from '@/features/map/ui/MapV3Canvas';
 
 const MAP_TUTORIAL_STORAGE_KEY = 'spot.mapTutorial.dismissed.v1';
 const MAP_FEED_QUERY_SIZE = 100;
+const MAP_FEED_COORD_PRECISION = 4;
+const DEFAULT_MAP_ZOOM = 15;
+
+function normalizeMapFeedCoord(value: number) {
+    return Number(value.toFixed(MAP_FEED_COORD_PRECISION));
+}
 
 function toMapFeedTypeParam(feedType: 'all' | 'offer' | 'request') {
     if (feedType === 'offer') return 'OFFER' as const;
@@ -65,7 +75,8 @@ const TUTORIAL_MARKERS: Array<{
         info: {
             id: 'tutorial-hotspot',
             label: '핫스팟',
-            description: '주변의 관심 포인트를 가볍게 보여줘요.',
+            description:
+                '사람들이 많이 모이거나 새 활동이 생기기 좋은 주변 포인트예요.',
         },
         cluster: {
             id: 'tutorial-hotspot',
@@ -83,7 +94,7 @@ const TUTORIAL_MARKERS: Array<{
             id: 'tutorial-ai-feed',
             label: 'AI 추천 피드',
             description:
-                'AI가 시뮬레이션에서 자주 참여할 만한 피드를 보여줘요.',
+                '현재 맥락에서 참여해볼 만한 활동을 AI가 먼저 골라 보여줘요.',
         },
         cluster: {
             id: 'tutorial-ai-feed',
@@ -97,7 +108,8 @@ const TUTORIAL_MARKERS: Array<{
         info: {
             id: 'tutorial-user-feed',
             label: '사용자 피드',
-            description: '실제 사용자가 만든 피드를 확인하고 참여해요.',
+            description:
+                '다른 사용자가 직접 올린 모집 글이에요. 상세를 보고 바로 참여할 수 있어요.',
         },
         cluster: {
             id: 'tutorial-user-feed',
@@ -141,6 +153,7 @@ export function MapClient() {
     const isStackExpanded = false;
     void pagerSnap;
     const [viewportBbox, setViewportBbox] = useState<ViewportBbox | null>(null);
+    const [mapZoom, setMapZoom] = useState(DEFAULT_MAP_ZOOM);
 
     // next-themes 의 resolvedTheme 은 초기 렌더에서 undefined — 이 상태로 MapV3Canvas 가 mount 되면
     // customStyleId 가 잘못 지정되어 기본 스타일로 뜬 뒤 live swap 되며 깜빡인다.
@@ -239,8 +252,8 @@ export function MapClient() {
     }, [tutorialOpen, tutorialStepIndex]);
 
     // sim run 재생: useMockPersonaSwarm 대체. manifest+lifecycle/movement 청크 기반.
-    // tickDurationMs 는 시각적으로 차분한 속도를 위해 길게 잡는다(48 tick × 2.5s ≈ 2분).
-    const sim = useSimRun({ enabled: true, tickDurationMs: 2500 });
+    // tickDurationMs 는 시각적으로 차분한 속도를 위해 길게 잡는다(336 tick × 3.5s ≈ 20분, 빈 로그 구간은 skip).
+    const sim = useSimRun({ enabled: true, tickDurationMs: 3500 });
     // 자동 재생 + 루프: ready 시 시작, total_ticks 도달 시 처음으로 되돌려 무한 재생.
     // 루프가 없으면 종료 후 모든 protagonist 가 go_home 도착점에 정적 정지해 화면이 굳음.
     const autoPlayedRef = useRef(false);
@@ -286,6 +299,7 @@ export function MapClient() {
         bufferedMovementsRef: sim.bufferedMovementsRef,
         bufferedLifecycleEventsRef: sim.bufferedLifecycleEventsRef,
         bufferedChunkVersion: sim.bufferedChunkVersion,
+        snapshotThrottleMs: 800,
     });
 
     const basePersonas = simDomain.personas;
@@ -295,19 +309,31 @@ export function MapClient() {
     const feedType = useFilterStore((s) => s.feedType);
     const categories = useFilterStore((s) => s.categories);
     const searchQuery = useFilterStore((s) => s.searchQuery);
+    const mapFeedCenter = useMemo(
+        () => ({
+            lat: normalizeMapFeedCoord(center.lat),
+            lng: normalizeMapFeedCoord(center.lng),
+        }),
+        [center.lat, center.lng],
+    );
     const mapFeedParams = useMemo(
         () => ({
             type: toMapFeedTypeParam(feedType),
             category: categories.length === 1 ? categories[0] : undefined,
             sort: 'latest',
-            nearLat: center.lat,
-            nearLng: center.lng,
+            nearLat: mapFeedCenter.lat,
+            nearLng: mapFeedCenter.lng,
             page: 0,
             size: MAP_FEED_QUERY_SIZE,
         }),
-        [center.lat, center.lng, feedType, categories],
+        [mapFeedCenter.lat, mapFeedCenter.lng, feedType, categories],
     );
-    const { data: feedData } = useLayerAwareFeedList(mapFeedParams);
+    const feedQuery = useLayerAwareFeedList(mapFeedParams, {
+        keepPreviousData: true,
+    });
+    const feedData = feedQuery.data;
+    const isInitialFeedLoading = feedQuery.isPending && !feedData;
+    const totalVisibleFeedCount = feedData?.meta?.total;
     const visibleFeedItems = useMemo(
         () =>
             filterVisibleFeedItems(feedData?.data ?? [], {
@@ -319,6 +345,8 @@ export function MapClient() {
     );
 
     const activeLayer = useLayerStore((s) => s.activeLayer);
+    const showSpots = activeLayer !== 'virtual';
+    const showPersonas = activeLayer !== 'real';
 
     const handleMapClick = useCallback(() => {
         if (tutorialOpen && tutorialStepIndex === 0) {
@@ -344,6 +372,19 @@ export function MapClient() {
             return next;
         });
     }, []);
+
+    const handleMapCenterChange = useCallback(
+        (nextCenter: { lat: number; lng: number }) => {
+            setCenter((prev) => {
+                const isSameCenter =
+                    Math.abs(prev.lat - nextCenter.lat) < 0.000001 &&
+                    Math.abs(prev.lng - nextCenter.lng) < 0.000001;
+
+                return isSameCenter ? prev : nextCenter;
+            });
+        },
+        [],
+    );
 
     // 필터 통과한 페르소나만 클러스터링 입력으로 사용.
     const filteredPersonas = useMemo<Persona[]>(() => {
@@ -417,6 +458,47 @@ export function MapClient() {
         });
     }, [rawClusters, feedType, categories, searchQuery]);
 
+    // 뷰포트 컬링: bbox 밖은 렌더 스킵. pad 는 panning 중 깜빡임 방지용 여유.
+    const inViewport = useCallback(
+        (coord: GeoCoord): boolean => {
+            if (!viewportBbox) return true;
+            const padLat = (viewportBbox.neLat - viewportBbox.swLat) * 0.1;
+            const padLng = (viewportBbox.neLng - viewportBbox.swLng) * 0.1;
+            return (
+                coord.lat >= viewportBbox.swLat - padLat &&
+                coord.lat <= viewportBbox.neLat + padLat &&
+                coord.lng >= viewportBbox.swLng - padLng &&
+                coord.lng <= viewportBbox.neLng + padLng
+            );
+        },
+        [viewportBbox],
+    );
+
+    const viewportMarkerCount = useMemo(() => {
+        const visibleClusterCount = clusters.filter((cluster) =>
+            inViewport(cluster.centerCoord),
+        ).length;
+        const visibleFeedMarkerCount = visibleFeedItems.filter((item) => {
+            const coord = resolveFeedCoordinate(item);
+            return coord ? inViewport(coord) : false;
+        }).length;
+        return visibleClusterCount + visibleFeedMarkerCount;
+    }, [clusters, visibleFeedItems, inViewport]);
+
+    const getMarkerVisualMode = useCallback(
+        (selected: boolean) =>
+            decideMarkerVisualMode({
+                mapZoom,
+                viewportMarkerCount,
+                selected,
+            }),
+        [mapZoom, viewportMarkerCount],
+    );
+
+    const shouldRenderPersonaDots = shouldRenderPersonaDotsForBudget({
+        showPersonas,
+    });
+
     const handleClusterSelect = useCallback(
         (clusterId: string) => {
             updateUrl({ cluster: clusterId });
@@ -433,25 +515,6 @@ export function MapClient() {
 
     // v3 는 spot marker 가 아닌 cluster 중심이라 SpotPreviewSheet 은 사용하지 않음.
     void selectedSpotId;
-
-    const showSpots = activeLayer !== 'virtual';
-    const showPersonas = activeLayer !== 'real';
-
-    // 뷰포트 컬링: bbox 밖은 렌더 스킵. pad 는 panning 중 깜빡임 방지용 여유.
-    const inViewport = useCallback(
-        (coord: GeoCoord): boolean => {
-            if (!viewportBbox) return true;
-            const padLat = (viewportBbox.neLat - viewportBbox.swLat) * 0.1;
-            const padLng = (viewportBbox.neLng - viewportBbox.swLng) * 0.1;
-            return (
-                coord.lat >= viewportBbox.swLat - padLat &&
-                coord.lat <= viewportBbox.neLat + padLat &&
-                coord.lng >= viewportBbox.swLng - padLng &&
-                coord.lng <= viewportBbox.neLng + padLng
-            );
-        },
-        [viewportBbox],
-    );
 
     // cluster overlays (layer=mixed|real)
     const clusterOverlays: MapOverlayItem[] = useMemo(() => {
@@ -470,6 +533,9 @@ export function MapClient() {
                         }}
                         selected={selectedClusterId === cluster.id}
                         onSelectAction={handleClusterSelect}
+                        visualMode={getMarkerVisualMode(
+                            selectedClusterId === cluster.id,
+                        )}
                     />
                 ),
             }));
@@ -478,6 +544,7 @@ export function MapClient() {
         selectedClusterId,
         handleClusterSelect,
         showSpots,
+        getMarkerVisualMode,
         inViewport,
     ]);
 
@@ -488,7 +555,7 @@ export function MapClient() {
     // 단독 페르소나만 dot 으로 렌더.
     // 대기 중인 agent 는 useSimRun 이 positionsRef 에서 좌표를 제거 → 여기서 skip.
     const personaOverlays: MapOverlayItem[] = useMemo(() => {
-        if (!showPersonas) return [];
+        if (!shouldRenderPersonaDots) return [];
         const result: MapOverlayItem[] = [];
         for (const persona of filteredPersonas) {
             if (clusteredPersonaIds.has(persona.id)) continue;
@@ -521,7 +588,7 @@ export function MapClient() {
         clusteredPersonaIds,
         swarmSubscribe,
         swarmPositionsRef,
-        showPersonas,
+        shouldRenderPersonaDots,
         inViewport,
     ]);
 
@@ -574,6 +641,9 @@ export function MapClient() {
                             onSelectAction={() =>
                                 handleFeedMarkerSelect(item.id)
                             }
+                            visualMode={getMarkerVisualMode(
+                                selectedClusterId === `feed-${item.id}`,
+                            )}
                         />
                     ),
                 } satisfies MapOverlayItem,
@@ -583,13 +653,14 @@ export function MapClient() {
         visibleFeedItems,
         selectedClusterId,
         handleFeedMarkerSelect,
+        getMarkerVisualMode,
         inViewport,
     ]);
 
-    const overlays: MapOverlayItem[] = useMemo(
-        () => [...clusterOverlays, ...feedMarkerOverlays, ...personaOverlays],
-        [clusterOverlays, feedMarkerOverlays, personaOverlays],
-    );
+    const overlays: MapOverlayItem[] = useMemo(() => {
+        if (tutorialOpen) return [];
+        return [...clusterOverlays, ...feedMarkerOverlays, ...personaOverlays];
+    }, [tutorialOpen, clusterOverlays, feedMarkerOverlays, personaOverlays]);
 
     const [tickerEvent, setTickerEvent] = useState<TickerEvent | null>(null);
     const swarmTickerAdapterRef = useRef(createSwarmTickerAdapter());
@@ -617,7 +688,9 @@ export function MapClient() {
                         center={center}
                         theme={theme}
                         onMapClickAction={handleMapClick}
+                        onCenterChangeAction={handleMapCenterChange}
                         onViewportChangeAction={setViewportBbox}
+                        onZoomChangeAction={setMapZoom}
                         overlays={overlays}
                     />
                 </div>
@@ -640,7 +713,7 @@ export function MapClient() {
             />
 
             {tutorialOpen && tutorialStepIndex === 0 && (
-                <div className="pointer-events-none fixed left-1/2 top-[34dvh] z-[85] flex w-[340px] -translate-x-1/2 -translate-y-1/2 items-center justify-between">
+                <div className="pointer-events-none fixed left-1/2 top-[29dvh] z-[85] flex w-[340px] -translate-x-1/2 -translate-y-1/2 items-center justify-between">
                     {TUTORIAL_MARKERS.map(({ info, cluster }) => (
                         <button
                             key={info.id}
@@ -686,6 +759,7 @@ export function MapClient() {
                 promotedCount={pagerPromotedCount}
                 onPromotedCountChange={setPagerPromotedCount}
                 items={visibleFeedItems}
+                isInitialLoading={isInitialFeedLoading}
                 onTutorialCardPromote={showCardTutorialStep}
                 onTutorialCardDismiss={completeDeckTutorial}
                 onBookmark={(item) => {
@@ -709,6 +783,9 @@ export function MapClient() {
                 }}
                 feedType={feedType}
                 categories={categories}
+                initialItems={visibleFeedItems}
+                initialTotalCount={totalVisibleFeedCount}
+                isInitialItemsLoading={isInitialFeedLoading}
             />
 
             {tickerEvent && (

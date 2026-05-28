@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import {
+    keepPreviousData,
     useInfiniteQuery,
     useMutation,
     useQuery,
@@ -54,16 +55,22 @@ function getNextFeedPageParam(
 
 export function useFeedList(
     params?: FeedListParams,
-    options: { enabled?: boolean } = {},
+    options: { enabled?: boolean; keepPreviousData?: boolean } = {},
 ) {
     return useQuery({
         queryKey: feedKeys.list(params),
         queryFn: () => feedApi.list(params),
         enabled: options.enabled,
+        placeholderData: options.keepPreviousData
+            ? keepPreviousData
+            : undefined,
     });
 }
 
-export function useInfiniteFeedList(params?: FeedListParams) {
+export function useInfiniteFeedList(
+    params?: FeedListParams,
+    options: { enabled?: boolean } = {},
+) {
     return useInfiniteQuery({
         queryKey: feedKeys.infiniteList(params),
         initialPageParam: params?.page ?? 0,
@@ -74,6 +81,7 @@ export function useInfiniteFeedList(params?: FeedListParams) {
                 size: params?.size ?? DEFAULT_FEED_PAGE_SIZE,
             }),
         getNextPageParam: getNextFeedPageParam,
+        enabled: options.enabled,
     });
 }
 
@@ -88,13 +96,16 @@ function useLayerAwareFeedParams(params?: FeedListParams) {
 
 export function useLayerAwareFeedList(
     params?: FeedListParams,
-    options?: { enabled?: boolean },
+    options?: { enabled?: boolean; keepPreviousData?: boolean },
 ) {
     return useFeedList(useLayerAwareFeedParams(params), options);
 }
 
-export function useLayerAwareInfiniteFeedList(params?: FeedListParams) {
-    return useInfiniteFeedList(useLayerAwareFeedParams(params));
+export function useLayerAwareInfiniteFeedList(
+    params?: FeedListParams,
+    options?: { enabled?: boolean },
+) {
+    return useInfiniteFeedList(useLayerAwareFeedParams(params), options);
 }
 
 export function useFeedApplications(feedId: string, enabled: boolean) {

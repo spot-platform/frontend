@@ -12,6 +12,10 @@ import { useRouter } from 'next/navigation';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import { useLayerAwareFeedList } from '@/features/feed/model/use-feed';
 import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
+import {
+    getVisiblePromotedCardRange,
+    MAX_PROMOTED_FEED_CARDS,
+} from '@/features/feed/model/map-feed-card-pager';
 import type { FeedItem } from '@/features/feed/model/types';
 import { FeedCard } from '@/features/feed/ui/FeedCard';
 
@@ -32,6 +36,7 @@ type MapFeedCardPagerProps = {
     promotedCount: number;
     onPromotedCountChange: (count: number) => void;
     items?: FeedItem[];
+    isInitialLoading?: boolean;
     onBookmark?: (item: FeedItem) => void;
     onTutorialCardPromote?: () => void;
     onTutorialCardDismiss?: () => void;
@@ -45,6 +50,7 @@ export function MapFeedCardPager({
     promotedCount,
     onPromotedCountChange,
     items,
+    isInitialLoading = false,
     onBookmark,
     onTutorialCardPromote,
     onTutorialCardDismiss,
@@ -62,15 +68,22 @@ export function MapFeedCardPager({
         id: string;
         dir: ExitDirection;
     } | null>(null);
-
-    const { data: feedData } = useLayerAwareFeedList(
-        { size: 100 },
-        { enabled: items == null },
+    const [instantDismissIds, setInstantDismissIds] = useState<Set<string>>(
+        () => new Set(),
     );
+
+    const fallbackFeedQuery = useLayerAwareFeedList(
+        { size: 100 },
+        { enabled: items == null, keepPreviousData: true },
+    );
+    const feedData = fallbackFeedQuery.data;
     const sourceItems = useMemo(
         () => items ?? feedData?.data ?? [],
         [items, feedData?.data],
     );
+    const sourceInitialLoading =
+        isInitialLoading ||
+        (items == null && fallbackFeedQuery.isPending && !feedData);
 
     const filtered = useMemo(
         () =>
@@ -83,9 +96,10 @@ export function MapFeedCardPager({
     );
 
     const total = filtered.length;
-    const safePromoted = Math.min(promotedCount, total);
+    const { safePromoted, visibleStart, visibleEnd } =
+        getVisiblePromotedCardRange(promotedCount, total);
     const nextStackIndex = safePromoted;
-    const promotedItems = filtered.slice(0, safePromoted);
+    const promotedItems = filtered.slice(visibleStart, visibleEnd);
     const stackItems = filtered.slice(safePromoted, safePromoted + 4);
 
     const isExpanded = snap === 'expanded';
@@ -96,8 +110,28 @@ export function MapFeedCardPager({
 
     function promoteOne() {
         if (safePromoted >= total) return;
-        setPromotedCount(safePromoted + 1);
-        onTutorialCardPromote?.();
+
+        const overflowItem =
+            promotedItems.length >= MAX_PROMOTED_FEED_CARDS
+                ? promotedItems[0]
+                : undefined;
+
+        if (!overflowItem) {
+            setPromotedCount(safePromoted + 1);
+            onTutorialCardPromote?.();
+            return;
+        }
+
+        // 8번째 카드가 올라오는 순간 가장 오래된 카드는 exit 애니메이션 없이 즉시 제거한다.
+        setInstantDismissIds((ids) => {
+            const next = new Set(ids);
+            next.add(overflowItem.id);
+            return next;
+        });
+        requestAnimationFrame(() => {
+            setPromotedCount(safePromoted + 1);
+            onTutorialCardPromote?.();
+        });
     }
     function bookmarkTopPromoted() {
         const top = promotedItems[promotedItems.length - 1];
@@ -191,7 +225,10 @@ export function MapFeedCardPager({
                 >
                     <AnimatePresence
                         initial={false}
-                        onExitComplete={() => setExitOverride(null)}
+                        onExitComplete={() => {
+                            setExitOverride(null);
+                            setInstantDismissIds(new Set());
+                        }}
                     >
                         {promotedItems.map((item, i) => {
                             const order = promotedItems.length - 1 - i;
@@ -203,6 +240,9 @@ export function MapFeedCardPager({
                             const yDvh = order * PROMOTED_STACK_STEP_DVH;
                             const scale = 1 - order * 0.025;
 
+                            const isInstantDismiss = instantDismissIds.has(
+                                item.id,
+                            );
                             const exitDir: ExitDirection =
                                 exitOverride?.id === item.id
                                     ? exitOverride.dir
@@ -216,37 +256,40 @@ export function MapFeedCardPager({
                                     number,
                                 ],
                             };
-                            const exitProps =
-                                exitDir === 'left'
+                            const exitProps = isInstantDismiss
+                                ? {
+                                      opacity: 0,
+                                      transition: { duration: 0 },
+                                  }
+                                : exitDir === 'left'
+                                  ? {
+                                        x: '-130%',
+                                        y: `${yDvh}dvh`,
+                                        rotate: -12,
+                                        opacity: 0,
+                                        transition: horizontalExitTransition,
+                                    }
+                                  : exitDir === 'right'
                                     ? {
-                                          x: '-130%',
+                                          x: '130%',
                                           y: `${yDvh}dvh`,
-                                          rotate: -12,
+                                          rotate: 12,
                                           opacity: 0,
                                           transition: horizontalExitTransition,
                                       }
-                                    : exitDir === 'right'
-                                      ? {
-                                            x: '130%',
-                                            y: `${yDvh}dvh`,
-                                            rotate: 12,
-                                            opacity: 0,
-                                            transition:
-                                                horizontalExitTransition,
-                                        }
-                                      : {
-                                            y: '60dvh',
-                                            opacity: 0,
-                                            transition: prefersReducedMotion
-                                                ? { duration: 0 }
-                                                : {
-                                                      type: 'spring' as const,
-                                                      stiffness: 240,
-                                                      damping: 28,
-                                                      mass: 0.7,
-                                                      delay: order * 0.09,
-                                                  },
-                                        };
+                                    : {
+                                          y: '60dvh',
+                                          opacity: 0,
+                                          transition: prefersReducedMotion
+                                              ? { duration: 0 }
+                                              : {
+                                                    type: 'spring' as const,
+                                                    stiffness: 240,
+                                                    damping: 28,
+                                                    mass: 0.7,
+                                                    delay: order * 0.09,
+                                                },
+                                      };
 
                             return (
                                 <motion.div
@@ -387,7 +430,11 @@ export function MapFeedCardPager({
                 {stackItems.length === 0 ? (
                     <div className="flex h-full items-center justify-center rounded-2xl border border-border-soft/70 bg-card/80 backdrop-blur-md">
                         <p className="px-2 text-center text-[11px] text-muted-foreground">
-                            {total === 0 ? '결과 없음' : '모두 봤어요'}
+                            {sourceInitialLoading
+                                ? '불러오는 중'
+                                : total === 0
+                                  ? '결과 없음'
+                                  : '모두 봤어요'}
                         </p>
                     </div>
                 ) : (

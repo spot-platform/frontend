@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     type BottomSheetSnapPoint,
     PersistentDrawer,
@@ -22,6 +22,9 @@ type FeedBottomSheetProps = {
     onOpenChange?: (open: boolean) => void;
     feedType?: 'all' | 'offer' | 'request';
     categories?: SpotCategory[];
+    initialItems?: FeedItem[];
+    initialTotalCount?: number;
+    isInitialItemsLoading?: boolean;
 };
 
 type SpotCardEntry = {
@@ -44,6 +47,23 @@ function getSimulationScore(
 
 const BOTTOM_SHEET_PAGE_SIZE = 10;
 
+function findScrollableAncestor(node: HTMLElement): HTMLElement | null {
+    let parent = node.parentElement;
+
+    while (parent && parent !== document.body) {
+        const style = window.getComputedStyle(parent);
+        const canScroll = /(auto|scroll|overlay)/.test(style.overflowY);
+
+        if (canScroll) {
+            return parent;
+        }
+
+        parent = parent.parentElement;
+    }
+
+    return null;
+}
+
 function toFeedTypeParam(feedType: FeedBottomSheetProps['feedType']) {
     if (feedType === 'offer') return 'OFFER' as const;
     if (feedType === 'request') return 'REQUEST' as const;
@@ -57,51 +77,100 @@ export function FeedBottomSheet({
     onOpenChange,
     feedType = 'all',
     categories = [],
+    initialItems = [],
+    initialTotalCount,
+    isInitialItemsLoading = false,
 }: FeedBottomSheetProps) {
     const userPersona = useAuthStore((state) => state.userPersona);
     const role = userPersona?.role ?? null;
     const searchQuery = useFilterStore((s) => s.searchQuery);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const [loadMoreNode, setLoadMoreNode] = useState<HTMLDivElement | null>(
+        null,
+    );
+    const pageSize = Math.max(BOTTOM_SHEET_PAGE_SIZE, initialItems.length);
     const feedListParams = useMemo(
         () => ({
             type: toFeedTypeParam(feedType),
             category: categories.length === 1 ? categories[0] : undefined,
-            sort: 'latest',
+            sort: 'latest' as const,
             page: 0,
-            size: BOTTOM_SHEET_PAGE_SIZE,
+            size: pageSize,
         }),
-        [feedType, categories],
+        [feedType, categories, pageSize],
     );
+    const hasInitialMoreItems =
+        typeof initialTotalCount === 'number' &&
+        initialTotalCount > initialItems.length;
+    const shouldFetchInfiniteList =
+        open && (initialItems.length === 0 || hasInitialMoreItems);
     const {
         data: feedData,
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
         isLoading,
-    } = useLayerAwareInfiniteFeedList(feedListParams);
+    } = useLayerAwareInfiniteFeedList(feedListParams, {
+        enabled: shouldFetchInfiniteList,
+    });
+    const canFetchMore = hasNextPage || (hasInitialMoreItems && !feedData);
     const feedItems = useMemo(
-        () => feedData?.pages.flatMap((page) => page.data) ?? [],
-        [feedData?.pages],
+        () => feedData?.pages.flatMap((page) => page.data) ?? initialItems,
+        [feedData?.pages, initialItems],
     );
     const spotCardLookup = useMemo(() => buildSpotCardLookup([]), []);
 
     useEffect(() => {
-        if (!open || snapPoint === 'peek' || !hasNextPage) return;
-        const node = loadMoreRef.current;
-        if (!node) return;
+        if (!open || snapPoint === 'peek' || !canFetchMore || !loadMoreNode) {
+            return;
+        }
 
+        const scrollRoot = findScrollableAncestor(loadMoreNode);
+        let requested = false;
+        const loadNextPage = () => {
+            if (requested || isFetchingNextPage) return;
+            requested = true;
+            void fetchNextPage();
+        };
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting && !isFetchingNextPage) {
-                    void fetchNextPage();
+                if (entry.isIntersecting) {
+                    loadNextPage();
                 }
             },
-            { root: null, rootMargin: '160px 0px' },
+            { root: scrollRoot, rootMargin: '160px 0px' },
         );
+        const maybeLoadFromScrollPosition = () => {
+            if (!scrollRoot) return;
+            const distanceToBottom =
+                scrollRoot.scrollHeight -
+                scrollRoot.scrollTop -
+                scrollRoot.clientHeight;
 
-        observer.observe(node);
-        return () => observer.disconnect();
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage, open, snapPoint]);
+            if (distanceToBottom <= 160) {
+                loadNextPage();
+            }
+        };
+
+        observer.observe(loadMoreNode);
+        scrollRoot?.addEventListener('scroll', maybeLoadFromScrollPosition, {
+            passive: true,
+        });
+        maybeLoadFromScrollPosition();
+        return () => {
+            observer.disconnect();
+            scrollRoot?.removeEventListener(
+                'scroll',
+                maybeLoadFromScrollPosition,
+            );
+        };
+    }, [
+        canFetchMore,
+        fetchNextPage,
+        isFetchingNextPage,
+        loadMoreNode,
+        open,
+        snapPoint,
+    ]);
 
     const filtered = filterVisibleFeedItems(feedItems, {
         feedType,
@@ -109,7 +178,10 @@ export function FeedBottomSheet({
         searchQuery,
     });
     const totalFeedCount =
-        feedData?.pages.at(-1)?.meta?.total ?? filtered.length;
+        feedData?.pages.at(-1)?.meta?.total ??
+        initialTotalCount ??
+        filtered.length;
+    const showLoading = isLoading || isInitialItemsLoading;
 
     return (
         <PersistentDrawer
@@ -159,20 +231,22 @@ export function FeedBottomSheet({
                                 </div>
                             );
                         })}
-                        {filtered.length === 0 && !isLoading && (
+                        {filtered.length === 0 && !showLoading && (
                             <div className="flex h-40 items-center justify-center">
                                 <p className="text-sm text-muted-foreground">
                                     조건에 맞는 모임이 없어요
                                 </p>
                             </div>
                         )}
-                        {(hasNextPage || isFetchingNextPage || isLoading) && (
+                        {(canFetchMore ||
+                            isFetchingNextPage ||
+                            showLoading) && (
                             <div
-                                ref={loadMoreRef}
+                                ref={setLoadMoreNode}
                                 className="flex h-16 items-center justify-center"
                             >
                                 <p className="text-xs text-muted-foreground">
-                                    {isFetchingNextPage || isLoading
+                                    {isFetchingNextPage || showLoading
                                         ? '피드를 더 불러오는 중이에요'
                                         : '아래로 더 내려보세요'}
                                 </p>

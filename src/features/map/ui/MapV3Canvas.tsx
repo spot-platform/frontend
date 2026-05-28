@@ -37,8 +37,12 @@ export type MapV3CanvasProps = {
     level?: number;
     overlays?: MapOverlayItem[];
     onMapClickAction?: (lat: number, lng: number) => void;
+    /** pan/zoom 종료 시 현재 지도 중심 좌표를 전달. 위치 기반 피드 조회에 사용. */
+    onCenterChangeAction?: (center: { lat: number; lng: number }) => void;
     /** pan/zoom 종료 시 현재 뷰포트 bbox 를 전달. 뷰포트 컬링에 사용. */
     onViewportChangeAction?: (bbox: ViewportBbox) => void;
+    /** pan/zoom 종료 시 현재 zoom level 을 전달. marker 간략화 기준에 사용. */
+    onZoomChangeAction?: (zoom: number) => void;
     className?: string;
     theme: Theme;
 };
@@ -93,7 +97,9 @@ function NaverMapV3({
     level,
     overlays = [],
     onMapClickAction,
+    onCenterChangeAction,
     onViewportChangeAction,
+    onZoomChangeAction,
     className,
     theme,
 }: MapV3CanvasProps) {
@@ -225,15 +231,25 @@ function NaverMapV3({
         };
     }, [map, onMapClickAction]);
 
-    // viewport bbox 변경 리스너. pan/zoom 중엔 bounds_changed 가 연속 발화되므로
+    // viewport bbox/zoom 변경 리스너. pan/zoom 중엔 bounds_changed 가 연속 발화되므로
     // idle (제스처 종료) + 초기 1회 emit 으로 업데이트.
     useEffect(() => {
-        if (!map || !onViewportChangeAction) return;
+        if (
+            !map ||
+            (!onViewportChangeAction &&
+                !onCenterChangeAction &&
+                !onZoomChangeAction)
+        ) {
+            return;
+        }
         const emit = () => {
             const bounds = map.getBounds() as naver.maps.LatLngBounds;
             const sw = bounds.getSW() as naver.maps.LatLng;
             const ne = bounds.getNE() as naver.maps.LatLng;
-            onViewportChangeAction({
+            const center = map.getCenter() as naver.maps.LatLng;
+            onZoomChangeAction?.(map.getZoom());
+            onCenterChangeAction?.({ lat: center.lat(), lng: center.lng() });
+            onViewportChangeAction?.({
                 swLat: sw.lat(),
                 swLng: sw.lng(),
                 neLat: ne.lat(),
@@ -245,7 +261,7 @@ function NaverMapV3({
         return () => {
             naver.maps.Event.removeListener(listener);
         };
-    }, [map, onViewportChangeAction]);
+    }, [map, onCenterChangeAction, onViewportChangeAction, onZoomChangeAction]);
 
     if (sdkState === 'error') {
         return (
