@@ -234,6 +234,8 @@ type UseSimDomainOptions = {
     bufferedMovementsRef: React.RefObject<Movement[]>;
     bufferedLifecycleEventsRef: React.RefObject<LifecycleEvent[]>;
     bufferedChunkVersion: number;
+    /** domain snapshot 재계산 최소 간격. 좌표 이동은 ref로 유지하고 React state 갱신만 줄인다. */
+    snapshotThrottleMs?: number;
 };
 
 /**
@@ -256,6 +258,7 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         bufferedMovementsRef,
         bufferedLifecycleEventsRef,
         bufferedChunkVersion,
+        snapshotThrottleMs = 800,
     } = options;
 
     const personas = useMemo(
@@ -283,6 +286,8 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         clusters: ActivityCluster[];
         arrivedParticipantIds: Set<string>;
     }>({ lifecycles: [], clusters: [], arrivedParticipantIds: new Set() });
+    const lastSnapshotComputeMsRef = useRef(0);
+    const lastSnapshotSignatureRef = useRef('');
 
     const personaLookupRef = useRef<Map<string, Persona>>(new Map());
     useEffect(() => {
@@ -291,13 +296,20 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
 
     useEffect(() => {
         if (!manifest || seeds.length === 0) return;
-        const compute = () => {
+        const compute = (force = false) => {
+            const startedAt = performance.now();
+            if (
+                !force &&
+                startedAt - lastSnapshotComputeMsRef.current <
+                    snapshotThrottleMs
+            ) {
+                return;
+            }
+            lastSnapshotComputeMsRef.current = startedAt;
             const tickDurationMs = tickDurationMsRef.current ?? 1000;
             const playbackStartMs = playbackStartMsRef.current ?? 0;
             const now =
-                playbackStartMs > 0
-                    ? performance.now()
-                    : currentTick * tickDurationMs;
+                playbackStartMs > 0 ? startedAt : currentTick * tickDurationMs;
             // performance.now 기준이 아닌 상대 ms 인 경우(=재생 시작 전), playbackStartMs 를
             // 0 으로 두고 lifecycle 의 ms 좌표도 상대 ms 로 박혀 있다고 가정.
             const effectivePlaybackStart =
@@ -374,12 +386,20 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
                 void lifespan;
             }
 
+            const signature = `${lifecycles.length}:${clusters
+                .map(
+                    (cluster) =>
+                        `${cluster.id}:${cluster.personas.length}:${cluster.arrivedCount ?? 0}:${cluster.isDying ? 1 : 0}`,
+                )
+                .join('|')}:${arrivedParticipantIds.size}`;
+            if (signature === lastSnapshotSignatureRef.current) return;
+            lastSnapshotSignatureRef.current = signature;
             setSnapshot({ lifecycles, clusters, arrivedParticipantIds });
         };
 
-        // 즉시 1회 + emit 마다 재계산.
-        compute();
-        const unsub = subscribe(compute);
+        // 초기 mount/seed 변경은 즉시 반영하고, 이후 rAF emit 은 throttle 로 state 갱신 빈도만 줄인다.
+        compute(true);
+        const unsub = subscribe(() => compute(false));
         return () => unsub();
     }, [
         manifest,
@@ -389,6 +409,7 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         playbackStartMsRef,
         tickDurationMsRef,
         currentTick,
+        snapshotThrottleMs,
     ]);
 
     return {

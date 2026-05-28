@@ -31,6 +31,8 @@ import {
 } from '../api/sim-api';
 import {
     buildAgentTimelines,
+    findNextMovement,
+    findRecentMovement,
     homePosition,
     jitterAround,
     resolveAgentPosition,
@@ -49,6 +51,10 @@ export type UseSimRunOptions = {
     dwellJitterM?: number;
     /** prefetch 트리거 — 윈도우 끝까지 N tick 남았을 때 다음 청크 요청. */
     prefetchAheadTicks?: number;
+    /** 같은 행정동 home 출발점을 시각적으로 흩뿌리는 반경(meters). */
+    spawnScatterM?: number;
+    /** lifecycle/movement 가 모두 비어 있는 긴 휴식 tick 구간은 다음 활동으로 건너뜀. */
+    skipEmptyEventTicks?: boolean;
 };
 
 export type UseSimRunResult = {
@@ -91,6 +97,8 @@ export type UseSimRunResult = {
 const DEFAULT_EMIT_THROTTLE_MS = 200;
 const DEFAULT_PREFETCH_AHEAD = 6;
 const DEFAULT_DWELL_JITTER_M = 20;
+const DEFAULT_SPAWN_SCATTER_M = 180;
+const MIN_EMPTY_SKIP_TICKS = 3;
 
 export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const {
@@ -100,6 +108,8 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         emitThrottleMs = DEFAULT_EMIT_THROTTLE_MS,
         dwellJitterM = DEFAULT_DWELL_JITTER_M,
         prefetchAheadTicks = DEFAULT_PREFETCH_AHEAD,
+        spawnScatterM = DEFAULT_SPAWN_SCATTER_M,
+        skipEmptyEventTicks = true,
     } = options;
 
     const [manifest, setManifest] = useState<SimManifest | null>(null);
@@ -245,6 +255,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             timelinesRef.current = buildAgentTimelines(
                 moveChunk.movements,
                 timelinesRef.current,
+                { staggerCrowdedStarts: true },
             );
 
             const lcMap = lifecycleByTickRef.current;
@@ -284,6 +295,62 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             });
     }
 
+    function hasActiveMovement(tFloat: number): boolean {
+        for (const tl of timelinesRef.current.values()) {
+            const recentMovement = findRecentMovement(tl, tFloat);
+            if (
+                recentMovement &&
+                recentMovement.depart_tick <= tFloat &&
+                tFloat < recentMovement.arrive_tick
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function findNextActivityTick(tFloat: number): number | null {
+        const w = loadedWindowRef.current;
+        if (!w) return null;
+        let nextTick = Number.POSITIVE_INFINITY;
+
+        for (const tl of timelinesRef.current.values()) {
+            const nextMovement = findNextMovement(tl, tFloat);
+            if (nextMovement && nextMovement.depart_tick < nextTick) {
+                nextTick = nextMovement.depart_tick;
+            }
+        }
+
+        for (const tick of lifecycleByTickRef.current.keys()) {
+            if (tick > tFloat && tick < nextTick) nextTick = tick;
+        }
+
+        if (!Number.isFinite(nextTick)) return null;
+        // 로드된 범위 안에서만 안전하게 건너뛴다. 다음 청크 내용은 아직 모르므로 추측하지 않는다.
+        return nextTick <= w.to ? nextTick : null;
+    }
+
+    function maybeSkipEmptyEventTicks(tFloat: number, now: number): number {
+        if (!skipEmptyEventTicks) return tFloat;
+        const tickInt = Math.floor(tFloat);
+        if (lifecycleByTickRef.current.get(tickInt)?.length) return tFloat;
+        if (hasActiveMovement(tFloat)) return tFloat;
+
+        const nextTick = findNextActivityTick(tFloat);
+        if (!nextTick || nextTick - tFloat < MIN_EMPTY_SKIP_TICKS) {
+            return tFloat;
+        }
+
+        const skippedTick = Math.min(
+            nextTick,
+            manifest?.total_ticks ?? nextTick,
+        );
+        pausedAtTickRef.current = skippedTick;
+        playbackStartMsRef.current =
+            now - skippedTick * tickDurationMsRef.current;
+        return skippedTick;
+    }
+
     // ── 재생 루프 (rAF + emit throttle) ────────────────────────────────────
     useEffect(() => {
         if (!enabled || !isPlaying || !manifest) return;
@@ -296,7 +363,11 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             const tFloat =
                 (now - playbackStartMsRef.current) /
                 Math.max(1, tickDurationMsRef.current);
-            const clamped = Math.min(tFloat, manifest.total_ticks - 0.0001);
+            const effectiveTFloat = maybeSkipEmptyEventTicks(tFloat, now);
+            const clamped = Math.min(
+                effectiveTFloat,
+                manifest.total_ticks - 0.0001,
+            );
 
             if (now - lastEmitMs >= emitThrottleMs) {
                 lastEmitMs = now;
@@ -306,7 +377,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             maybePrefetch(clamped, manifest, runId);
 
             // 재생 종료
-            if (tFloat >= manifest.total_ticks) {
+            if (effectiveTFloat >= manifest.total_ticks) {
                 pausedAtTickRef.current = manifest.total_ticks;
                 setIsPlaying(false);
                 return;
@@ -349,13 +420,22 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                 continue;
             }
 
-            const pos = resolveAgentPosition(a, timelines, tFloat, placeMap);
+            const recentMovement = tl ? findRecentMovement(tl, tFloat) : null;
+            const hasReturnedHome =
+                recentMovement?.reason === 'go_home' &&
+                recentMovement.arrive_tick <= tFloat;
+            if (hasReturnedHome) {
+                next.delete(a.agent_id);
+                continue;
+            }
+
+            const pos = resolveAgentPosition(a, timelines, tFloat, placeMap, {
+                spawnScatterM,
+            });
             if (!pos) continue;
             // spot 도착 후 dwell 은 잔잔한 jitter 만(움직이지 않는 모임 멤버 표현).
             const isDwell =
-                !tl ||
-                tl.length === 0 ||
-                tl[tl.length - 1].arrive_tick <= tFloat;
+                recentMovement !== null && recentMovement.arrive_tick <= tFloat;
             next.set(
                 a.agent_id,
                 isDwell && dwellJitterM > 0
