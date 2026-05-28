@@ -1,6 +1,12 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import {
+    useMemo,
+    useRef,
+    useState,
+    type Dispatch,
+    type SetStateAction,
+} from 'react';
 import {
     motion,
     AnimatePresence,
@@ -34,7 +40,7 @@ type MapFeedCardPagerProps = {
     snap: FeedCardPagerSnap;
     onSnapChange: (snap: FeedCardPagerSnap) => void;
     promotedCount: number;
-    onPromotedCountChange: (count: number) => void;
+    onPromotedCountChange: Dispatch<SetStateAction<number>>;
     items?: FeedItem[];
     isInitialLoading?: boolean;
     onBookmark?: (item: FeedItem) => void;
@@ -117,7 +123,7 @@ export function MapFeedCardPager({
                 : undefined;
 
         if (!overflowItem) {
-            setPromotedCount(safePromoted + 1);
+            setPromotedCount((prev) => Math.min(total, prev + 1));
             onTutorialCardPromote?.();
             return;
         }
@@ -129,7 +135,7 @@ export function MapFeedCardPager({
             return next;
         });
         requestAnimationFrame(() => {
-            setPromotedCount(safePromoted + 1);
+            setPromotedCount((prev) => Math.min(total, prev + 1));
             onTutorialCardPromote?.();
         });
     }

@@ -84,7 +84,7 @@ export function MapTutorialOverlay({
     onStepChange: (stepIndex: number) => void;
     onClose: (reason: 'skip' | 'done') => void;
 }) {
-    if (!open) return null;
+    if (!open || steps.length === 0) return null;
 
     const safeIndex = Math.min(Math.max(stepIndex, 0), steps.length - 1);
     const step = steps[safeIndex];
