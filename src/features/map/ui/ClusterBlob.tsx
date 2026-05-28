@@ -29,6 +29,7 @@ type ClusterBlobProps = {
     selected: boolean;
     onSelectAction: (id: string) => void;
     absorbing?: AbsorbingDot[];
+    visualMode?: 'full' | 'simple';
 };
 
 const VIEW = 160;
@@ -75,6 +76,7 @@ function ClusterBlobImpl({
     selected,
     onSelectAction,
     absorbing = [],
+    visualMode = 'full',
 }: ClusterBlobProps) {
     const reduceMotion = useReducedMotion();
     const filterId = useId();
@@ -83,6 +85,7 @@ function ClusterBlobImpl({
     const dying = !!cluster.isDying;
     const tone = getVariantTone(cluster.variant, selected);
     const isDiscovery = cluster.variant === 'discovery';
+    const isSimple = visualMode === 'simple';
 
     // 물리적 도착자 수 증가 감지 → join burst 트리거.
     // (assigned 수 아님 — 이동 완료 후 "딱 도착한 순간" 이 사용자에게 의미 있는 이벤트)
@@ -110,6 +113,11 @@ function ClusterBlobImpl({
               event.stopPropagation();
               onSelectAction(cluster.id);
           };
+
+    const simpleSize = isDiscovery ? 18 : selected ? 30 : 24;
+    const modeTransition = reduceMotion
+        ? { duration: 0 }
+        : { duration: 0.24, ease: [0.32, 0.72, 0, 1] as const };
 
     return (
         <motion.div
@@ -149,216 +157,315 @@ function ClusterBlobImpl({
                 pointerEvents: dying ? 'none' : undefined,
             }}
         >
-            <AnimatePresence mode="wait">
-                {selected && cluster.isPulse && !reduceMotion && (
+            <AnimatePresence initial={false} mode="sync">
+                {isSimple ? (
                     <motion.div
-                        key="pulse"
-                        className="absolute rounded-full border border-primary"
+                        key="simple-marker"
+                        className="absolute rounded-full"
                         style={{
-                            top: CY - core * 1.5,
-                            left: CX - core * 1.5,
-                            width: core * 3,
-                            height: core * 3,
+                            top: CY - simpleSize / 2,
+                            left: CX - simpleSize / 2,
+                            width: simpleSize,
+                            height: simpleSize,
+                            backgroundColor: tone.fill,
+                            border: selected
+                                ? '2px solid var(--color-primary)'
+                                : '1px solid var(--color-map-bg)',
+                            boxShadow: selected
+                                ? '0 0 0 4px color-mix(in srgb, var(--color-primary) 22%, transparent)'
+                                : '0 2px 8px rgba(0,0,0,0.16)',
                         }}
-                        initial={{ scale: 1, opacity: 0.5 }}
-                        animate={{ scale: 1.3, opacity: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                            duration: 1.4,
-                            repeat: Infinity,
-                            ease: 'easeOut',
+                        initial={{
+                            opacity: 0,
+                            scale: 0.72,
                         }}
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* 참여자 join burst — 새 참여자가 도착할 때마다 ring 이 퍼져나감 + 잔향 링 */}
-            {!reduceMotion && joinBurstKey > 0 && (
-                <>
-                    <motion.div
-                        key={`burst-ring-${joinBurstKey}`}
-                        className="pointer-events-none absolute rounded-full border-[2px] border-persona-strong"
-                        style={{
-                            top: CY - core,
-                            left: CX - core,
-                            width: core * 2,
-                            height: core * 2,
+                        animate={{
+                            opacity: Math.min(1, tone.opacity + 0.12),
+                            scale: 1,
                         }}
-                        initial={{ scale: 0.6, opacity: 0.9 }}
-                        animate={{ scale: 3, opacity: 0 }}
-                        transition={{ duration: 0.9, ease: 'easeOut' }}
-                    />
-                    <motion.div
-                        key={`burst-echo-${joinBurstKey}`}
-                        className="pointer-events-none absolute rounded-full border border-persona"
-                        style={{
-                            top: CY - core,
-                            left: CX - core,
-                            width: core * 2,
-                            height: core * 2,
-                        }}
-                        initial={{ scale: 0.8, opacity: 0.6 }}
-                        animate={{ scale: 4, opacity: 0 }}
-                        transition={{
-                            duration: 1.3,
-                            ease: 'easeOut',
-                            delay: 0.12,
-                        }}
-                    />
-                    {/* 중앙 플래시 — 짧고 밝게 */}
-                    <motion.div
-                        key={`burst-flash-${joinBurstKey}`}
-                        className="pointer-events-none absolute rounded-full bg-persona-strong"
-                        style={{
-                            top: CY - core / 2,
-                            left: CX - core / 2,
-                            width: core,
-                            height: core,
-                            filter: 'blur(6px)',
-                        }}
-                        initial={{ scale: 0.6, opacity: 0.8 }}
-                        animate={{ scale: 1.6, opacity: 0 }}
-                        transition={{ duration: 0.5, ease: 'easeOut' }}
-                    />
-                </>
-            )}
-
-            <svg
-                width={VIEW}
-                height={VIEW}
-                className="pointer-events-none absolute inset-0"
-                aria-hidden
-            >
-                <defs>
-                    <filter
-                        id={filterId}
-                        x="-20%"
-                        y="-20%"
-                        width="140%"
-                        height="140%"
+                        exit={{ opacity: 0, scale: 1.12 }}
+                        transition={modeTransition}
                     >
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="6" />
-                        <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" />
-                    </filter>
-                </defs>
-                <g
-                    filter={`url(#${filterId})`}
-                    style={{
-                        fill: tone.fill,
-                        opacity: tone.opacity,
-                    }}
-                >
-                    <motion.circle
-                        cx={CX}
-                        cy={CY}
-                        initial={{ r: core }}
-                        animate={
-                            reduceMotion
-                                ? { r: core }
-                                : isDiscovery
-                                  ? { r: [core - 2, core + 3, core - 1] }
-                                  : { r: [core, core + 2, core] }
-                        }
-                        transition={{
-                            duration: isDiscovery ? 2.7 : 3.4,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
+                        {!isDiscovery && count > 1 && (
+                            <span
+                                className={cn(
+                                    'absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-sm',
+                                    tone.countClassName,
+                                )}
+                            >
+                                {count}
+                            </span>
+                        )}
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="full-marker"
+                        className="absolute inset-0"
+                        initial={{
+                            opacity: 0,
+                            scale: 0.82,
                         }}
-                    />
-                    {!isDiscovery &&
-                        Array.from({ length: SAT_COUNT }).map((_, i) => {
-                            const angle =
-                                (i / SAT_COUNT) * Math.PI * 2 + i * 0.35;
-                            const baseR = core * 1.05;
-                            const sx = CX + Math.cos(angle) * baseR;
-                            const sy = CY + Math.sin(angle) * baseR;
-                            const drift = 5;
-                            return (
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.76 }}
+                        transition={modeTransition}
+                    >
+                        <AnimatePresence mode="wait">
+                            {selected && cluster.isPulse && !reduceMotion && (
+                                <motion.div
+                                    key="pulse"
+                                    className="absolute rounded-full border border-primary"
+                                    style={{
+                                        top: CY - core * 1.5,
+                                        left: CX - core * 1.5,
+                                        width: core * 3,
+                                        height: core * 3,
+                                    }}
+                                    initial={{ scale: 1, opacity: 0.5 }}
+                                    animate={{ scale: 1.3, opacity: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{
+                                        duration: 1.4,
+                                        repeat: Infinity,
+                                        ease: 'easeOut',
+                                    }}
+                                />
+                            )}
+                        </AnimatePresence>
+
+                        {/* 참여자 join burst — 새 참여자가 도착할 때마다 ring 이 퍼져나감 + 잔향 링 */}
+                        {!reduceMotion && joinBurstKey > 0 && (
+                            <>
+                                <motion.div
+                                    key={`burst-ring-${joinBurstKey}`}
+                                    className="pointer-events-none absolute rounded-full border-[2px] border-persona-strong"
+                                    style={{
+                                        top: CY - core,
+                                        left: CX - core,
+                                        width: core * 2,
+                                        height: core * 2,
+                                    }}
+                                    initial={{ scale: 0.6, opacity: 0.9 }}
+                                    animate={{ scale: 3, opacity: 0 }}
+                                    transition={{
+                                        duration: 0.9,
+                                        ease: 'easeOut',
+                                    }}
+                                />
+                                <motion.div
+                                    key={`burst-echo-${joinBurstKey}`}
+                                    className="pointer-events-none absolute rounded-full border border-persona"
+                                    style={{
+                                        top: CY - core,
+                                        left: CX - core,
+                                        width: core * 2,
+                                        height: core * 2,
+                                    }}
+                                    initial={{ scale: 0.8, opacity: 0.6 }}
+                                    animate={{ scale: 4, opacity: 0 }}
+                                    transition={{
+                                        duration: 1.3,
+                                        ease: 'easeOut',
+                                        delay: 0.12,
+                                    }}
+                                />
+                                {/* 중앙 플래시 — 짧고 밝게 */}
+                                <motion.div
+                                    key={`burst-flash-${joinBurstKey}`}
+                                    className="pointer-events-none absolute rounded-full bg-persona-strong"
+                                    style={{
+                                        top: CY - core / 2,
+                                        left: CX - core / 2,
+                                        width: core,
+                                        height: core,
+                                    }}
+                                    initial={{ scale: 0.6, opacity: 0.8 }}
+                                    animate={{ scale: 1.6, opacity: 0 }}
+                                    transition={{
+                                        duration: 0.5,
+                                        ease: 'easeOut',
+                                    }}
+                                />
+                            </>
+                        )}
+
+                        <svg
+                            width={VIEW}
+                            height={VIEW}
+                            className="pointer-events-none absolute inset-0"
+                            aria-hidden
+                        >
+                            <defs>
+                                <filter
+                                    id={filterId}
+                                    x="-20%"
+                                    y="-20%"
+                                    width="140%"
+                                    height="140%"
+                                >
+                                    <feGaussianBlur
+                                        in="SourceGraphic"
+                                        stdDeviation="6"
+                                    />
+                                    <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" />
+                                </filter>
+                            </defs>
+                            <g
+                                filter={`url(#${filterId})`}
+                                style={{
+                                    fill: tone.fill,
+                                    opacity: tone.opacity,
+                                }}
+                            >
                                 <motion.circle
-                                    key={`sat-${i}`}
-                                    initial={{ cx: sx, cy: sy, r: 8 }}
+                                    cx={CX}
+                                    cy={CY}
+                                    initial={{ r: core }}
                                     animate={
                                         reduceMotion
-                                            ? { cx: sx, cy: sy, r: 8 }
-                                            : {
-                                                  cx: [
-                                                      sx,
-                                                      sx +
-                                                          Math.cos(angle) *
-                                                              drift,
-                                                      sx,
-                                                  ],
-                                                  cy: [
-                                                      sy,
-                                                      sy +
-                                                          Math.sin(angle) *
-                                                              drift,
-                                                      sy,
-                                                  ],
-                                                  r: [8, 10, 8],
-                                              }
+                                            ? { r: core }
+                                            : isDiscovery
+                                              ? {
+                                                    r: [
+                                                        core - 2,
+                                                        core + 3,
+                                                        core - 1,
+                                                    ],
+                                                }
+                                              : { r: [core, core + 2, core] }
                                     }
                                     transition={{
-                                        duration: 2.8 + i * 0.22,
+                                        duration: isDiscovery ? 2.7 : 3.4,
                                         repeat: Infinity,
                                         ease: 'easeInOut',
                                     }}
                                 />
-                            );
-                        })}
-                    {absorbing.map((dot) => {
-                        const startX = CX + dot.fromX * 55;
-                        const startY = CY + dot.fromY * 55;
-                        const x = startX + (CX - startX) * dot.progress;
-                        const y = startY + (CY - startY) * dot.progress;
-                        const r = 5 + dot.progress * 6;
-                        return <circle key={dot.id} cx={x} cy={y} r={r} />;
-                    })}
-                </g>
-            </svg>
+                                {!isDiscovery &&
+                                    Array.from({ length: SAT_COUNT }).map(
+                                        (_, i) => {
+                                            const angle =
+                                                (i / SAT_COUNT) * Math.PI * 2 +
+                                                i * 0.35;
+                                            const baseR = core * 1.05;
+                                            const sx =
+                                                CX + Math.cos(angle) * baseR;
+                                            const sy =
+                                                CY + Math.sin(angle) * baseR;
+                                            const drift = 5;
+                                            return (
+                                                <motion.circle
+                                                    key={`sat-${i}`}
+                                                    initial={{
+                                                        cx: sx,
+                                                        cy: sy,
+                                                        r: 8,
+                                                    }}
+                                                    animate={
+                                                        reduceMotion
+                                                            ? {
+                                                                  cx: sx,
+                                                                  cy: sy,
+                                                                  r: 8,
+                                                              }
+                                                            : {
+                                                                  cx: [
+                                                                      sx,
+                                                                      sx +
+                                                                          Math.cos(
+                                                                              angle,
+                                                                          ) *
+                                                                              drift,
+                                                                      sx,
+                                                                  ],
+                                                                  cy: [
+                                                                      sy,
+                                                                      sy +
+                                                                          Math.sin(
+                                                                              angle,
+                                                                          ) *
+                                                                              drift,
+                                                                      sy,
+                                                                  ],
+                                                                  r: [8, 10, 8],
+                                                              }
+                                                    }
+                                                    transition={{
+                                                        duration:
+                                                            2.8 + i * 0.22,
+                                                        repeat: Infinity,
+                                                        ease: 'easeInOut',
+                                                    }}
+                                                />
+                                            );
+                                        },
+                                    )}
+                                {absorbing.map((dot) => {
+                                    const startX = CX + dot.fromX * 55;
+                                    const startY = CY + dot.fromY * 55;
+                                    const x =
+                                        startX + (CX - startX) * dot.progress;
+                                    const y =
+                                        startY + (CY - startY) * dot.progress;
+                                    const r = 5 + dot.progress * 6;
+                                    return (
+                                        <circle
+                                            key={dot.id}
+                                            cx={x}
+                                            cy={y}
+                                            r={r}
+                                        />
+                                    );
+                                })}
+                            </g>
+                        </svg>
 
-            {isDiscovery && !reduceMotion && (
-                <motion.div
-                    className="pointer-events-none absolute rounded-full border border-foreground/20"
-                    style={{
-                        top: CY - core * 1.08,
-                        left: CX - core * 1.08,
-                        width: core * 2.16,
-                        height: core * 2.16,
-                    }}
-                    animate={{
-                        scale: [0.92, 1.18, 0.96],
-                        opacity: [0.22, 0.04, 0.18],
-                        borderRadius: ['48%', '43%', '52%'],
-                    }}
-                    transition={{
-                        duration: 2.8,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                    }}
-                />
-            )}
-
-            {!isDiscovery && (
-                <>
-                    <div
-                        className={cn(
-                            'absolute flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-[6px] font-mono text-[11px] font-bold shadow-md',
-                            'border-2 border-map-bg',
-                            tone.countClassName,
+                        {isDiscovery && !reduceMotion && (
+                            <motion.div
+                                className="pointer-events-none absolute rounded-full border border-foreground/20"
+                                style={{
+                                    top: CY - core * 1.08,
+                                    left: CX - core * 1.08,
+                                    width: core * 2.16,
+                                    height: core * 2.16,
+                                }}
+                                animate={{
+                                    scale: [0.92, 1.18, 0.96],
+                                    opacity: [0.22, 0.04, 0.18],
+                                    borderRadius: ['48%', '43%', '52%'],
+                                }}
+                                transition={{
+                                    duration: 2.8,
+                                    repeat: Infinity,
+                                    ease: 'easeInOut',
+                                }}
+                            />
                         )}
-                        style={{ top: CY - core - 8, left: CX + core - 6 }}
-                    >
-                        {count}
-                    </div>
-                    <div
-                        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold tracking-tight text-foreground/75 drop-shadow-sm dark:text-foreground/80"
-                        style={{ top: CY + core + 10 }}
-                    >
-                        {cluster.category}
-                    </div>
-                </>
-            )}
+
+                        {!isDiscovery && (
+                            <>
+                                <div
+                                    className={cn(
+                                        'absolute flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-[6px] font-mono text-[11px] font-bold shadow-md',
+                                        'border-2 border-map-bg',
+                                        tone.countClassName,
+                                    )}
+                                    style={{
+                                        top: CY - core - 8,
+                                        left: CX + core - 6,
+                                    }}
+                                >
+                                    {count}
+                                </div>
+                                <div
+                                    className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold tracking-tight text-foreground/75 drop-shadow-sm dark:text-foreground/80"
+                                    style={{ top: CY + core + 10 }}
+                                >
+                                    {cluster.category}
+                                </div>
+                            </>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }
@@ -366,6 +473,7 @@ function ClusterBlobImpl({
 export const ClusterBlob = memo(ClusterBlobImpl, (prev, next) => {
     if (prev.selected !== next.selected) return false;
     if (prev.absorbing !== next.absorbing) return false;
+    if (prev.visualMode !== next.visualMode) return false;
     const a = prev.cluster;
     const b = next.cluster;
     return (

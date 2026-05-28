@@ -26,6 +26,8 @@ export type FeedListParams = {
     category?: string;
     sort?: string;
     isAi?: boolean;
+    nearLat?: number;
+    nearLng?: number;
     page?: number;
     size?: number;
 };
@@ -132,17 +134,22 @@ export const feedApi = {
     list: async (params?: FeedListParams): Promise<PagedResponse<FeedItem>> =>
         clientApiFetch<BackendFeedList>(
             `${endpoints.feeds.root}${buildQueryString(params)}`,
+            {
+                redirectOnUnauthorized: false,
+                retryUnauthenticatedOnUnauthorized: true,
+            },
         ).then((response) => ({
             data: (response.data ?? []).map(toFeedItem),
             meta: response.meta,
         })),
 
     get: async (feedId: string): Promise<{ data: FeedItem }> =>
-        clientApiFetch<BackendFeedItem>(endpoints.feeds.detail(feedId)).then(
-            (data) => ({
-                data: toFeedItem(data),
-            }),
-        ),
+        clientApiFetch<BackendFeedItem>(endpoints.feeds.detail(feedId), {
+            redirectOnUnauthorized: false,
+            retryUnauthenticatedOnUnauthorized: true,
+        }).then((data) => ({
+            data: toFeedItem(data),
+        })),
 
     apply: async (
         feedId: string,

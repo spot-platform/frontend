@@ -5,9 +5,8 @@
 // 그대로 두고 데이터 소스만 sim 으로 바꾸기 위함. tick→ms 변환은 useSimRun 이 노출하는
 // playbackStartMsRef + tickDurationMsRef 를 사용해 SpotInfoCard 의 ms 기반 비교를 만족.
 //
-// 입력은 모두 API에서 조회한 immutable 데이터로 가정 — 매 emit 마다 lifecycle 객체를
-// 새로 만들지 않고, manifest+events 로부터 한 번 빌드한 뒤 useDomain 훅에서 currentTick 에 따라
-// participants 의 도착 여부만 다시 계산한다.
+// 입력은 useSimRun 이 tick 진행에 맞춰 로드한 버퍼로 가정 — 별도 API 호출 없이
+// 현재까지 도착한 movement/lifecycle 청크만 기존 도메인 모델로 변환한다.
 
 'use client';
 
@@ -26,11 +25,6 @@ import type {
     SpotLifecycle,
     SpotParticipantEntry,
 } from '@/features/simulation/model/use-mock-spot-lifecycles';
-
-import {
-    fetchSimLifecycle,
-    fetchSimMovements,
-} from '@/features/simulation/api/sim-api';
 
 // ─── SimAgent → Persona ────────────────────────────────────────────────────
 // background agent 는 movement 가 없어 시각적으로 home 좌표에 정적으로 박힌다.
@@ -231,13 +225,17 @@ const DEATH_GRACE_TICKS = 0.8;
 type UseSimDomainOptions = {
     manifest: SimManifest | null;
     isReady: boolean;
-    runId: string;
     currentTick: number;
     /** rAF emit 마다 호출되는 subscribe — 좌표 ref 갱신 통지. */
     subscribe: (cb: () => void) => () => void;
     positionsRef: React.RefObject<Map<string, GeoCoord>>;
     playbackStartMsRef: React.RefObject<number>;
     tickDurationMsRef: React.RefObject<number>;
+    bufferedMovementsRef: React.RefObject<Movement[]>;
+    bufferedLifecycleEventsRef: React.RefObject<LifecycleEvent[]>;
+    bufferedChunkVersion: number;
+    /** domain snapshot 재계산 최소 간격. 좌표 이동은 ref로 유지하고 React state 갱신만 줄인다. */
+    snapshotThrottleMs?: number;
 };
 
 /**
@@ -245,19 +243,22 @@ type UseSimDomainOptions = {
  * 좌표 도착 판정 + cluster 빌드는 매 sim emit 마다 갱신(subscribe 경유).
  *
  * 내부 구현:
- *   - manifest 로드되면 BE simulation API에서 모든 lifecycle/movement 청크를 prefetch 해 seed 를 한 번에 빌드.
- *   - currentTick 변할 때마다 SpotLifecycle 객체 + cluster 를 다시 만들어 state 로 노출.
+ *   - useSimRun 이 로드한 movement/lifecycle 버퍼로 seed 를 점진 빌드한다.
+ *   - currentTick 또는 버퍼 버전이 바뀔 때 SpotLifecycle 객체 + cluster 를 다시 만들어 state 로 노출.
  */
 export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
     const {
         manifest,
         isReady,
-        runId,
         currentTick,
         subscribe,
         positionsRef,
         playbackStartMsRef,
         tickDurationMsRef,
+        bufferedMovementsRef,
+        bufferedLifecycleEventsRef,
+        bufferedChunkVersion,
+        snapshotThrottleMs = 800,
     } = options;
 
     const personas = useMemo(
@@ -265,33 +266,18 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         [manifest],
     );
 
-    // 전체 lifecycle/movement 를 BE 청크 API로 fetch 해 seed 빌드.
-    const [seeds, setSeeds] = useState<SpotLifecycleSeed[]>([]);
-    useEffect(() => {
-        if (!manifest || !isReady) return;
-        let mounted = true;
-        (async () => {
-            const allMovements: Movement[] = [];
-            const allLifecycle: LifecycleEvent[] = [];
-            const chunkSize = manifest.chunk_size_ticks;
-            for (let from = 0; from < manifest.total_ticks; from += chunkSize) {
-                const to = Math.min(from + chunkSize, manifest.total_ticks);
-                const [moveChunk, lifeChunk] = await Promise.all([
-                    fetchSimMovements(runId, from, to),
-                    fetchSimLifecycle(runId, from, to),
-                ]);
-                allMovements.push(...moveChunk.movements);
-                allLifecycle.push(...lifeChunk.events);
-            }
-            if (!mounted) return;
-            setSeeds(
-                buildSpotLifecycleSeeds(manifest, allLifecycle, allMovements),
-            );
-        })();
-        return () => {
-            mounted = false;
-        };
-    }, [manifest, isReady, runId]);
+    // useSimRun 버퍼에 도착한 청크만 기존 도메인 seed 로 변환한다.
+    // 여기서 API를 직접 호출하지 않아야 재생 pacing 과 무관한 eager full-run drain 이 생기지 않는다.
+    const seeds = useMemo(() => {
+        if (!manifest || !isReady) return [];
+        return buildSpotLifecycleSeeds(
+            manifest,
+            bufferedLifecycleEventsRef.current,
+            bufferedMovementsRef.current,
+        );
+        // refs 자체는 안정적이므로 새 청크 도착 신호인 bufferedChunkVersion 으로 재계산한다.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [manifest, isReady, bufferedChunkVersion]);
 
     // currentTick + positionsRef 기반 cluster/lifecycle 빌드.
     // 매 emit 마다 호출되도록 subscribe 후크에서 트리거.
@@ -300,6 +286,8 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         clusters: ActivityCluster[];
         arrivedParticipantIds: Set<string>;
     }>({ lifecycles: [], clusters: [], arrivedParticipantIds: new Set() });
+    const lastSnapshotComputeMsRef = useRef(0);
+    const lastSnapshotSignatureRef = useRef('');
 
     const personaLookupRef = useRef<Map<string, Persona>>(new Map());
     useEffect(() => {
@@ -308,13 +296,20 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
 
     useEffect(() => {
         if (!manifest || seeds.length === 0) return;
-        const compute = () => {
+        const compute = (force = false) => {
+            const startedAt = performance.now();
+            if (
+                !force &&
+                startedAt - lastSnapshotComputeMsRef.current <
+                    snapshotThrottleMs
+            ) {
+                return;
+            }
+            lastSnapshotComputeMsRef.current = startedAt;
             const tickDurationMs = tickDurationMsRef.current ?? 1000;
             const playbackStartMs = playbackStartMsRef.current ?? 0;
             const now =
-                playbackStartMs > 0
-                    ? performance.now()
-                    : currentTick * tickDurationMs;
+                playbackStartMs > 0 ? startedAt : currentTick * tickDurationMs;
             // performance.now 기준이 아닌 상대 ms 인 경우(=재생 시작 전), playbackStartMs 를
             // 0 으로 두고 lifecycle 의 ms 좌표도 상대 ms 로 박혀 있다고 가정.
             const effectivePlaybackStart =
@@ -391,12 +386,20 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
                 void lifespan;
             }
 
+            const signature = `${lifecycles.length}:${clusters
+                .map(
+                    (cluster) =>
+                        `${cluster.id}:${cluster.personas.length}:${cluster.arrivedCount ?? 0}:${cluster.isDying ? 1 : 0}`,
+                )
+                .join('|')}:${arrivedParticipantIds.size}`;
+            if (signature === lastSnapshotSignatureRef.current) return;
+            lastSnapshotSignatureRef.current = signature;
             setSnapshot({ lifecycles, clusters, arrivedParticipantIds });
         };
 
-        // 즉시 1회 + emit 마다 재계산.
-        compute();
-        const unsub = subscribe(compute);
+        // 초기 mount/seed 변경은 즉시 반영하고, 이후 rAF emit 은 throttle 로 state 갱신 빈도만 줄인다.
+        compute(true);
+        const unsub = subscribe(() => compute(false));
         return () => unsub();
     }, [
         manifest,
@@ -406,6 +409,7 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         playbackStartMsRef,
         tickDurationMsRef,
         currentTick,
+        snapshotThrottleMs,
     ]);
 
     return {

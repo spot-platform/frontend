@@ -1,5 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clientApiFetch } from './client-api';
+import { buildQueryString, clientApiFetch } from './client-api';
+
+describe('client API query strings', () => {
+    it('serializes feed paging and nearby query parameters for the backend proxy', () => {
+        expect(
+            buildQueryString({
+                type: 'REQUEST',
+                sort: 'latest',
+                nearLat: 37.2636,
+                nearLng: 127.0286,
+                page: 0,
+                size: 10,
+            }),
+        ).toBe(
+            '?type=REQUEST&sort=latest&nearLat=37.2636&nearLng=127.0286&page=0&size=10',
+        );
+    });
+});
 
 const originalLocation = window.location;
 
@@ -115,5 +132,72 @@ describe('clientApiFetch auth recovery', () => {
         expect(window.location.assign).toHaveBeenCalledWith(
             '/login?next=%2Fmap%3Flayer%3Dfeed',
         );
+    });
+
+    it('refreshes public requests without redirecting to login', async () => {
+        const fetchMock = vi
+            .fn<typeof fetch>()
+            .mockResolvedValueOnce(
+                Response.json({ message: 'expired' }, { status: 401 }),
+            )
+            .mockResolvedValueOnce(Response.json({ accessToken: 'new-access' }))
+            .mockResolvedValueOnce(Response.json({ data: [{ id: 'feed-1' }] }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(
+            clientApiFetch('/feeds', { redirectOnUnauthorized: false }),
+        ).resolves.toEqual([{ id: 'feed-1' }]);
+
+        expect(fetchMock).toHaveBeenNthCalledWith(
+            2,
+            '/api/auth/refresh',
+            expect.objectContaining({ method: 'POST', cache: 'no-store' }),
+        );
+        expect(fetchMock).toHaveBeenNthCalledWith(
+            3,
+            '/api/backend/v1/feeds',
+            expect.objectContaining({ cache: 'no-store' }),
+        );
+        expect(window.location.assign).not.toHaveBeenCalled();
+    });
+
+    it('retries public requests as anonymous when refresh fails', async () => {
+        window.localStorage.setItem('spot-auth', 'persisted-auth');
+        const fetchMock = vi
+            .fn<typeof fetch>()
+            .mockResolvedValueOnce(
+                Response.json({ message: 'expired' }, { status: 401 }),
+            )
+            .mockResolvedValueOnce(
+                Response.json({ message: 'refresh expired' }, { status: 401 }),
+            )
+            .mockResolvedValueOnce(Response.json({ ok: true }))
+            .mockResolvedValueOnce(Response.json({ data: [{ id: 'feed-1' }] }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        await expect(
+            clientApiFetch('/feeds', {
+                redirectOnUnauthorized: false,
+                retryUnauthenticatedOnUnauthorized: true,
+            }),
+        ).resolves.toEqual([{ id: 'feed-1' }]);
+
+        expect(fetchMock).toHaveBeenNthCalledWith(
+            2,
+            '/api/auth/refresh',
+            expect.objectContaining({ method: 'POST', cache: 'no-store' }),
+        );
+        expect(fetchMock).toHaveBeenNthCalledWith(
+            3,
+            '/api/auth/logout',
+            expect.objectContaining({ method: 'POST', cache: 'no-store' }),
+        );
+        expect(fetchMock).toHaveBeenNthCalledWith(
+            4,
+            '/api/backend/v1/feeds',
+            expect.objectContaining({ cache: 'no-store' }),
+        );
+        expect(window.localStorage.getItem('spot-auth')).toBeNull();
+        expect(window.location.assign).not.toHaveBeenCalled();
     });
 });

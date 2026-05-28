@@ -45,6 +45,27 @@ export function findRecentMovement(
     return timeline[lo];
 }
 
+export function findNextMovement(
+    timeline: Movement[],
+    tFloat: number,
+): Movement | null {
+    if (timeline.length === 0) return null;
+    if (timeline[timeline.length - 1].depart_tick <= tFloat) return null;
+
+    let lo = 0;
+    let hi = timeline.length - 1;
+    while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (timeline[mid].depart_tick > tFloat) hi = mid;
+        else lo = mid + 1;
+    }
+    return timeline[lo];
+}
+
+type PositionAtOptions = {
+    fromCoord?: GeoCoord;
+};
+
 /**
  * movement 와 시간으로부터 좌표 산출. easing 없이 선형 보간.
  * - tFloat ≤ depart: from 좌표
@@ -55,13 +76,16 @@ export function positionAt(
     m: Movement,
     tFloat: number,
     placeMap: PlaceMap,
+    options?: PositionAtOptions,
 ): GeoCoord | null {
     const from = placeMap.get(m.from_place_id);
     const to = placeMap.get(m.to_place_id);
     if (!from || !to) return null;
 
+    const fromCoord = options?.fromCoord ?? { lat: from.lat, lng: from.lng };
+
     if (tFloat <= m.depart_tick) {
-        return { lat: from.lat, lng: from.lng };
+        return fromCoord;
     }
     if (tFloat >= m.arrive_tick) {
         return { lat: to.lat, lng: to.lng };
@@ -69,8 +93,8 @@ export function positionAt(
     const span = m.arrive_tick - m.depart_tick;
     const p = span <= 0 ? 1 : (tFloat - m.depart_tick) / span;
     return {
-        lat: lerp(from.lat, to.lat, p),
-        lng: lerp(from.lng, to.lng, p),
+        lat: lerp(fromCoord.lat, to.lat, p),
+        lng: lerp(fromCoord.lng, to.lng, p),
     };
 }
 
@@ -99,6 +123,7 @@ export function resolveAgentPosition(
     timelines: AgentTimelineMap,
     tFloat: number,
     placeMap: PlaceMap,
+    options?: { spawnScatterM?: number },
 ): GeoCoord | null {
     const tl = timelines.get(agent.agent_id);
     if (!tl || tl.length === 0) {
@@ -108,7 +133,67 @@ export function resolveAgentPosition(
     if (!m) {
         return homePosition(agent, placeMap);
     }
-    return positionAt(m, tFloat, placeMap);
+    const from = placeMap.get(m.from_place_id);
+    const fromCoord =
+        from && from.place_type === 'region' && options?.spawnScatterM
+            ? jitterAround(
+                  { lat: from.lat, lng: from.lng },
+                  `${agent.agent_id}:${m.from_place_id}:spawn`,
+                  options.spawnScatterM,
+              )
+            : undefined;
+    return positionAt(m, tFloat, placeMap, { fromCoord });
+}
+
+export type BuildAgentTimelinesOptions = {
+    /**
+     * 같은 tick 에 몰린 movement 를 시각화용으로만 살짝 분산한다.
+     * 원본 로그 tick 은 lifecycle/cluster 계산에 그대로 사용한다.
+     */
+    staggerCrowdedStarts?: boolean;
+    /** 같은 depart_tick 에 이 개수 이상 몰릴 때만 분산. */
+    minCrowdSize?: number;
+    /** 최대 지연 tick. */
+    maxStaggerTicks?: number;
+};
+
+const DEFAULT_MIN_CROWD_SIZE = 4;
+const DEFAULT_MAX_STAGGER_TICKS = 4;
+
+function withVisualStagger(
+    movements: Movement[],
+    options?: BuildAgentTimelinesOptions,
+): Movement[] {
+    if (!options?.staggerCrowdedStarts) return movements;
+
+    const minCrowdSize = options.minCrowdSize ?? DEFAULT_MIN_CROWD_SIZE;
+    const maxStaggerTicks =
+        options.maxStaggerTicks ?? DEFAULT_MAX_STAGGER_TICKS;
+    if (maxStaggerTicks <= 0) return movements;
+
+    const departCounts = new Map<number, number>();
+    for (const m of movements) {
+        departCounts.set(
+            m.depart_tick,
+            (departCounts.get(m.depart_tick) ?? 0) + 1,
+        );
+    }
+
+    return movements.map((m) => {
+        const crowdSize = departCounts.get(m.depart_tick) ?? 0;
+        if (crowdSize < minCrowdSize) return m;
+
+        const delay =
+            hashStringToUnit(
+                `${m.agent_id}:${m.depart_tick}:${m.reason}:${m.spot_id ?? ''}`,
+            ) * maxStaggerTicks;
+
+        return {
+            ...m,
+            depart_tick: m.depart_tick + delay,
+            arrive_tick: m.arrive_tick + delay,
+        };
+    });
 }
 
 /**
@@ -118,10 +203,11 @@ export function resolveAgentPosition(
 export function buildAgentTimelines(
     movements: Movement[],
     existing?: AgentTimelineMap,
+    options?: BuildAgentTimelinesOptions,
 ): AgentTimelineMap {
     const map: AgentTimelineMap = existing ? new Map(existing) : new Map();
 
-    for (const m of movements) {
+    for (const m of withVisualStagger(movements, options)) {
         const arr = map.get(m.agent_id);
         if (arr) {
             arr.push(m);

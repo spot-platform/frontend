@@ -53,9 +53,15 @@ export async function getServerFeedDetail(
     feedId: string,
     options: ServerFeedOptions = {},
 ): Promise<FeedItem | null> {
-    const response = await serverApiFetch(endpoints.feeds.detail(feedId), {
+    let response = await serverApiFetch(endpoints.feeds.detail(feedId), {
         accessToken: options.accessToken,
     }).catch(() => null);
+
+    if (response?.status === 401 && options.accessToken) {
+        response = await serverApiFetch(endpoints.feeds.detail(feedId)).catch(
+            () => null,
+        );
+    }
 
     if (!response?.ok) {
         return null;

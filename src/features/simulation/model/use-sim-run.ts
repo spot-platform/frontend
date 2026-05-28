@@ -17,6 +17,7 @@ import type {
     AgentTimelineMap,
     GeoCoord,
     LifecycleEvent,
+    Movement,
     PlaceMap,
     SimAgent,
     SimManifest,
@@ -30,6 +31,8 @@ import {
 } from '../api/sim-api';
 import {
     buildAgentTimelines,
+    findNextMovement,
+    findRecentMovement,
     homePosition,
     jitterAround,
     resolveAgentPosition,
@@ -48,6 +51,10 @@ export type UseSimRunOptions = {
     dwellJitterM?: number;
     /** prefetch 트리거 — 윈도우 끝까지 N tick 남았을 때 다음 청크 요청. */
     prefetchAheadTicks?: number;
+    /** 같은 행정동 home 출발점을 시각적으로 흩뿌리는 반경(meters). */
+    spawnScatterM?: number;
+    /** lifecycle/movement 가 모두 비어 있는 긴 휴식 tick 구간은 다음 활동으로 건너뜀. */
+    skipEmptyEventTicks?: boolean;
 };
 
 export type UseSimRunResult = {
@@ -79,11 +86,19 @@ export type UseSimRunResult = {
     playbackStartMsRef: React.RefObject<number>;
     /** 현재 tick 길이(ms). 어댑터가 tick→ms 변환 시 사용. */
     tickDurationMsRef: React.RefObject<number>;
+    /** 현재까지 로드된 movement 버퍼. 도메인 어댑터가 별도 fetch 없이 seed를 점진 갱신할 때 사용. */
+    bufferedMovementsRef: React.RefObject<Movement[]>;
+    /** 현재까지 로드된 lifecycle 이벤트 버퍼. */
+    bufferedLifecycleEventsRef: React.RefObject<LifecycleEvent[]>;
+    /** 새 chunk가 버퍼에 반영될 때 증가하는 버전. ref 소비자가 재계산 트리거로 사용. */
+    bufferedChunkVersion: number;
 };
 
 const DEFAULT_EMIT_THROTTLE_MS = 200;
 const DEFAULT_PREFETCH_AHEAD = 6;
 const DEFAULT_DWELL_JITTER_M = 20;
+const DEFAULT_SPAWN_SCATTER_M = 180;
+const MIN_EMPTY_SKIP_TICKS = 3;
 
 export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const {
@@ -93,6 +108,8 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         emitThrottleMs = DEFAULT_EMIT_THROTTLE_MS,
         dwellJitterM = DEFAULT_DWELL_JITTER_M,
         prefetchAheadTicks = DEFAULT_PREFETCH_AHEAD,
+        spawnScatterM = DEFAULT_SPAWN_SCATTER_M,
+        skipEmptyEventTicks = true,
     } = options;
 
     const [manifest, setManifest] = useState<SimManifest | null>(null);
@@ -114,6 +131,11 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const lifecycleByTickRef = useRef<Map<number, LifecycleEvent[]>>(new Map());
     const loadedWindowRef = useRef<{ from: number; to: number } | null>(null);
     const inflightChunkRef = useRef<Promise<void> | null>(null);
+    const bufferedMovementsRef = useRef<Movement[]>([]);
+    const bufferedLifecycleEventsRef = useRef<LifecycleEvent[]>([]);
+    const loadedChunkKeysRef = useRef<Set<string>>(new Set());
+    const chunkPromiseMapRef = useRef<Map<string, Promise<void>>>(new Map());
+    const [bufferedChunkVersion, setBufferedChunkVersion] = useState(0);
 
     const tickDurationMsRef = useRef<number>(tickDurationMs ?? 1000);
     const playbackStartMsRef = useRef<number>(0);
@@ -149,6 +171,14 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                     m.places.map((p) => [p.place_id, p] as const),
                 );
                 agentsRef.current = m.agents;
+                timelinesRef.current = new Map();
+                lifecycleByTickRef.current = new Map();
+                loadedWindowRef.current = null;
+                bufferedMovementsRef.current = [];
+                bufferedLifecycleEventsRef.current = [];
+                loadedChunkKeysRef.current = new Set();
+                chunkPromiseMapRef.current = new Map();
+                setBufferedChunkVersion(0);
 
                 // 초기 좌표: home 으로 세팅(지터 적용).
                 const init = new Map<string, GeoCoord>();
@@ -200,26 +230,51 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         to: number,
         rid: string,
     ): Promise<void> {
-        const [moveChunk, lifeChunk] = await Promise.all([
-            fetchSimMovements(rid, from, to),
-            fetchSimLifecycle(rid, from, to),
-        ]);
+        const key = `${rid}:${from}:${to}`;
+        if (loadedChunkKeysRef.current.has(key)) return;
 
-        timelinesRef.current = buildAgentTimelines(
-            moveChunk.movements,
-            timelinesRef.current,
-        );
+        const existing = chunkPromiseMapRef.current.get(key);
+        if (existing) return existing;
 
-        const lcMap = lifecycleByTickRef.current;
-        for (const ev of lifeChunk.events) {
-            const arr = lcMap.get(ev.tick);
-            if (arr) arr.push(ev);
-            else lcMap.set(ev.tick, [ev]);
-        }
+        const promise = (async () => {
+            const [moveChunk, lifeChunk] = await Promise.all([
+                fetchSimMovements(rid, from, to),
+                fetchSimLifecycle(rid, from, to),
+            ]);
 
-        loadedWindowRef.current = loadedWindowRef.current
-            ? { from: loadedWindowRef.current.from, to }
-            : { from, to };
+            loadedChunkKeysRef.current.add(key);
+            bufferedMovementsRef.current = [
+                ...bufferedMovementsRef.current,
+                ...moveChunk.movements,
+            ];
+            bufferedLifecycleEventsRef.current = [
+                ...bufferedLifecycleEventsRef.current,
+                ...lifeChunk.events,
+            ];
+
+            timelinesRef.current = buildAgentTimelines(
+                moveChunk.movements,
+                timelinesRef.current,
+                { staggerCrowdedStarts: true },
+            );
+
+            const lcMap = lifecycleByTickRef.current;
+            for (const ev of lifeChunk.events) {
+                const arr = lcMap.get(ev.tick);
+                if (arr) arr.push(ev);
+                else lcMap.set(ev.tick, [ev]);
+            }
+
+            loadedWindowRef.current = loadedWindowRef.current
+                ? { from: loadedWindowRef.current.from, to }
+                : { from, to };
+            setBufferedChunkVersion((version) => version + 1);
+        })().finally(() => {
+            chunkPromiseMapRef.current.delete(key);
+        });
+
+        chunkPromiseMapRef.current.set(key, promise);
+        return promise;
     }
 
     function maybePrefetch(tFloat: number, m: SimManifest, rid: string): void {
@@ -240,6 +295,62 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             });
     }
 
+    function hasActiveMovement(tFloat: number): boolean {
+        for (const tl of timelinesRef.current.values()) {
+            const recentMovement = findRecentMovement(tl, tFloat);
+            if (
+                recentMovement &&
+                recentMovement.depart_tick <= tFloat &&
+                tFloat < recentMovement.arrive_tick
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function findNextActivityTick(tFloat: number): number | null {
+        const w = loadedWindowRef.current;
+        if (!w) return null;
+        let nextTick = Number.POSITIVE_INFINITY;
+
+        for (const tl of timelinesRef.current.values()) {
+            const nextMovement = findNextMovement(tl, tFloat);
+            if (nextMovement && nextMovement.depart_tick < nextTick) {
+                nextTick = nextMovement.depart_tick;
+            }
+        }
+
+        for (const tick of lifecycleByTickRef.current.keys()) {
+            if (tick > tFloat && tick < nextTick) nextTick = tick;
+        }
+
+        if (!Number.isFinite(nextTick)) return null;
+        // 로드된 범위 안에서만 안전하게 건너뛴다. 다음 청크 내용은 아직 모르므로 추측하지 않는다.
+        return nextTick <= w.to ? nextTick : null;
+    }
+
+    function maybeSkipEmptyEventTicks(tFloat: number, now: number): number {
+        if (!skipEmptyEventTicks) return tFloat;
+        const tickInt = Math.floor(tFloat);
+        if (lifecycleByTickRef.current.get(tickInt)?.length) return tFloat;
+        if (hasActiveMovement(tFloat)) return tFloat;
+
+        const nextTick = findNextActivityTick(tFloat);
+        if (!nextTick || nextTick - tFloat < MIN_EMPTY_SKIP_TICKS) {
+            return tFloat;
+        }
+
+        const skippedTick = Math.min(
+            nextTick,
+            manifest?.total_ticks ?? nextTick,
+        );
+        pausedAtTickRef.current = skippedTick;
+        playbackStartMsRef.current =
+            now - skippedTick * tickDurationMsRef.current;
+        return skippedTick;
+    }
+
     // ── 재생 루프 (rAF + emit throttle) ────────────────────────────────────
     useEffect(() => {
         if (!enabled || !isPlaying || !manifest) return;
@@ -252,7 +363,11 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             const tFloat =
                 (now - playbackStartMsRef.current) /
                 Math.max(1, tickDurationMsRef.current);
-            const clamped = Math.min(tFloat, manifest.total_ticks - 0.0001);
+            const effectiveTFloat = maybeSkipEmptyEventTicks(tFloat, now);
+            const clamped = Math.min(
+                effectiveTFloat,
+                manifest.total_ticks - 0.0001,
+            );
 
             if (now - lastEmitMs >= emitThrottleMs) {
                 lastEmitMs = now;
@@ -262,7 +377,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             maybePrefetch(clamped, manifest, runId);
 
             // 재생 종료
-            if (tFloat >= manifest.total_ticks) {
+            if (effectiveTFloat >= manifest.total_ticks) {
                 pausedAtTickRef.current = manifest.total_ticks;
                 setIsPlaying(false);
                 return;
@@ -305,13 +420,22 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                 continue;
             }
 
-            const pos = resolveAgentPosition(a, timelines, tFloat, placeMap);
+            const recentMovement = tl ? findRecentMovement(tl, tFloat) : null;
+            const hasReturnedHome =
+                recentMovement?.reason === 'go_home' &&
+                recentMovement.arrive_tick <= tFloat;
+            if (hasReturnedHome) {
+                next.delete(a.agent_id);
+                continue;
+            }
+
+            const pos = resolveAgentPosition(a, timelines, tFloat, placeMap, {
+                spawnScatterM,
+            });
             if (!pos) continue;
             // spot 도착 후 dwell 은 잔잔한 jitter 만(움직이지 않는 모임 멤버 표현).
             const isDwell =
-                !tl ||
-                tl.length === 0 ||
-                tl[tl.length - 1].arrive_tick <= tFloat;
+                recentMovement !== null && recentMovement.arrive_tick <= tFloat;
             next.set(
                 a.agent_id,
                 isDwell && dwellJitterM > 0
@@ -382,6 +506,9 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             seek,
             playbackStartMsRef,
             tickDurationMsRef,
+            bufferedMovementsRef,
+            bufferedLifecycleEventsRef,
+            bufferedChunkVersion,
         }),
         [
             manifest,
@@ -394,6 +521,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             play,
             pause,
             seek,
+            bufferedChunkVersion,
         ],
     );
 }

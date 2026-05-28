@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { IconNavigation, IconList } from '@tabler/icons-react';
+import { IconHelpCircle, IconNavigation, IconList } from '@tabler/icons-react';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import {
     LAYER_LABEL,
@@ -11,12 +11,14 @@ import {
 type MapFooterProps = {
     onCenterToUser?: (coord: { lat: number; lng: number }) => void;
     onToggleListView?: () => void;
+    onOpenHelp?: () => void;
     hidden?: boolean;
 };
 
 export function MapFooter({
     onCenterToUser,
     onToggleListView,
+    onOpenHelp,
     hidden = false,
 }: MapFooterProps) {
     const [locating, setLocating] = useState(false);
@@ -67,6 +69,19 @@ export function MapFooter({
                 pointerEvents: hidden ? 'none' : 'auto',
             }}
         >
+            <button
+                type="button"
+                onClick={() => onOpenHelp?.()}
+                className={`${btnBase} ${btnIdle}`}
+                aria-label="맵 도움말 다시 보기"
+            >
+                <IconHelpCircle
+                    size={18}
+                    stroke={1.8}
+                    className="text-foreground"
+                />
+            </button>
+
             <button
                 type="button"
                 onClick={() => {

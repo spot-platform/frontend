@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     type BottomSheetSnapPoint,
     PersistentDrawer,
 } from '@frontend/design-system';
 import { useAuthStore } from '@/shared/model/auth-store';
 import { buildSpotCardLookup } from '@/features/simulation/model/spot-card-adapter';
-import { useLayerAwareFeedList } from '../model/use-feed';
+import { useLayerAwareInfiniteFeedList } from '../model/use-feed';
 import { useFilterStore } from '@/features/map/model/use-filter-store';
 import type { SpotCategory } from '@/entities/spot/categories';
 import { FeedCard } from './FeedCard';
@@ -22,6 +22,9 @@ type FeedBottomSheetProps = {
     onOpenChange?: (open: boolean) => void;
     feedType?: 'all' | 'offer' | 'request';
     categories?: SpotCategory[];
+    initialItems?: FeedItem[];
+    initialTotalCount?: number;
+    isInitialItemsLoading?: boolean;
 };
 
 type SpotCardEntry = {
@@ -42,6 +45,31 @@ function getSimulationScore(
     };
 }
 
+const BOTTOM_SHEET_PAGE_SIZE = 10;
+
+function findScrollableAncestor(node: HTMLElement): HTMLElement | null {
+    let parent = node.parentElement;
+
+    while (parent && parent !== document.body) {
+        const style = window.getComputedStyle(parent);
+        const canScroll = /(auto|scroll|overlay)/.test(style.overflowY);
+
+        if (canScroll) {
+            return parent;
+        }
+
+        parent = parent.parentElement;
+    }
+
+    return null;
+}
+
+function toFeedTypeParam(feedType: FeedBottomSheetProps['feedType']) {
+    if (feedType === 'offer') return 'OFFER' as const;
+    if (feedType === 'request') return 'REQUEST' as const;
+    return undefined;
+}
+
 export function FeedBottomSheet({
     open,
     snapPoint,
@@ -49,19 +77,111 @@ export function FeedBottomSheet({
     onOpenChange,
     feedType = 'all',
     categories = [],
+    initialItems = [],
+    initialTotalCount,
+    isInitialItemsLoading = false,
 }: FeedBottomSheetProps) {
     const userPersona = useAuthStore((state) => state.userPersona);
     const role = userPersona?.role ?? null;
     const searchQuery = useFilterStore((s) => s.searchQuery);
-    const { data: feedData } = useLayerAwareFeedList();
-    const feedItems = feedData?.data ?? [];
+    const [loadMoreNode, setLoadMoreNode] = useState<HTMLDivElement | null>(
+        null,
+    );
+    const pageSize = Math.max(BOTTOM_SHEET_PAGE_SIZE, initialItems.length);
+    const feedListParams = useMemo(
+        () => ({
+            type: toFeedTypeParam(feedType),
+            category: categories.length === 1 ? categories[0] : undefined,
+            sort: 'latest' as const,
+            page: 0,
+            size: pageSize,
+        }),
+        [feedType, categories, pageSize],
+    );
+    const hasInitialMoreItems =
+        typeof initialTotalCount === 'number' &&
+        initialTotalCount > initialItems.length;
+    const shouldFetchInfiniteList =
+        open && (initialItems.length === 0 || hasInitialMoreItems);
+    const {
+        data: feedData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+    } = useLayerAwareInfiniteFeedList(feedListParams, {
+        enabled: shouldFetchInfiniteList,
+    });
+    const canFetchMore = hasNextPage || (hasInitialMoreItems && !feedData);
+    const feedItems = useMemo(
+        () => feedData?.pages.flatMap((page) => page.data) ?? initialItems,
+        [feedData?.pages, initialItems],
+    );
     const spotCardLookup = useMemo(() => buildSpotCardLookup([]), []);
+
+    useEffect(() => {
+        if (!open || snapPoint === 'peek' || !canFetchMore || !loadMoreNode) {
+            return;
+        }
+
+        const scrollRoot = findScrollableAncestor(loadMoreNode);
+        let requested = false;
+        const loadNextPage = () => {
+            if (requested || isFetchingNextPage) return;
+            requested = true;
+            void fetchNextPage();
+        };
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    loadNextPage();
+                }
+            },
+            { root: scrollRoot, rootMargin: '160px 0px' },
+        );
+        const maybeLoadFromScrollPosition = () => {
+            if (!scrollRoot) return;
+            const distanceToBottom =
+                scrollRoot.scrollHeight -
+                scrollRoot.scrollTop -
+                scrollRoot.clientHeight;
+
+            if (distanceToBottom <= 160) {
+                loadNextPage();
+            }
+        };
+
+        observer.observe(loadMoreNode);
+        scrollRoot?.addEventListener('scroll', maybeLoadFromScrollPosition, {
+            passive: true,
+        });
+        maybeLoadFromScrollPosition();
+        return () => {
+            observer.disconnect();
+            scrollRoot?.removeEventListener(
+                'scroll',
+                maybeLoadFromScrollPosition,
+            );
+        };
+    }, [
+        canFetchMore,
+        fetchNextPage,
+        isFetchingNextPage,
+        loadMoreNode,
+        open,
+        snapPoint,
+    ]);
 
     const filtered = filterVisibleFeedItems(feedItems, {
         feedType,
         categories,
         searchQuery,
     });
+    const totalFeedCount =
+        feedData?.pages.at(-1)?.meta?.total ??
+        initialTotalCount ??
+        filtered.length;
+    const showLoading = isLoading || isInitialItemsLoading;
 
     return (
         <PersistentDrawer
@@ -76,6 +196,9 @@ export function FeedBottomSheet({
                 <>
                     <p className="mb-3 text-xs font-medium text-muted-foreground">
                         주변 모임 {filtered.length}개
+                        {typeof totalFeedCount === 'number' &&
+                            totalFeedCount > filtered.length &&
+                            ` / 전체 ${totalFeedCount}개`}
                     </p>
                     <div className="flex flex-col divide-y divide-border-soft">
                         {filtered.map((item) => {
@@ -108,10 +231,24 @@ export function FeedBottomSheet({
                                 </div>
                             );
                         })}
-                        {filtered.length === 0 && (
+                        {filtered.length === 0 && !showLoading && (
                             <div className="flex h-40 items-center justify-center">
                                 <p className="text-sm text-muted-foreground">
                                     조건에 맞는 모임이 없어요
+                                </p>
+                            </div>
+                        )}
+                        {(canFetchMore ||
+                            isFetchingNextPage ||
+                            showLoading) && (
+                            <div
+                                ref={setLoadMoreNode}
+                                className="flex h-16 items-center justify-center"
+                            >
+                                <p className="text-xs text-muted-foreground">
+                                    {isFetchingNextPage || showLoading
+                                        ? '피드를 더 불러오는 중이에요'
+                                        : '아래로 더 내려보세요'}
                                 </p>
                             </div>
                         )}
@@ -124,6 +261,12 @@ export function FeedBottomSheet({
                     <span className="text-sm font-bold tracking-tight text-foreground">
                         이 동네 피드{' '}
                         <span className="text-primary">{filtered.length}</span>
+                        {typeof totalFeedCount === 'number' &&
+                            totalFeedCount > filtered.length && (
+                                <span className="text-muted-foreground">
+                                    /{totalFeedCount}
+                                </span>
+                            )}
                     </span>
                     <span className="text-[11px] text-muted-foreground">
                         위로 올려서 목록 ↑
