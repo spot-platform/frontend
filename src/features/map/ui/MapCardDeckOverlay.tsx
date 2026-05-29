@@ -69,13 +69,14 @@ export function MapCardDeckOverlay({
     );
     const topItem = visibleItems[0];
     const hasNextItem = dismissedCount < items.length - 1;
-    const closeDelay = visibleItems.length * DECK_ANIMATION.staggerDelay * 1000;
-
     function closeDeck() {
         if (isClosingDeck) return;
         setExitOverride(null);
+        if (prefersReducedMotion) {
+            onCloseAction();
+            return;
+        }
         setIsClosingDeck(true);
-        window.setTimeout(onCloseAction, prefersReducedMotion ? 0 : closeDelay);
     }
 
     function dismissTop(dir: ExitDirection = 'down') {
@@ -90,10 +91,7 @@ export function MapCardDeckOverlay({
         }
 
         setIsClosingDeck(true);
-        window.setTimeout(
-            onCloseAction,
-            prefersReducedMotion ? 0 : DECK_ANIMATION.staggerDelay * 1000,
-        );
+        if (prefersReducedMotion) onCloseAction();
     }
 
     function openDetail(dir: Extract<ExitDirection, 'left' | 'right'>) {
@@ -150,7 +148,12 @@ export function MapCardDeckOverlay({
                     <AnimatePresence
                         initial={!prefersReducedMotion}
                         mode="popLayout"
-                        onExitComplete={() => setExitOverride(null)}
+                        onExitComplete={() => {
+                            setExitOverride(null);
+                            if (!isClosingDeck) return;
+                            setIsClosingDeck(false);
+                            onCloseAction();
+                        }}
                     >
                         {visibleItems
                             .slice()

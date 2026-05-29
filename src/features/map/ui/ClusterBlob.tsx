@@ -477,6 +477,9 @@ function ClusterBlobImpl({
                                                     : i % 3 === 1
                                                       ? FEED_GROUP_PURPLE
                                                       : FEED_GROUP_BLUE;
+                                            const satelliteAnimationDuration =
+                                                (isFeedGroup ? 3.2 : 2.8) +
+                                                i * 0.22;
                                             return (
                                                 <motion.circle
                                                     key={`sat-${i}`}
@@ -532,10 +535,7 @@ function ClusterBlobImpl({
                                                     }
                                                     transition={{
                                                         duration:
-                                                            (isFeedGroup
-                                                                ? 3.2
-                                                                : 2.8) +
-                                                            i * 0.22,
+                                                            satelliteAnimationDuration,
                                                         repeat: Infinity,
                                                         ease: 'easeInOut',
                                                     }}
@@ -547,7 +547,7 @@ function ClusterBlobImpl({
                                                                       'fill-box',
                                                                   transformOrigin:
                                                                       'center',
-                                                                  animation: `${2.8 + i * 0.22}s ease-in-out ${i * 0.08}s infinite spot-cluster-satellite-drift`,
+                                                                  animation: `${satelliteAnimationDuration}s ease-in-out ${i * 0.08}s infinite spot-cluster-satellite-drift`,
                                                                   '--blob-dx': `${Math.cos(angle) * drift}px`,
                                                                   '--blob-dy': `${Math.sin(angle) * drift}px`,
                                                               } as CSSProperties)
