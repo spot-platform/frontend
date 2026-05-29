@@ -32,7 +32,9 @@ export function MapBottomStack({
             )}
         >
             <div className="flex flex-col gap-2">
-                <AnimatePresence initial={false}>{children}</AnimatePresence>
+                <AnimatePresence initial={false} mode="wait">
+                    {children}
+                </AnimatePresence>
             </div>
 
             {peek !== undefined && (

@@ -1,6 +1,7 @@
 'use client';
 
 import { IconChevronLeft, IconChevronRight, IconX } from '@tabler/icons-react';
+import type { CSSProperties } from 'react';
 
 export type MapTutorialStep = {
     id: 'markers' | 'deck' | 'card' | 'controls';
@@ -19,19 +20,62 @@ export type MapTutorialMarkerInfo = {
 const panelClassNameByStep: Record<MapTutorialStep['id'], string> = {
     markers:
         'left-5 right-5 bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] sm:bottom-auto sm:left-auto sm:right-6 sm:top-[calc(env(safe-area-inset-top)+5rem)] sm:w-[360px]',
-    deck: 'left-5 right-5 top-[calc(env(safe-area-inset-top)+5rem)] sm:left-1/2 sm:right-auto sm:top-[calc(env(safe-area-inset-top)+3rem)] sm:w-[420px] sm:-translate-x-1/2',
-    card: 'left-5 right-5 bottom-[calc(env(safe-area-inset-bottom)+0.5rem)] sm:left-1/2 sm:right-auto sm:w-[460px] sm:-translate-x-1/2',
+    deck: 'left-5 right-5 top-[calc(env(safe-area-inset-top)+4.5rem)] sm:left-1/2 sm:right-auto sm:top-[calc(env(safe-area-inset-top)+3rem)] sm:w-[420px] sm:-translate-x-1/2',
+    card: 'left-5 right-5 bottom-[calc(env(safe-area-inset-bottom)+1rem)] sm:left-1/2 sm:right-auto sm:w-[460px] sm:-translate-x-1/2',
     controls:
         'left-5 right-5 bottom-[calc(env(safe-area-inset-bottom)+1.25rem)] sm:left-6 sm:right-auto sm:w-[420px]',
 };
 
-const spotlightScopeClassNameByStep: Record<MapTutorialStep['id'], string> = {
-    markers:
-        'left-1/2 top-[29dvh] h-[17rem] w-[23rem] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 -translate-y-1/2 sm:h-[20rem] sm:w-[28rem]',
-    deck: 'left-1/2 bottom-[1.5rem] h-[18rem] w-[28rem] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 sm:bottom-[1rem] sm:h-[14rem] sm:w-[36rem]',
-    card: 'left-1/2 top-[32dvh] h-[18rem] w-[24rem] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 -translate-y-1/2 sm:h-[14rem] sm:w-[30rem]',
-    controls:
-        'right-[0.5rem] top-[calc(env(safe-area-inset-top)+7.5rem)] h-[20rem] w-[7.5rem] sm:right-[1rem] sm:h-[22rem] sm:w-[8.5rem]',
+const spotlightScopeStyleByStep: Record<
+    MapTutorialStep['id'],
+    Pick<CSSProperties, 'height' | 'left' | 'top' | 'transform' | 'width'>
+> = {
+    markers: {
+        left: '50%',
+        top: '29dvh',
+        width: 'min(30rem, calc(100vw - 1rem))',
+        height: 'min(20rem, 34dvh)',
+        transform: 'translate(-50%, -50%)',
+    },
+    deck: {
+        left: '50%',
+        top: 'calc(100dvh - 7.25rem)',
+        width: 'min(42rem, calc(100vw - 0.75rem))',
+        height: 'min(19.5rem, 29dvh)',
+        transform: 'translate(-50%, -50%)',
+    },
+    card: {
+        left: '50%',
+        top: '35dvh',
+        width: 'min(34rem, calc(100vw - 0.75rem))',
+        height: 'min(21rem, 36dvh)',
+        transform: 'translate(-50%, -50%)',
+    },
+    controls: {
+        left: 'calc(100vw - 5.75rem)',
+        top: 'calc(env(safe-area-inset-top) + 16.75rem)',
+        width: '10.5rem',
+        height: '22rem',
+        transform: 'translate(-50%, -50%)',
+    },
+};
+
+const gestureCueStyleByStep: Partial<
+    Record<
+        MapTutorialStep['id'],
+        Pick<CSSProperties, 'left' | 'top' | 'transform'>
+    >
+> = {
+    deck: {
+        left: '50%',
+        top: 'calc(100dvh - 7.25rem)',
+        transform: 'translate(-50%, -50%)',
+    },
+    card: {
+        left: '50%',
+        top: '35dvh',
+        transform: 'translate(-50%, -50%)',
+    },
 };
 
 export const MAP_TUTORIAL_STEPS: MapTutorialStep[] = [
@@ -54,18 +98,18 @@ export const MAP_TUTORIAL_STEPS: MapTutorialStep[] = [
     {
         id: 'card',
         eyebrow: '카드 제스처',
-        title: '관심 있는 피드는 카드 제스처로 빠르게 정리해요.',
+        title: '궁금한 피드는 좌우 제스처로 디테일을 열 수 있어요.',
         description:
-            '올라온 카드를 왼쪽으로 밀면 저장 흐름을 체험할 수 있어요. 피드를 살펴보다가 마음에 드는 활동을 빠르게 남겨보세요.',
-        hint: '카드를 왼쪽으로 스와이프',
+            '올라온 카드를 왼쪽이나 오른쪽으로 밀면 디테일 보기 제스처를 익힐 수 있어요. 튜토리얼에서는 실제 페이지로 이동하지 않고 다음 안내로 넘어가요.',
+        hint: '카드를 좌우로 스와이프',
     },
     {
         id: 'controls',
         eyebrow: '빠른 버튼',
         title: '오른쪽 버튼으로 맵을 빠르게 조정할 수 있어요.',
         description:
-            '피드 타입 전환, 내 위치 이동, 목록 보기, 레이어 전환을 오른쪽 버튼에서 바로 사용할 수 있어요. 필요할 때 지도를 이동하지 않고 원하는 보기로 바꿔보세요.',
-        hint: '필터 · 위치 · 목록 · 레이어',
+            '도움말 다시 보기, 피드 타입 전환, 내 위치 이동, 목록 보기, 레이어 전환을 오른쪽 버튼에서 바로 사용할 수 있어요. 필요할 때 지도를 이동하지 않고 원하는 보기로 바꿔보세요.',
+        hint: '도움말 · 필터 · 위치 · 목록 · 레이어',
     },
 ];
 
@@ -91,6 +135,7 @@ export function MapTutorialOverlay({
     const isFirst = safeIndex === 0;
     const isLast = safeIndex === steps.length - 1;
     const showSelectedMarker = step.id === 'markers' && selectedMarker;
+    const gestureCueStyle = gestureCueStyleByStep[step.id];
 
     return (
         <div
@@ -102,15 +147,46 @@ export function MapTutorialOverlay({
         >
             <div
                 aria-hidden
-                className={`absolute rounded-[999px] shadow-[0_0_0_9999px_rgba(0,0,0,0.66)] ${spotlightScopeClassNameByStep[step.id]}`}
+                className="absolute inset-0 animate-[map-tutorial-full-dim_680ms_ease-out_forwards] bg-black/58 backdrop-blur-[2px]"
             />
 
+            <div
+                aria-hidden
+                data-map-tutorial-spotlight
+                className="absolute animate-[map-tutorial-spotlight-reveal_680ms_180ms_ease-out_both] rounded-[999px] shadow-[0_0_0_9999px_rgba(0,0,0,0.58)] transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                style={spotlightScopeStyleByStep[step.id]}
+            />
+
+            {gestureCueStyle && (
+                <div
+                    aria-hidden
+                    className="absolute z-[5] animate-[map-tutorial-spotlight-reveal_680ms_260ms_ease-out_both]"
+                    style={gestureCueStyle}
+                >
+                    <GestureCue
+                        direction={step.id === 'deck' ? 'up' : 'right'}
+                    />
+                </div>
+            )}
+
+            <style>{`
+                @keyframes map-tutorial-full-dim {
+                    0% { opacity: 1; }
+                    45% { opacity: 1; }
+                    100% { opacity: 0; }
+                }
+                @keyframes map-tutorial-spotlight-reveal {
+                    0% { opacity: 0; }
+                    100% { opacity: 1; }
+                }
+            `}</style>
+
             <section
-                className={`pointer-events-auto absolute rounded-[1.75rem] bg-black/55 p-4 text-white shadow-[0_20px_60px_rgba(0,0,0,0.35)] ring-1 ring-white/15 backdrop-blur-xl ${panelClassNameByStep[step.id]}`}
+                className={`pointer-events-auto absolute rounded-[1.75rem] border border-brand-100/80 bg-white/92 p-4 text-foreground shadow-[0_20px_60px_rgba(15,23,42,0.18)] ring-1 ring-black/5 backdrop-blur-xl ${panelClassNameByStep[step.id]}`}
             >
                 <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
                             {step.eyebrow}
                         </p>
                         <h2
@@ -123,7 +199,7 @@ export function MapTutorialOverlay({
                     <button
                         type="button"
                         onClick={() => onClose('skip')}
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-brand-50 hover:text-primary"
                         aria-label="튜토리얼 닫기"
                     >
                         <IconX size={17} stroke={2} />
@@ -132,23 +208,23 @@ export function MapTutorialOverlay({
 
                 <p
                     id="map-tutorial-description"
-                    className="text-sm leading-6 text-white/85"
+                    className="text-sm leading-6 text-text-secondary"
                 >
                     {step.description}
                 </p>
 
                 {showSelectedMarker && (
-                    <div className="mt-4 border-l-2 border-white/60 pl-3">
-                        <p className="text-sm font-bold text-white">
+                    <div className="mt-4 rounded-2xl border border-brand-100 bg-brand-50/70 px-3 py-2">
+                        <p className="text-sm font-bold text-foreground">
                             {selectedMarker.label}
                         </p>
-                        <p className="mt-1 text-sm leading-6 text-white/85">
+                        <p className="mt-1 text-sm leading-6 text-text-secondary">
                             {selectedMarker.description}
                         </p>
                     </div>
                 )}
 
-                <div className="mt-4 inline-flex rounded-full bg-white/15 px-3 py-2 text-sm font-semibold text-white backdrop-blur-sm">
+                <div className="mt-4 inline-flex rounded-full bg-brand-50 px-3 py-2 text-sm font-semibold text-primary ring-1 ring-brand-100">
                     {showSelectedMarker ? '다른 마커도 눌러보세요' : step.hint}
                 </div>
 
@@ -160,7 +236,7 @@ export function MapTutorialOverlay({
                                 className={`h-1.5 rounded-full transition-all ${
                                     index === safeIndex
                                         ? 'w-5 bg-primary'
-                                        : 'w-1.5 bg-white/35'
+                                        : 'w-1.5 bg-border-soft'
                                 }`}
                             />
                         ))}
@@ -170,7 +246,7 @@ export function MapTutorialOverlay({
                         <button
                             type="button"
                             onClick={() => onClose('skip')}
-                            className="rounded-full px-3 py-2 text-sm font-semibold text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+                            className="rounded-full px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         >
                             스킵
                         </button>
@@ -178,7 +254,7 @@ export function MapTutorialOverlay({
                             <button
                                 type="button"
                                 onClick={() => onStepChange(safeIndex - 1)}
-                                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white transition-transform active:scale-95"
+                                className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition-transform active:scale-95"
                                 aria-label="이전 도움말"
                             >
                                 <IconChevronLeft size={18} stroke={2} />
@@ -192,7 +268,7 @@ export function MapTutorialOverlay({
                                         ? onClose('done')
                                         : onStepChange(safeIndex + 1)
                                 }
-                                className="inline-flex h-9 items-center gap-1 rounded-full bg-white px-4 text-sm font-semibold text-black transition-transform active:scale-95"
+                                className="inline-flex h-9 items-center gap-1 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-transform active:scale-95"
                             >
                                 {isLast ? '시작하기' : '다음'}
                                 {!isLast && (
@@ -203,6 +279,41 @@ export function MapTutorialOverlay({
                     </div>
                 </div>
             </section>
+        </div>
+    );
+}
+
+function GestureCue({ direction }: { direction: 'up' | 'right' }) {
+    const isUp = direction === 'up';
+
+    return (
+        <div
+            className={`pointer-events-none relative ${
+                isUp ? 'h-28 w-14' : 'h-14 w-52'
+            }`}
+        >
+            <span
+                className={`absolute h-12 w-12 ${
+                    isUp
+                        ? 'left-1/2 bottom-3 -translate-x-1/2 animate-[map-tutorial-dot-up_1.25s_ease-in-out_infinite]'
+                        : 'left-3 top-1/2 -translate-y-1/2 animate-[map-tutorial-dot-right_1.45s_ease-in-out_infinite]'
+                }`}
+            >
+                <span className="absolute inset-0 rounded-full bg-white/72 shadow-[0_8px_28px_rgba(15,23,42,0.18)] ring-1 ring-primary/15 backdrop-blur-sm" />
+                <span className="absolute left-1/2 top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_22px_rgba(20,184,166,0.5)]" />
+            </span>
+            <style>{`
+                @keyframes map-tutorial-dot-up {
+                    0% { transform: translate(-50%, 0); opacity: 0.95; }
+                    72% { transform: translate(-50%, -4.2rem); opacity: 0.95; }
+                    100% { transform: translate(-50%, -4.2rem); opacity: 0; }
+                }
+                @keyframes map-tutorial-dot-right {
+                    0% { transform: translate(0, -50%); opacity: 0.95; }
+                    72% { transform: translate(10rem, -50%); opacity: 0.95; }
+                    100% { transform: translate(10rem, -50%); opacity: 0; }
+                }
+            `}</style>
         </div>
     );
 }

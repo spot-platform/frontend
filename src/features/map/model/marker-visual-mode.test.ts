@@ -35,6 +35,16 @@ describe('decideMarkerVisualMode', () => {
         ).toBe('full');
     });
 
+    it('does not degrade the first render before the viewport bbox is ready', () => {
+        expect(
+            decideMarkerVisualMode({
+                mapZoom: SIMPLE_MARKER_ZOOM_THRESHOLD + 1,
+                viewportMarkerCount: SIMPLE_MARKER_COUNT_THRESHOLD + 50,
+                viewportReady: false,
+            }),
+        ).toBe('full');
+    });
+
     it('keeps non-selected markers simple when the visible viewport marker count is high', () => {
         expect(
             decideMarkerVisualMode({

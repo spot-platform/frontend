@@ -6,11 +6,11 @@
 
 'use client';
 
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { cn } from '@frontend/design-system';
 import { getCategoryMeta } from '@/entities/spot/categories';
+import { MapCardDeckOverlay } from '@/features/map/ui/MapCardDeckOverlay';
 import type { Persona } from '@/entities/persona/types';
 import type { SpotLifecycle } from '@/features/simulation/model/use-mock-spot-lifecycles';
 
@@ -92,16 +92,11 @@ export function SpotInfoCard({
             now < lifecycle.closedAtMs,
     );
 
-    return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            onClick={(e) => e.stopPropagation()}
-            className="rounded-2xl border border-border-soft bg-card p-3 shadow-md"
-        >
+    const openDetail = () =>
+        router.push(`/feed/${encodeURIComponent(lifecycle.spotId)}`);
+
+    const content = (
+        <div onClick={(e) => e.stopPropagation()} className="bg-card p-3">
             <div className="mb-2 flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-persona-soft text-[20px]">
                     <span aria-hidden>{categoryMeta.emoji}</span>
@@ -185,11 +180,7 @@ export function SpotInfoCard({
             ) : (
                 <button
                     type="button"
-                    onClick={() =>
-                        router.push(
-                            `/feed/${encodeURIComponent(lifecycle.spotId)}`,
-                        )
-                    }
+                    onClick={openDetail}
                     className="mt-3 w-full rounded-xl border border-border-soft bg-card px-3 py-2 text-[12px] font-semibold text-text-secondary transition-colors hover:bg-muted"
                 >
                     자세히 보기
@@ -208,6 +199,23 @@ export function SpotInfoCard({
                         <span>나도 이런 모임 열기</span>
                     </button>
                 )}
-        </motion.div>
+        </div>
+    );
+
+    return (
+        <MapCardDeckOverlay
+            deckId={`spot-${lifecycle.spotId}`}
+            ariaLabel="핫스팟 카드 닫기"
+            items={[
+                {
+                    id: lifecycle.spotId,
+                    content,
+                    onDetailAction:
+                        variant === 'discovery' ? undefined : openDetail,
+                },
+            ]}
+            onCloseAction={onCloseAction ?? (() => undefined)}
+            dismissBehavior="close"
+        />
     );
 }
