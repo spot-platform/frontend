@@ -7,8 +7,10 @@ import {
     memo,
     useEffect,
     useId,
+    useInsertionEffect,
     useReducer,
     useRef,
+    type CSSProperties,
     type KeyboardEvent,
     type MouseEvent,
 } from 'react';
@@ -38,6 +40,41 @@ const CY = VIEW / 2;
 const CORE_SELECTED = 26;
 const CORE_IDLE = 22;
 const SAT_COUNT = 5;
+const FEED_GROUP_PURPLE = '#8B5CF6';
+const FEED_GROUP_TEAL = '#14B8A6';
+const FEED_GROUP_BLUE = '#06B6D4';
+const CLUSTER_BLOB_KEYFRAMES_ID = 'spot-cluster-blob-keyframes';
+const CLUSTER_BLOB_KEYFRAMES = `
+@keyframes spot-cluster-core-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+@keyframes spot-cluster-discovery-breathe {
+    0%, 100% { transform: scale(0.92); }
+    50% { transform: scale(1.14); }
+}
+@keyframes spot-feed-group-core-shift {
+    0%, 100% { transform: scale(1); fill: ${FEED_GROUP_PURPLE}; }
+    38% { transform: scale(1.12); fill: ${FEED_GROUP_TEAL}; }
+    70% { transform: scale(1.03); fill: ${FEED_GROUP_BLUE}; }
+}
+@keyframes spot-cluster-satellite-drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(var(--blob-dx), var(--blob-dy)) scale(1.2); }
+}
+`;
+
+function useClusterBlobKeyframes() {
+    useInsertionEffect(() => {
+        if (typeof document === 'undefined') return;
+        if (document.getElementById(CLUSTER_BLOB_KEYFRAMES_ID)) return;
+
+        const style = document.createElement('style');
+        style.id = CLUSTER_BLOB_KEYFRAMES_ID;
+        style.textContent = CLUSTER_BLOB_KEYFRAMES;
+        document.head.appendChild(style);
+    }, []);
+}
 
 function getVariantTone(
     variant: ActivityCluster['variant'],
@@ -55,6 +92,13 @@ function getVariantTone(
             fill: 'var(--color-persona)',
             opacity: 0.42,
             countClassName: 'bg-background/90 text-muted-foreground',
+        };
+    }
+    if (variant === 'feed-group') {
+        return {
+            fill: FEED_GROUP_PURPLE,
+            opacity: 0.9,
+            countClassName: 'bg-teal-500 text-white',
         };
     }
     if (variant === 'mine' || variant === 'user-feed' || selected) {
@@ -78,6 +122,8 @@ function ClusterBlobImpl({
     absorbing = [],
     visualMode = 'full',
 }: ClusterBlobProps) {
+    useClusterBlobKeyframes();
+
     const reduceMotion = useReducedMotion();
     const filterId = useId();
     const count = cluster.personas.length;
@@ -85,6 +131,7 @@ function ClusterBlobImpl({
     const dying = !!cluster.isDying;
     const tone = getVariantTone(cluster.variant, selected);
     const isDiscovery = cluster.variant === 'discovery';
+    const isFeedGroup = cluster.variant === 'feed-group';
     const isSimple = visualMode === 'simple';
 
     // 물리적 도착자 수 증가 감지 → join burst 트리거.
@@ -161,19 +208,28 @@ function ClusterBlobImpl({
                 {isSimple ? (
                     <motion.div
                         key="simple-marker"
-                        className="absolute rounded-full"
+                        className={cn(
+                            'absolute',
+                            isFeedGroup
+                                ? 'overflow-visible rounded-[48%_52%_45%_55%/54%_46%_58%_42%]'
+                                : 'rounded-full',
+                        )}
                         style={{
                             top: CY - simpleSize / 2,
                             left: CX - simpleSize / 2,
                             width: simpleSize,
                             height: simpleSize,
-                            backgroundColor: tone.fill,
+                            background: isFeedGroup ? 'transparent' : tone.fill,
                             border: selected
                                 ? '2px solid var(--color-primary)'
-                                : '1px solid var(--color-map-bg)',
+                                : isFeedGroup
+                                  ? '0'
+                                  : '1px solid var(--color-map-bg)',
                             boxShadow: selected
                                 ? '0 0 0 4px color-mix(in srgb, var(--color-primary) 22%, transparent)'
-                                : '0 2px 8px rgba(0,0,0,0.16)',
+                                : isFeedGroup
+                                  ? 'none'
+                                  : '0 2px 8px rgba(0,0,0,0.16)',
                         }}
                         initial={{
                             opacity: 0,
@@ -186,6 +242,51 @@ function ClusterBlobImpl({
                         exit={{ opacity: 0, scale: 1.12 }}
                         transition={modeTransition}
                     >
+                        {isFeedGroup && (
+                            <span
+                                aria-hidden
+                                className="absolute inset-0"
+                                style={{
+                                    transform: 'rotate(-18deg)',
+                                    borderRadius:
+                                        '48% 52% 45% 55% / 54% 46% 58% 42%',
+                                    background: `
+                                        radial-gradient(circle at 31% 27%, rgba(255,255,255,0.38) 0 9%, transparent 28%),
+                                        radial-gradient(circle at 72% 24%, rgba(20,184,166,0.86) 0 14%, transparent 38%),
+                                        radial-gradient(circle at 30% 76%, rgba(6,182,212,0.82) 0 16%, transparent 42%),
+                                        linear-gradient(135deg, ${FEED_GROUP_TEAL} 0%, ${FEED_GROUP_BLUE} 34%, ${FEED_GROUP_PURPLE} 70%, #7C3AED 100%)
+                                    `,
+                                    border: '1px solid var(--color-map-bg)',
+                                    boxShadow:
+                                        '0 0 0 2px rgba(255,255,255,0.74), 0 0 0 5px rgba(20,184,166,0.15), 0 6px 14px rgba(91,33,182,0.24)',
+                                }}
+                            >
+                                <span
+                                    className="absolute rounded-full"
+                                    style={{
+                                        width: simpleSize * 0.72,
+                                        height: simpleSize * 0.72,
+                                        right: -simpleSize * 0.08,
+                                        top: -simpleSize * 0.1,
+                                        background: FEED_GROUP_TEAL,
+                                        opacity: 0.82,
+                                        filter: 'blur(0.2px)',
+                                    }}
+                                />
+                                <span
+                                    className="absolute rounded-full"
+                                    style={{
+                                        width: simpleSize * 0.62,
+                                        height: simpleSize * 0.62,
+                                        left: -simpleSize * 0.04,
+                                        bottom: -simpleSize * 0.08,
+                                        background: FEED_GROUP_BLUE,
+                                        opacity: 0.72,
+                                        filter: 'blur(0.25px)',
+                                    }}
+                                />
+                            </span>
+                        )}
                         {!isDiscovery && count > 1 && (
                             <span
                                 className={cn(
@@ -310,6 +411,8 @@ function ClusterBlobImpl({
                                 </filter>
                             </defs>
                             <g
+                                data-testid="cluster-blob-full-animation"
+                                data-animated={reduceMotion ? 'false' : 'true'}
                                 filter={`url(#${filterId})`}
                                 style={{
                                     fill: tone.fill,
@@ -319,6 +422,7 @@ function ClusterBlobImpl({
                                 <motion.circle
                                     cx={CX}
                                     cy={CY}
+                                    fill={tone.fill}
                                     initial={{ r: core }}
                                     animate={
                                         reduceMotion
@@ -331,12 +435,42 @@ function ClusterBlobImpl({
                                                         core - 1,
                                                     ],
                                                 }
-                                              : { r: [core, core + 2, core] }
+                                              : isFeedGroup
+                                                ? {
+                                                      r: [
+                                                          core,
+                                                          core + 2.5,
+                                                          core + 0.5,
+                                                          core,
+                                                      ],
+                                                      fill: [
+                                                          FEED_GROUP_PURPLE,
+                                                          FEED_GROUP_TEAL,
+                                                          FEED_GROUP_BLUE,
+                                                          FEED_GROUP_PURPLE,
+                                                      ],
+                                                  }
+                                                : { r: [core, core + 2, core] }
                                     }
                                     transition={{
-                                        duration: isDiscovery ? 2.7 : 3.4,
+                                        duration: isDiscovery
+                                            ? 2.7
+                                            : isFeedGroup
+                                              ? 4.1
+                                              : 3.4,
                                         repeat: Infinity,
                                         ease: 'easeInOut',
+                                    }}
+                                    style={{
+                                        transformBox: 'fill-box',
+                                        transformOrigin: 'center',
+                                        animation: reduceMotion
+                                            ? undefined
+                                            : isDiscovery
+                                              ? 'spot-cluster-discovery-breathe 2.7s ease-in-out infinite'
+                                              : isFeedGroup
+                                                ? 'spot-feed-group-core-shift 4.1s ease-in-out infinite'
+                                                : 'spot-cluster-core-breathe 3.4s ease-in-out infinite',
                                     }}
                                 />
                                 {!isDiscovery &&
@@ -351,9 +485,23 @@ function ClusterBlobImpl({
                                             const sy =
                                                 CY + Math.sin(angle) * baseR;
                                             const drift = 5;
+                                            const feedGroupFill =
+                                                i % 3 === 0
+                                                    ? FEED_GROUP_TEAL
+                                                    : i % 3 === 1
+                                                      ? FEED_GROUP_PURPLE
+                                                      : FEED_GROUP_BLUE;
+                                            const satelliteAnimationDuration =
+                                                (isFeedGroup ? 3.2 : 2.8) +
+                                                i * 0.22;
                                             return (
                                                 <motion.circle
                                                     key={`sat-${i}`}
+                                                    fill={
+                                                        isFeedGroup
+                                                            ? feedGroupFill
+                                                            : tone.fill
+                                                    }
                                                     initial={{
                                                         cx: sx,
                                                         cy: sy,
@@ -385,15 +533,39 @@ function ClusterBlobImpl({
                                                                               drift,
                                                                       sy,
                                                                   ],
-                                                                  r: [8, 10, 8],
+                                                                  r: isFeedGroup
+                                                                      ? [
+                                                                            7.5,
+                                                                            10.5,
+                                                                            8.5,
+                                                                            7.5,
+                                                                        ]
+                                                                      : [
+                                                                            8,
+                                                                            10,
+                                                                            8,
+                                                                        ],
                                                               }
                                                     }
                                                     transition={{
                                                         duration:
-                                                            2.8 + i * 0.22,
+                                                            satelliteAnimationDuration,
                                                         repeat: Infinity,
                                                         ease: 'easeInOut',
                                                     }}
+                                                    style={
+                                                        reduceMotion
+                                                            ? undefined
+                                                            : ({
+                                                                  transformBox:
+                                                                      'fill-box',
+                                                                  transformOrigin:
+                                                                      'center',
+                                                                  animation: `${satelliteAnimationDuration}s ease-in-out ${i * 0.08}s infinite spot-cluster-satellite-drift`,
+                                                                  '--blob-dx': `${Math.cos(angle) * drift}px`,
+                                                                  '--blob-dy': `${Math.sin(angle) * drift}px`,
+                                                              } as CSSProperties)
+                                                    }
                                                 />
                                             );
                                         },
@@ -455,12 +627,14 @@ function ClusterBlobImpl({
                                 >
                                     {count}
                                 </div>
-                                <div
-                                    className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold tracking-tight text-foreground/75 drop-shadow-sm dark:text-foreground/80"
-                                    style={{ top: CY + core + 10 }}
-                                >
-                                    {cluster.category}
-                                </div>
+                                {!isFeedGroup && (
+                                    <div
+                                        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold tracking-tight text-foreground/75 drop-shadow-sm dark:text-foreground/80"
+                                        style={{ top: CY + core + 10 }}
+                                    >
+                                        {cluster.category}
+                                    </div>
+                                )}
                             </>
                         )}
                     </motion.div>

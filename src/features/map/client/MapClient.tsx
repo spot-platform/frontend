@@ -28,6 +28,7 @@ import { MapBottomStack } from '@/features/map/ui/MapBottomStack';
 import { SpotInfoCard } from '@/features/map/ui/SpotInfoCard';
 import { MySpotInfoCard } from '@/features/map/ui/MySpotInfoCard';
 import { MapFeedInfoCard } from '@/features/map/ui/MapFeedInfoCard';
+import { MapFeedStackCard } from '@/features/map/ui/MapFeedStackCard';
 import {
     MAP_TUTORIAL_STEPS,
     MapTutorialOverlay,
@@ -36,7 +37,8 @@ import {
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
 import { useLayerAwareFeedList } from '@/features/feed/model/use-feed';
 import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
-import { resolveFeedCoordinate } from '@/features/feed/model/feed-location';
+import { groupFeedMarkersByProximity } from '@/features/feed/model/feed-marker-group';
+import { filterHotspotsOverlappingFeedMarkers } from '@/features/map/model/hotspot-feed-overlap';
 import type { TickerEvent } from '@/features/map/model/ticker-adapter';
 import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
 import {
@@ -154,6 +156,7 @@ export function MapClient() {
     void pagerSnap;
     const [viewportBbox, setViewportBbox] = useState<ViewportBbox | null>(null);
     const [mapZoom, setMapZoom] = useState(DEFAULT_MAP_ZOOM);
+    const isMapMarkerDeckOpen = selectedClusterId !== null;
 
     // next-themes 의 resolvedTheme 은 초기 렌더에서 undefined — 이 상태로 MapV3Canvas 가 mount 되면
     // customStyleId 가 잘못 지정되어 기본 스타일로 뜬 뒤 live swap 되며 깜빡인다.
@@ -180,6 +183,12 @@ export function MapClient() {
         setSelectedTutorialMarkerId(null);
         setTutorialOpen(true);
     }, []);
+
+    useEffect(() => {
+        if (!isMapMarkerDeckOpen) return;
+        setPagerPromotedCount(0);
+        setPagerSnap('peek');
+    }, [isMapMarkerDeckOpen, selectedClusterId]);
 
     const openMapTutorial = useCallback(() => {
         setFeedListOpen(false);
@@ -344,6 +353,11 @@ export function MapClient() {
         [feedData?.data, feedType, categories, searchQuery],
     );
 
+    const feedMarkerGroups = useMemo(
+        () => groupFeedMarkersByProximity(visibleFeedItems),
+        [visibleFeedItems],
+    );
+
     const activeLayer = useLayerStore((s) => s.activeLayer);
     const showSpots = activeLayer !== 'virtual';
     const showPersonas = activeLayer !== 'real';
@@ -437,7 +451,7 @@ export function MapClient() {
 
     // FilterChipBar 토글 시 이미 활성화된 클러스터도 즉시 반영되도록 display-side filter 적용.
     // swarm 모드에선 `filteredPersonas` 가 신규 스팟 풀만 제한하므로, 여기서 카테고리/intent 로 한 번 더 거름.
-    const clusters = useMemo(() => {
+    const filteredClusters = useMemo(() => {
         const q = searchQuery.trim().toLowerCase();
         if (feedType === 'all' && categories.length === 0 && q.length === 0) {
             return rawClusters;
@@ -457,6 +471,15 @@ export function MapClient() {
             return true;
         });
     }, [rawClusters, feedType, categories, searchQuery]);
+
+    const clusters = useMemo(
+        () =>
+            filterHotspotsOverlappingFeedMarkers(
+                filteredClusters,
+                feedMarkerGroups,
+            ),
+        [filteredClusters, feedMarkerGroups],
+    );
 
     // 뷰포트 컬링: bbox 밖은 렌더 스킵. pad 는 panning 중 깜빡임 방지용 여유.
     const inViewport = useCallback(
@@ -478,21 +501,21 @@ export function MapClient() {
         const visibleClusterCount = clusters.filter((cluster) =>
             inViewport(cluster.centerCoord),
         ).length;
-        const visibleFeedMarkerCount = visibleFeedItems.filter((item) => {
-            const coord = resolveFeedCoordinate(item);
-            return coord ? inViewport(coord) : false;
-        }).length;
+        const visibleFeedMarkerCount = feedMarkerGroups.filter((group) =>
+            inViewport(group.coord),
+        ).length;
         return visibleClusterCount + visibleFeedMarkerCount;
-    }, [clusters, visibleFeedItems, inViewport]);
+    }, [clusters, feedMarkerGroups, inViewport]);
 
     const getMarkerVisualMode = useCallback(
         (selected: boolean) =>
             decideMarkerVisualMode({
                 mapZoom,
                 viewportMarkerCount,
+                viewportReady: viewportBbox !== null,
                 selected,
             }),
-        [mapZoom, viewportMarkerCount],
+        [mapZoom, viewportMarkerCount, viewportBbox],
     );
 
     const shouldRenderPersonaDots = shouldRenderPersonaDotsForBudget({
@@ -509,6 +532,13 @@ export function MapClient() {
     const handleFeedMarkerSelect = useCallback(
         (feedId: string) => {
             updateUrl({ cluster: `feed-${feedId}` });
+        },
+        [updateUrl],
+    );
+
+    const handleFeedMarkerGroupSelect = useCallback(
+        (groupId: string) => {
+            updateUrl({ cluster: groupId });
         },
         [updateUrl],
     );
@@ -601,48 +631,72 @@ export function MapClient() {
     );
 
     const feedMarkerOverlays: MapOverlayItem[] = useMemo(() => {
-        return visibleFeedItems.flatMap((item) => {
-            const coord = resolveFeedCoordinate(item);
-            if (!coord || !inViewport(coord)) return [];
+        return feedMarkerGroups.flatMap((group) => {
+            if (!inViewport(group.coord)) return [];
+
+            const [item] = group.items;
+            const isGrouped = group.items.length > 1;
 
             const markerCount = Math.max(
-                1,
-                item.confirmedPartnerProfiles?.length ??
-                    item.partnerCount ??
-                    item.applicantCount ??
-                    1,
+                group.items.length,
+                group.items.reduce(
+                    (total, feed) =>
+                        total +
+                        Math.max(
+                            1,
+                            feed.confirmedPartnerProfiles?.length ??
+                                feed.partnerCount ??
+                                feed.applicantCount ??
+                                1,
+                        ),
+                    0,
+                ),
             );
             const personas = Array.from(
                 { length: markerCount },
                 (_, index) => ({
-                    id: `${item.id}-${index}`,
-                    name: item.authorNickname,
-                    emoji: item.type === 'REQUEST' ? '🙋' : '📍',
+                    id: `${group.id}-${index}`,
+                    name: isGrouped ? '중첩 피드' : item.authorNickname,
+                    emoji: isGrouped
+                        ? '📚'
+                        : item.type === 'REQUEST'
+                          ? '🙋'
+                          : '📍',
                 }),
             );
             const cluster: ActivityCluster = {
-                id: `feed-${item.id}`,
-                centerCoord: coord,
-                category: item.category ?? '피드',
+                id: group.id,
+                centerCoord: group.coord,
+                category: isGrouped
+                    ? `인접 피드 ${group.items.length}개`
+                    : (item.category ?? '피드'),
                 intent: item.type === 'REQUEST' ? 'request' : 'offer',
                 personas,
-                variant: item.isAi ? 'ai-feed' : 'user-feed',
+                variant: isGrouped
+                    ? 'feed-group'
+                    : group.items.every((feed) => feed.isAi)
+                      ? 'ai-feed'
+                      : 'user-feed',
             };
 
             return [
                 {
-                    key: `feed-marker-${item.id}`,
-                    position: coord,
+                    key: `feed-marker-${group.id}`,
+                    position: group.coord,
                     clickable: true,
                     render: () => (
                         <ClusterBlob
                             cluster={cluster}
-                            selected={selectedClusterId === `feed-${item.id}`}
-                            onSelectAction={() =>
-                                handleFeedMarkerSelect(item.id)
-                            }
+                            selected={selectedClusterId === group.id}
+                            onSelectAction={() => {
+                                if (isGrouped) {
+                                    handleFeedMarkerGroupSelect(group.id);
+                                    return;
+                                }
+                                handleFeedMarkerSelect(item.id);
+                            }}
                             visualMode={getMarkerVisualMode(
-                                selectedClusterId === `feed-${item.id}`,
+                                selectedClusterId === group.id,
                             )}
                         />
                     ),
@@ -650,9 +704,10 @@ export function MapClient() {
             ];
         });
     }, [
-        visibleFeedItems,
+        feedMarkerGroups,
         selectedClusterId,
         handleFeedMarkerSelect,
+        handleFeedMarkerGroupSelect,
         getMarkerVisualMode,
         inViewport,
     ]);
@@ -753,20 +808,25 @@ export function MapClient() {
                 onClose={() => updateUrl({ chat: false })}
             />
 
-            <MapFeedCardPager
-                snap={pagerSnap}
-                onSnapChange={setPagerSnap}
-                promotedCount={pagerPromotedCount}
-                onPromotedCountChange={setPagerPromotedCount}
-                items={visibleFeedItems}
-                isInitialLoading={isInitialFeedLoading}
-                onTutorialCardPromote={showCardTutorialStep}
-                onTutorialCardDismiss={completeDeckTutorial}
-                onBookmark={(item) => {
-                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                    console.info('[bookmark]', item.id, item.title);
-                }}
-            />
+            {!isMapMarkerDeckOpen && (
+                <MapFeedCardPager
+                    snap={pagerSnap}
+                    onSnapChange={setPagerSnap}
+                    promotedCount={pagerPromotedCount}
+                    onPromotedCountChange={setPagerPromotedCount}
+                    items={visibleFeedItems}
+                    isInitialLoading={isInitialFeedLoading}
+                    onTutorialCardPromote={showCardTutorialStep}
+                    onTutorialCardDismiss={completeDeckTutorial}
+                    onTutorialCardDetail={
+                        tutorialOpen ? completeDeckTutorial : undefined
+                    }
+                    onBookmark={(item) => {
+                        // TODO: 다음 PR에서 useAddFavorite mutation 연결
+                        console.info('[bookmark]', item.id, item.title);
+                    }}
+                />
+            )}
 
             <FeedBottomSheet
                 open={feedListOpen}
@@ -827,6 +887,32 @@ export function MapClient() {
                         );
                     }
 
+                    // 정확히 같거나 인접한 좌표의 피드 마커 — 하나의 묶음 마커에서 카드 스택으로 탐색.
+                    if (selectedClusterId.startsWith('feed-group-')) {
+                        const selectedGroup = feedMarkerGroups.find(
+                            (group) => group.id === selectedClusterId,
+                        );
+                        if (!selectedGroup) return null;
+                        return (
+                            <MapFeedStackCard
+                                key={`feed-stack-${selectedGroup.id}`}
+                                groupId={selectedGroup.id}
+                                items={selectedGroup.items}
+                                onCloseAction={() =>
+                                    updateUrl({ cluster: null })
+                                }
+                                onBookmarkAction={(item) => {
+                                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
+                                    console.info(
+                                        '[bookmark]',
+                                        item.id,
+                                        item.title,
+                                    );
+                                }}
+                            />
+                        );
+                    }
+
                     // 실제 사용자/AI 추천 피드 마커 — 바로 상세 이동하지 않고 요약 카드 먼저 노출.
                     if (selectedClusterId.startsWith('feed-')) {
                         const feedId = selectedClusterId.slice('feed-'.length);
@@ -844,6 +930,14 @@ export function MapClient() {
                                 onDetailAction={() =>
                                     router.push(`/feed/${selectedFeed.id}`)
                                 }
+                                onBookmarkAction={(item) => {
+                                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
+                                    console.info(
+                                        '[bookmark]',
+                                        item.id,
+                                        item.title,
+                                    );
+                                }}
                             />
                         );
                     }

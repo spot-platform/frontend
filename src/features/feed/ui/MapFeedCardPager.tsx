@@ -22,6 +22,10 @@ import {
     getVisiblePromotedCardRange,
     MAX_PROMOTED_FEED_CARDS,
 } from '@/features/feed/model/map-feed-card-pager';
+import {
+    MAP_FEED_CARD_DECK_ANIMATION,
+    type CardDeckExitDirection,
+} from '@/features/feed/model/card-deck-animation';
 import type { FeedItem } from '@/features/feed/model/types';
 import { FeedCard } from '@/features/feed/ui/FeedCard';
 
@@ -32,9 +36,7 @@ const STACK_WIDTH_PEEK = 120;
 const STACK_WIDTH_EXPANDED = 160;
 const STACK_BOTTOM_PEEK_DVH = -8;
 const STACK_BOTTOM_EXPANDED_DVH = -10;
-const PROMOTED_CARD_WIDTH = 'min(92vw, 420px)';
-const PROMOTED_CARD_TOP_DVH = 22;
-const PROMOTED_STACK_STEP_DVH = 1.4;
+const DECK_ANIMATION = MAP_FEED_CARD_DECK_ANIMATION;
 
 type MapFeedCardPagerProps = {
     snap: FeedCardPagerSnap;
@@ -46,9 +48,10 @@ type MapFeedCardPagerProps = {
     onBookmark?: (item: FeedItem) => void;
     onTutorialCardPromote?: () => void;
     onTutorialCardDismiss?: () => void;
+    onTutorialCardDetail?: () => void;
 };
 
-type ExitDirection = 'down' | 'left' | 'right';
+type ExitDirection = CardDeckExitDirection;
 
 export function MapFeedCardPager({
     snap,
@@ -60,6 +63,7 @@ export function MapFeedCardPager({
     onBookmark,
     onTutorialCardPromote,
     onTutorialCardDismiss,
+    onTutorialCardDetail,
 }: MapFeedCardPagerProps) {
     const router = useRouter();
     const prefersReducedMotion = useReducedMotion();
@@ -151,12 +155,16 @@ export function MapFeedCardPager({
             onTutorialCardDismiss?.();
         });
     }
-    function openDetailTopPromoted() {
+    function openDetailTopPromoted(dir: ExitDirection = 'right') {
         const top = promotedItems[promotedItems.length - 1];
         if (!top) return;
-        setExitOverride({ id: top.id, dir: 'right' });
+        setExitOverride({ id: top.id, dir });
         requestAnimationFrame(() => {
             if (safePromoted > 0) setPromotedCount(safePromoted - 1);
+            if (onTutorialCardDetail) {
+                onTutorialCardDetail();
+                return;
+            }
             router.push(`/feed/${top.id}`);
         });
     }
@@ -171,7 +179,10 @@ export function MapFeedCardPager({
         }
         setPromotedCount(0);
         // 가장 깊은 카드의 exit 가 끝난 시점 직후에 snap 전환.
-        setTimeout(() => onSnapChange('peek'), start * 90);
+        setTimeout(
+            () => onSnapChange('peek'),
+            start * DECK_ANIMATION.staggerDelay * 1000,
+        );
     }
 
     function handleStackDragEnd(_e: unknown, info: PanInfo) {
@@ -200,14 +211,15 @@ export function MapFeedCardPager({
         const dy = info.offset.y;
         const absX = Math.abs(dx);
         const absY = Math.abs(dy);
-        // 가로 스와이프가 우세하면 좌/우 분기 — 좌: 북마크, 우: 디테일.
+        // 가로 스와이프가 우세하면 좌/우 모두 디테일로 진입한다.
+        // 관심 액션은 카드 상단 버튼으로만 유지한다.
         if (absX > absY) {
             if (dx <= -SWIPE_THRESHOLD) {
-                bookmarkTopPromoted();
+                openDetailTopPromoted('left');
                 return;
             }
             if (dx >= SWIPE_THRESHOLD) {
-                openDetailTopPromoted();
+                openDetailTopPromoted('right');
                 return;
             }
             return;
@@ -223,11 +235,11 @@ export function MapFeedCardPager({
             {/* promote 된 카드 더미 — 화면 위쪽으로 쌓임 */}
             <div
                 className="pointer-events-none fixed inset-x-0 z-30"
-                style={{ top: `${PROMOTED_CARD_TOP_DVH}dvh` }}
+                style={{ top: `${DECK_ANIMATION.cardTopDvh}dvh` }}
             >
                 <div
                     className="relative mx-auto"
-                    style={{ width: PROMOTED_CARD_WIDTH }}
+                    style={{ width: DECK_ANIMATION.cardWidth }}
                 >
                     <AnimatePresence
                         initial={false}
@@ -242,9 +254,11 @@ export function MapFeedCardPager({
                             const direction = i % 2 === 0 ? -1 : 1;
                             const rotate = isTop
                                 ? 0
-                                : direction * (1.2 + order * 0.4);
-                            const yDvh = order * PROMOTED_STACK_STEP_DVH;
-                            const scale = 1 - order * 0.025;
+                                : direction *
+                                  (DECK_ANIMATION.rotateBase +
+                                      order * DECK_ANIMATION.rotateStep);
+                            const yDvh = order * DECK_ANIMATION.stackStepDvh;
+                            const scale = 1 - order * DECK_ANIMATION.scaleStep;
 
                             const isInstantDismiss = instantDismissIds.has(
                                 item.id,
@@ -254,13 +268,8 @@ export function MapFeedCardPager({
                                     ? exitOverride.dir
                                     : 'down';
                             const horizontalExitTransition = {
-                                duration: 0.32,
-                                ease: [0.32, 0.72, 0, 1] as [
-                                    number,
-                                    number,
-                                    number,
-                                    number,
-                                ],
+                                duration: DECK_ANIMATION.horizontalExitDuration,
+                                ease: DECK_ANIMATION.horizontalEase,
                             };
                             const exitProps = isInstantDismiss
                                 ? {
@@ -269,31 +278,30 @@ export function MapFeedCardPager({
                                   }
                                 : exitDir === 'left'
                                   ? {
-                                        x: '-130%',
+                                        x: `-${DECK_ANIMATION.horizontalExitOffset}`,
                                         y: `${yDvh}dvh`,
-                                        rotate: -12,
+                                        rotate: -DECK_ANIMATION.horizontalExitRotate,
                                         opacity: 0,
                                         transition: horizontalExitTransition,
                                     }
                                   : exitDir === 'right'
                                     ? {
-                                          x: '130%',
+                                          x: DECK_ANIMATION.horizontalExitOffset,
                                           y: `${yDvh}dvh`,
-                                          rotate: 12,
+                                          rotate: DECK_ANIMATION.horizontalExitRotate,
                                           opacity: 0,
                                           transition: horizontalExitTransition,
                                       }
                                     : {
-                                          y: '60dvh',
+                                          y: DECK_ANIMATION.downExitY,
                                           opacity: 0,
                                           transition: prefersReducedMotion
                                               ? { duration: 0 }
                                               : {
-                                                    type: 'spring' as const,
-                                                    stiffness: 240,
-                                                    damping: 28,
-                                                    mass: 0.7,
-                                                    delay: order * 0.09,
+                                                    ...DECK_ANIMATION.spring,
+                                                    delay:
+                                                        order *
+                                                        DECK_ANIMATION.staggerDelay,
                                                 },
                                       };
 
@@ -312,7 +320,7 @@ export function MapFeedCardPager({
                                         top: -200,
                                         bottom: 200,
                                         left: -300,
-                                        right: 80,
+                                        right: 300,
                                     }}
                                     dragElastic={0.2}
                                     dragMomentum={false}
@@ -321,7 +329,10 @@ export function MapFeedCardPager({
                                             ? handleTopPromotedDragEnd
                                             : undefined
                                     }
-                                    initial={{ y: '60dvh', opacity: 0 }}
+                                    initial={{
+                                        y: DECK_ANIMATION.enterY,
+                                        opacity: 0,
+                                    }}
                                     animate={{
                                         x: 0,
                                         y: `${yDvh}dvh`,
@@ -334,17 +345,14 @@ export function MapFeedCardPager({
                                         prefersReducedMotion
                                             ? { duration: 0 }
                                             : {
-                                                  type: 'spring',
-                                                  stiffness: 240,
-                                                  damping: 28,
-                                                  mass: 0.7,
+                                                  ...DECK_ANIMATION.spring,
                                               }
                                     }
                                 >
                                     <div
                                         className="relative overflow-hidden rounded-2xl border border-border-soft/70 bg-card shadow-[0_-12px_36px_-16px_rgba(0,0,0,0.25)]"
                                         onClickCapture={(e) => {
-                                            // 카드 내부 click(디테일 진입)은 swipe right 로만 허용.
+                                            // 카드 내부 click 은 막고, 디테일 진입은 좌/우 swipe 로만 허용.
                                             const target =
                                                 e.target as HTMLElement;
                                             if (
@@ -391,15 +399,6 @@ export function MapFeedCardPager({
                             );
                         })}
                     </AnimatePresence>
-                    {promotedItems.length > 0 && (
-                        <div
-                            aria-hidden
-                            className="pointer-events-none bottom-1 absolute inset-x-0 flex items-center justify-between px-2 text-[11px] font-medium text-muted-foreground"
-                        >
-                            <span>← 북마크</span>
-                            <span>디테일 →</span>
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -414,7 +413,7 @@ export function MapFeedCardPager({
                 transition={
                     prefersReducedMotion
                         ? { duration: 0 }
-                        : { type: 'spring', stiffness: 240, damping: 28 }
+                        : DECK_ANIMATION.stackSpring
                 }
                 style={{
                     width: stackWidth,
