@@ -188,7 +188,7 @@ export function MapClient() {
         if (!isMapMarkerDeckOpen) return;
         setPagerPromotedCount(0);
         setPagerSnap('peek');
-    }, [isMapMarkerDeckOpen]);
+    }, [isMapMarkerDeckOpen, selectedClusterId]);
 
     const openMapTutorial = useCallback(() => {
         setFeedListOpen(false);

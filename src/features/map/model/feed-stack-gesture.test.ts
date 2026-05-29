@@ -27,6 +27,24 @@ describe('resolveFeedStackGesture', () => {
         ).toBe('detail-right');
     });
 
+    it('uses fast side flicks as detail triggers even with short drag distance', () => {
+        expect(
+            resolveFeedStackGesture({
+                dx: -64,
+                dy: 8,
+                velocityX: -820,
+            }),
+        ).toBe('detail-left');
+
+        expect(
+            resolveFeedStackGesture({
+                dx: 64,
+                dy: 8,
+                velocityX: 820,
+            }),
+        ).toBe('detail-right');
+    });
+
     it('requires horizontal dominance before side actions', () => {
         expect(
             resolveFeedStackGesture({

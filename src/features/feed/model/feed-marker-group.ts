@@ -60,26 +60,29 @@ export function groupFeedMarkersByProximity(
     const thresholdMeters =
         options.thresholdMeters ?? DEFAULT_NEARBY_THRESHOLD_METERS;
     const resolveCoord = options.resolveCoord ?? resolveFeedCoordinate;
-    const groups: Array<{ coords: GeoCoord[]; items: FeedItem[] }> = [];
+    const groups: Array<{
+        coords: GeoCoord[];
+        items: FeedItem[];
+        representative: GeoCoord;
+    }> = [];
 
     for (const item of items) {
         const coord = resolveCoord(item);
         if (!coord) continue;
 
-        const group = groups.find(({ coords }) =>
-            coords.some(
-                (existingCoord) =>
-                    getDistanceMeters(existingCoord, coord) <= thresholdMeters,
-            ),
+        const group = groups.find(
+            ({ representative }) =>
+                getDistanceMeters(representative, coord) <= thresholdMeters,
         );
 
         if (group) {
             group.coords.push(coord);
             group.items.push(item);
+            group.representative = getAverageCoord(group.coords);
             continue;
         }
 
-        groups.push({ coords: [coord], items: [item] });
+        groups.push({ coords: [coord], items: [item], representative: coord });
     }
 
     return groups.map((group) => ({

@@ -53,6 +53,21 @@ describe('groupFeedMarkersByProximity', () => {
         expect(groups[0].coord.lng).toBeCloseTo(127.028625, 6);
     });
 
+    it('compares new feeds against the group representative to avoid chain grouping', () => {
+        const groups = groupFeedMarkersByProximity(
+            [
+                createFeed('a', 37.2636, 127.0286),
+                createFeed('b', 37.2636, 127.0287),
+                createFeed('c', 37.2636, 127.0288),
+            ],
+            { thresholdMeters: 12 },
+        );
+
+        expect(groups).toHaveLength(2);
+        expect(groups[0].items.map((item) => item.id)).toEqual(['a', 'b']);
+        expect(groups[1].items.map((item) => item.id)).toEqual(['c']);
+    });
+
     it('ignores feeds without valid coordinates', () => {
         const groups = groupFeedMarkersByProximity([
             createFeed('a', 37.2636, 127.0286),

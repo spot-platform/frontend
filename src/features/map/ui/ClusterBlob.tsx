@@ -7,6 +7,7 @@ import {
     memo,
     useEffect,
     useId,
+    useInsertionEffect,
     useReducer,
     useRef,
     type CSSProperties,
@@ -42,6 +43,38 @@ const SAT_COUNT = 5;
 const FEED_GROUP_PURPLE = '#8B5CF6';
 const FEED_GROUP_TEAL = '#14B8A6';
 const FEED_GROUP_BLUE = '#06B6D4';
+const CLUSTER_BLOB_KEYFRAMES_ID = 'spot-cluster-blob-keyframes';
+const CLUSTER_BLOB_KEYFRAMES = `
+@keyframes spot-cluster-core-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+@keyframes spot-cluster-discovery-breathe {
+    0%, 100% { transform: scale(0.92); }
+    50% { transform: scale(1.14); }
+}
+@keyframes spot-feed-group-core-shift {
+    0%, 100% { transform: scale(1); fill: ${FEED_GROUP_PURPLE}; }
+    38% { transform: scale(1.12); fill: ${FEED_GROUP_TEAL}; }
+    70% { transform: scale(1.03); fill: ${FEED_GROUP_BLUE}; }
+}
+@keyframes spot-cluster-satellite-drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(var(--blob-dx), var(--blob-dy)) scale(1.2); }
+}
+`;
+
+function useClusterBlobKeyframes() {
+    useInsertionEffect(() => {
+        if (typeof document === 'undefined') return;
+        if (document.getElementById(CLUSTER_BLOB_KEYFRAMES_ID)) return;
+
+        const style = document.createElement('style');
+        style.id = CLUSTER_BLOB_KEYFRAMES_ID;
+        style.textContent = CLUSTER_BLOB_KEYFRAMES;
+        document.head.appendChild(style);
+    }, []);
+}
 
 function getVariantTone(
     variant: ActivityCluster['variant'],
@@ -89,6 +122,8 @@ function ClusterBlobImpl({
     absorbing = [],
     visualMode = 'full',
 }: ClusterBlobProps) {
+    useClusterBlobKeyframes();
+
     const reduceMotion = useReducedMotion();
     const filterId = useId();
     const count = cluster.personas.length;
@@ -375,27 +410,6 @@ function ClusterBlobImpl({
                                     <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" />
                                 </filter>
                             </defs>
-                            <style>
-                                {`
-                                    @keyframes spot-cluster-core-breathe {
-                                        0%, 100% { transform: scale(1); }
-                                        50% { transform: scale(1.1); }
-                                    }
-                                    @keyframes spot-cluster-discovery-breathe {
-                                        0%, 100% { transform: scale(0.92); }
-                                        50% { transform: scale(1.14); }
-                                    }
-                                    @keyframes spot-feed-group-core-shift {
-                                        0%, 100% { transform: scale(1); fill: ${FEED_GROUP_PURPLE}; }
-                                        38% { transform: scale(1.12); fill: ${FEED_GROUP_TEAL}; }
-                                        70% { transform: scale(1.03); fill: ${FEED_GROUP_BLUE}; }
-                                    }
-                                    @keyframes spot-cluster-satellite-drift {
-                                        0%, 100% { transform: translate(0, 0) scale(1); }
-                                        50% { transform: translate(var(--blob-dx), var(--blob-dy)) scale(1.2); }
-                                    }
-                                `}
-                            </style>
                             <g
                                 data-testid="cluster-blob-full-animation"
                                 data-animated={reduceMotion ? 'false' : 'true'}
