@@ -146,6 +146,9 @@ export function MapClient() {
         useState<BottomSheetSnapPoint>('half');
     const [pagerSnap, setPagerSnap] = useState<FeedCardPagerSnap>('peek');
     const [pagerPromotedCount, setPagerPromotedCount] = useState(0);
+    const [isPagerHiddenByMarkerDeck, setIsPagerHiddenByMarkerDeck] = useState(
+        () => selectedClusterId !== null,
+    );
     const [tutorialOpen, setTutorialOpen] = useState(false);
     const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
     const [selectedTutorialMarkerId, setSelectedTutorialMarkerId] = useState<
@@ -186,9 +189,18 @@ export function MapClient() {
 
     useEffect(() => {
         if (!isMapMarkerDeckOpen) return;
+        setIsPagerHiddenByMarkerDeck(true);
         setPagerPromotedCount(0);
         setPagerSnap('peek');
     }, [isMapMarkerDeckOpen, selectedClusterId]);
+
+    useEffect(() => {
+        if (isMapMarkerDeckOpen) return;
+        const revealTimer = window.setTimeout(() => {
+            setIsPagerHiddenByMarkerDeck(false);
+        }, 120);
+        return () => window.clearTimeout(revealTimer);
+    }, [isMapMarkerDeckOpen]);
 
     const openMapTutorial = useCallback(() => {
         setFeedListOpen(false);
@@ -808,7 +820,7 @@ export function MapClient() {
                 onClose={() => updateUrl({ chat: false })}
             />
 
-            {!isMapMarkerDeckOpen && (
+            {!isPagerHiddenByMarkerDeck && (
                 <MapFeedCardPager
                     snap={pagerSnap}
                     onSnapChange={setPagerSnap}
