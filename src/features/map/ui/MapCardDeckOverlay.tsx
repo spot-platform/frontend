@@ -69,6 +69,7 @@ export function MapCardDeckOverlay({
     );
     const topItem = visibleItems[0];
     const hasNextItem = dismissedCount < items.length - 1;
+
     function closeDeck() {
         if (isClosingDeck) return;
         setExitOverride(null);
@@ -151,7 +152,6 @@ export function MapCardDeckOverlay({
                         onExitComplete={() => {
                             setExitOverride(null);
                             if (!isClosingDeck) return;
-                            setIsClosingDeck(false);
                             onCloseAction();
                         }}
                     >
