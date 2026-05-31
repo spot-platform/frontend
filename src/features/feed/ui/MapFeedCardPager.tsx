@@ -1,6 +1,8 @@
 'use client';
 
 import {
+    useCallback,
+    useEffect,
     useMemo,
     useRef,
     useState,
@@ -39,6 +41,7 @@ const STACK_BOTTOM_EXPANDED_DVH = -10;
 const DECK_ANIMATION = MAP_FEED_CARD_DECK_ANIMATION;
 
 type MapFeedCardPagerProps = {
+    hidden?: boolean;
     snap: FeedCardPagerSnap;
     onSnapChange: (snap: FeedCardPagerSnap) => void;
     promotedCount: number;
@@ -54,6 +57,7 @@ type MapFeedCardPagerProps = {
 type ExitDirection = CardDeckExitDirection;
 
 export function MapFeedCardPager({
+    hidden = false,
     snap,
     onSnapChange,
     promotedCount,
@@ -72,6 +76,9 @@ export function MapFeedCardPager({
     const searchQuery = useFilterStore((s) => s.searchQuery);
     const setPromotedCount = onPromotedCountChange;
     const isStackDragging = useRef(false);
+    const previousSafePromoted = useRef(0);
+    const resetToPeekTimerRef = useRef<number | null>(null);
+    const [isResettingToPeek, setIsResettingToPeek] = useState(false);
     // 좌/우 swipe 가 시작된 단일 카드만 override — 그 외는 기본 'down' exit.
     // ref + forceRerender 안티패턴 대신 단일 state 로 정리 (한 시점에 override 대상은 1장).
     const [exitOverride, setExitOverride] = useState<{
@@ -112,6 +119,67 @@ export function MapFeedCardPager({
     const promotedItems = filtered.slice(visibleStart, visibleEnd);
     const stackItems = filtered.slice(safePromoted, safePromoted + 4);
 
+    const clearResetToPeekTimer = useCallback(() => {
+        if (resetToPeekTimerRef.current === null) return;
+        window.clearTimeout(resetToPeekTimerRef.current);
+        resetToPeekTimerRef.current = null;
+    }, []);
+
+    const finishResetToPeek = useCallback(() => {
+        clearResetToPeekTimer();
+        setIsResettingToPeek(false);
+        onSnapChange('peek');
+    }, [clearResetToPeekTimer, onSnapChange]);
+
+    const holdStackUntilResetExitCompletes = useCallback(
+        (cardCount: number) => {
+            clearResetToPeekTimer();
+            if (cardCount <= 0) {
+                setIsResettingToPeek(false);
+                return;
+            }
+
+            setIsResettingToPeek(true);
+            // AnimatePresence onExitComplete is the source of truth, but keep a
+            // conservative fallback so the lower deck cannot stay locked if an
+            // exit is interrupted by route/HMR/state timing.
+            resetToPeekTimerRef.current = window.setTimeout(
+                finishResetToPeek,
+                cardCount * DECK_ANIMATION.staggerDelay * 1000 + 450,
+            );
+        },
+        [clearResetToPeekTimer, finishResetToPeek],
+    );
+
+    useEffect(() => {
+        const previous = previousSafePromoted.current;
+        previousSafePromoted.current = safePromoted;
+
+        if (previous > 0 && safePromoted === 0) {
+            holdStackUntilResetExitCompletes(previous);
+            return;
+        }
+
+        if (safePromoted > 0) {
+            clearResetToPeekTimer();
+            setIsResettingToPeek(false);
+        }
+    }, [
+        safePromoted,
+        clearResetToPeekTimer,
+        holdStackUntilResetExitCompletes,
+        promotedCount,
+    ]);
+
+    useEffect(
+        () => () => {
+            clearResetToPeekTimer();
+        },
+        [clearResetToPeekTimer],
+    );
+
+    const isStackInteractionLocked = isResettingToPeek;
+
     const isExpanded = snap === 'expanded';
     const stackWidth = isExpanded ? STACK_WIDTH_EXPANDED : STACK_WIDTH_PEEK;
     const stackBottom = isExpanded
@@ -119,7 +187,9 @@ export function MapFeedCardPager({
         : STACK_BOTTOM_PEEK_DVH;
 
     function promoteOne() {
-        if (safePromoted >= total) return;
+        if (safePromoted >= total) {
+            return;
+        }
 
         const overflowItem =
             promotedItems.length >= MAX_PROMOTED_FEED_CARDS
@@ -178,14 +248,13 @@ export function MapFeedCardPager({
             return;
         }
         setPromotedCount(0);
-        // 가장 깊은 카드의 exit 가 끝난 시점 직후에 snap 전환.
-        setTimeout(
-            () => onSnapChange('peek'),
-            start * DECK_ANIMATION.staggerDelay * 1000,
-        );
+        holdStackUntilResetExitCompletes(start);
     }
 
     function handleStackDragEnd(_e: unknown, info: PanInfo) {
+        if (isStackInteractionLocked) {
+            return;
+        }
         const dy = info.offset.y;
         setTimeout(() => {
             isStackDragging.current = false;
@@ -201,7 +270,12 @@ export function MapFeedCardPager({
     }
 
     function handleStackClick() {
-        if (isStackDragging.current) return;
+        if (isStackInteractionLocked) {
+            return;
+        }
+        if (isStackDragging.current) {
+            return;
+        }
         if (snap === 'peek') onSnapChange('expanded');
         else promoteOne();
     }
@@ -234,7 +308,9 @@ export function MapFeedCardPager({
         <>
             {/* promote 된 카드 더미 — 화면 위쪽으로 쌓임 */}
             <div
-                className="pointer-events-none fixed inset-x-0 z-30"
+                className={`pointer-events-none fixed inset-x-0 z-30 ${
+                    hidden ? 'opacity-0' : ''
+                }`}
                 style={{ top: `${DECK_ANIMATION.cardTopDvh}dvh` }}
             >
                 <div
@@ -246,6 +322,9 @@ export function MapFeedCardPager({
                         onExitComplete={() => {
                             setExitOverride(null);
                             setInstantDismissIds(new Set());
+                            if (isResettingToPeek) {
+                                finishResetToPeek();
+                            }
                         }}
                     >
                         {promotedItems.map((item, i) => {
@@ -404,7 +483,11 @@ export function MapFeedCardPager({
 
             {/* 하단 뭉치 — 카드 자체가 drag 영역 */}
             <motion.div
-                className="pointer-events-auto fixed left-1/2 z-30 -translate-x-1/2 cursor-grab touch-none active:cursor-grabbing"
+                className={`pointer-events-auto fixed left-1/2 z-30 -translate-x-1/2 cursor-grab touch-none active:cursor-grabbing ${
+                    isStackInteractionLocked || hidden
+                        ? 'pointer-events-none opacity-0'
+                        : ''
+                }`}
                 initial={false}
                 animate={{
                     width: stackWidth,

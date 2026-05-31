@@ -160,7 +160,7 @@ export function MapClient() {
     const [viewportBbox, setViewportBbox] = useState<ViewportBbox | null>(null);
     const [mapZoom, setMapZoom] = useState(DEFAULT_MAP_ZOOM);
     const isMapMarkerDeckOpen = selectedClusterId !== null;
-
+    const isFeedPagerHidden = isMapMarkerDeckOpen || isPagerHiddenByMarkerDeck;
     // next-themes 의 resolvedTheme 은 초기 렌더에서 undefined — 이 상태로 MapV3Canvas 가 mount 되면
     // customStyleId 가 잘못 지정되어 기본 스타일로 뜬 뒤 live swap 되며 깜빡인다.
     // <html class="dark"> 는 next-themes inline 스크립트가 React 수화 전에 동기적으로 세팅하므로,
@@ -199,7 +199,9 @@ export function MapClient() {
         const revealTimer = window.setTimeout(() => {
             setIsPagerHiddenByMarkerDeck(false);
         }, 120);
-        return () => window.clearTimeout(revealTimer);
+        return () => {
+            window.clearTimeout(revealTimer);
+        };
     }, [isMapMarkerDeckOpen]);
 
     const openMapTutorial = useCallback(() => {
@@ -536,6 +538,9 @@ export function MapClient() {
 
     const handleClusterSelect = useCallback(
         (clusterId: string) => {
+            setIsPagerHiddenByMarkerDeck(true);
+            setPagerSnap('peek');
+            setPagerPromotedCount(0);
             updateUrl({ cluster: clusterId });
         },
         [updateUrl],
@@ -543,6 +548,9 @@ export function MapClient() {
 
     const handleFeedMarkerSelect = useCallback(
         (feedId: string) => {
+            setIsPagerHiddenByMarkerDeck(true);
+            setPagerSnap('peek');
+            setPagerPromotedCount(0);
             updateUrl({ cluster: `feed-${feedId}` });
         },
         [updateUrl],
@@ -550,6 +558,9 @@ export function MapClient() {
 
     const handleFeedMarkerGroupSelect = useCallback(
         (groupId: string) => {
+            setIsPagerHiddenByMarkerDeck(true);
+            setPagerSnap('peek');
+            setPagerPromotedCount(0);
             updateUrl({ cluster: groupId });
         },
         [updateUrl],
@@ -820,25 +831,24 @@ export function MapClient() {
                 onClose={() => updateUrl({ chat: false })}
             />
 
-            {!isPagerHiddenByMarkerDeck && (
-                <MapFeedCardPager
-                    snap={pagerSnap}
-                    onSnapChange={setPagerSnap}
-                    promotedCount={pagerPromotedCount}
-                    onPromotedCountChange={setPagerPromotedCount}
-                    items={visibleFeedItems}
-                    isInitialLoading={isInitialFeedLoading}
-                    onTutorialCardPromote={showCardTutorialStep}
-                    onTutorialCardDismiss={completeDeckTutorial}
-                    onTutorialCardDetail={
-                        tutorialOpen ? completeDeckTutorial : undefined
-                    }
-                    onBookmark={(item) => {
-                        // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                        console.info('[bookmark]', item.id, item.title);
-                    }}
-                />
-            )}
+            <MapFeedCardPager
+                hidden={isFeedPagerHidden}
+                snap={pagerSnap}
+                onSnapChange={setPagerSnap}
+                promotedCount={pagerPromotedCount}
+                onPromotedCountChange={setPagerPromotedCount}
+                items={visibleFeedItems}
+                isInitialLoading={isInitialFeedLoading}
+                onTutorialCardPromote={showCardTutorialStep}
+                onTutorialCardDismiss={completeDeckTutorial}
+                onTutorialCardDetail={
+                    tutorialOpen ? completeDeckTutorial : undefined
+                }
+                onBookmark={(item) => {
+                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
+                    console.info('[bookmark]', item.id, item.title);
+                }}
+            />
 
             <FeedBottomSheet
                 open={feedListOpen}
