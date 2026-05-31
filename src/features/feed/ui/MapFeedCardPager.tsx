@@ -164,12 +164,7 @@ export function MapFeedCardPager({
             clearResetToPeekTimer();
             setIsResettingToPeek(false);
         }
-    }, [
-        safePromoted,
-        clearResetToPeekTimer,
-        holdStackUntilResetExitCompletes,
-        promotedCount,
-    ]);
+    }, [safePromoted, clearResetToPeekTimer, holdStackUntilResetExitCompletes]);
 
     useEffect(
         () => () => {
@@ -309,7 +304,7 @@ export function MapFeedCardPager({
             {/* promote 된 카드 더미 — 화면 위쪽으로 쌓임 */}
             <div
                 className={`pointer-events-none fixed inset-x-0 z-30 ${
-                    hidden ? 'opacity-0' : ''
+                    hidden ? 'pointer-events-none opacity-0' : ''
                 }`}
                 style={{ top: `${DECK_ANIMATION.cardTopDvh}dvh` }}
             >
@@ -388,7 +383,9 @@ export function MapFeedCardPager({
                                 <motion.div
                                     key={item.id}
                                     className={`absolute left-0 right-0 ${
-                                        isTop ? 'pointer-events-auto' : ''
+                                        isTop && !hidden
+                                            ? 'pointer-events-auto'
+                                            : ''
                                     }`}
                                     style={{
                                         zIndex: 100 - order,
