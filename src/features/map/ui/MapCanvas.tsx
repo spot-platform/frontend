@@ -8,6 +8,66 @@ const NAVER_CLIENT_ID = process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_KEY ?? '';
 const DEFAULT_CENTER = { lat: 37.2636, lng: 127.0286 };
 const DEFAULT_ZOOM = 15;
 
+type OverlayRedrawRegistry = {
+    callbacks: Set<() => void>;
+    listeners: naver.maps.MapEventListener[];
+    rafId: number | null;
+};
+
+const overlayRedrawRegistries = new WeakMap<
+    naver.maps.Map,
+    OverlayRedrawRegistry
+>();
+
+function scheduleOverlayRedraw(registry: OverlayRedrawRegistry) {
+    if (registry.rafId !== null) return;
+    registry.rafId = window.requestAnimationFrame(() => {
+        registry.rafId = null;
+        for (const callback of registry.callbacks) {
+            try {
+                callback();
+            } catch {
+                // 한 overlay redraw 실패가 같은 batch 의 나머지 overlay 위치 동기화를 막지 않게 격리.
+            }
+        }
+    });
+}
+
+function registerMapOverlayRedraw(map: naver.maps.Map, redraw: () => void) {
+    let registry = overlayRedrawRegistries.get(map);
+    if (!registry) {
+        const nextRegistry: OverlayRedrawRegistry = {
+            callbacks: new Set(),
+            listeners: [],
+            rafId: null,
+        };
+        const schedule = () => scheduleOverlayRedraw(nextRegistry);
+        nextRegistry.listeners = [
+            naver.maps.Event.addListener(map, 'idle', schedule),
+            naver.maps.Event.addListener(map, 'zoom_changed', schedule),
+            naver.maps.Event.addListener(map, 'bounds_changed', schedule),
+        ];
+        overlayRedrawRegistries.set(map, nextRegistry);
+        registry = nextRegistry;
+    }
+
+    registry.callbacks.add(redraw);
+    return () => {
+        const current = overlayRedrawRegistries.get(map);
+        if (!current) return;
+        current.callbacks.delete(redraw);
+        if (current.callbacks.size > 0) return;
+
+        for (const listener of current.listeners) {
+            naver.maps.Event.removeListener(listener);
+        }
+        if (current.rafId !== null) {
+            window.cancelAnimationFrame(current.rafId);
+        }
+        overlayRedrawRegistries.delete(map);
+    };
+}
+
 export type MapOverlayItem = {
     key: string;
     position: { lat: number; lng: number };
@@ -346,23 +406,15 @@ export function NaverOverlay({
 
     // 줌 애니메이션 중·후 모두 redraw 를 강제해 overlay 가 stale pixel 에 남지 않도록.
     // GL 렌더링에선 zoom_changed 가 한 번만 발화될 수 있어 bounds_changed + idle 을 함께 구독.
-    // 과거엔 200ms setInterval 로 폴링했으나, 오버레이 N개 × 초당 5회 draw 가 모바일 발열의
-    // 주범이라 map 이벤트 구독으로 전환. positionSubscribe 가 있는 overlay 는 subscribe 자체가
-    // 동기화 역할이므로 스킵.
+    // map 이벤트 listener 는 overlay 마다 붙이지 않고 map 단위 registry 에 모아 rAF 로 batch redraw 한다.
+    // positionSubscribe 가 있는 overlay 는 subscribe 자체가 동기화 역할이므로 스킵.
     useEffect(() => {
         if (!map || positionSubscribe) return;
         const redraw = () => {
             const ov = overlayRef.current;
             if (ov && ov.getMap()) ov.draw();
         };
-        const listeners = [
-            naver.maps.Event.addListener(map, 'idle', redraw),
-            naver.maps.Event.addListener(map, 'zoom_changed', redraw),
-            naver.maps.Event.addListener(map, 'bounds_changed', redraw),
-        ];
-        return () => {
-            for (const l of listeners) naver.maps.Event.removeListener(l);
-        };
+        return registerMapOverlayRedraw(map, redraw);
     }, [map, positionSubscribe]);
 
     return createPortal(children, container);
