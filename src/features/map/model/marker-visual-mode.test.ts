@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+    COARSE_POINTER_PERSONA_PULSE_COUNT_THRESHOLD,
     decideMarkerVisualMode,
     SIMPLE_MARKER_COUNT_THRESHOLD,
     SIMPLE_MARKER_ZOOM_THRESHOLD,
+    shouldAnimatePersonaDots,
     shouldRenderPersonaDots,
 } from './marker-visual-mode';
 
@@ -72,5 +74,61 @@ describe('shouldRenderPersonaDots', () => {
 
     it('hides persona dots only when the active layer disables personas', () => {
         expect(shouldRenderPersonaDots({ showPersonas: false })).toBe(false);
+    });
+});
+
+describe('shouldAnimatePersonaDots', () => {
+    it('keeps persona pulse enabled at high zoom with a sparse viewport', () => {
+        expect(
+            shouldAnimatePersonaDots({
+                showPersonas: true,
+                mapZoom: SIMPLE_MARKER_ZOOM_THRESHOLD + 1,
+                viewportMarkerCount: SIMPLE_MARKER_COUNT_THRESHOLD - 1,
+            }),
+        ).toBe(true);
+    });
+
+    it('disables persona pulse when map zoom already simplifies markers', () => {
+        expect(
+            shouldAnimatePersonaDots({
+                showPersonas: true,
+                mapZoom: SIMPLE_MARKER_ZOOM_THRESHOLD,
+                viewportMarkerCount: 1,
+            }),
+        ).toBe(false);
+    });
+
+    it('disables persona pulse in dense viewports while keeping dots visible', () => {
+        expect(
+            shouldAnimatePersonaDots({
+                showPersonas: true,
+                mapZoom: SIMPLE_MARKER_ZOOM_THRESHOLD + 1,
+                viewportMarkerCount: SIMPLE_MARKER_COUNT_THRESHOLD,
+            }),
+        ).toBe(false);
+    });
+
+    it('uses a lower pulse budget on coarse pointer devices', () => {
+        expect(
+            shouldAnimatePersonaDots({
+                showPersonas: true,
+                mapZoom: SIMPLE_MARKER_ZOOM_THRESHOLD + 1,
+                viewportMarkerCount:
+                    COARSE_POINTER_PERSONA_PULSE_COUNT_THRESHOLD,
+                isCoarsePointer: true,
+            }),
+        ).toBe(false);
+    });
+
+    it('does not disable pulse before viewport readiness is known', () => {
+        expect(
+            shouldAnimatePersonaDots({
+                showPersonas: true,
+                mapZoom: SIMPLE_MARKER_ZOOM_THRESHOLD + 1,
+                viewportMarkerCount: SIMPLE_MARKER_COUNT_THRESHOLD + 50,
+                viewportReady: false,
+                isCoarsePointer: true,
+            }),
+        ).toBe(true);
     });
 });

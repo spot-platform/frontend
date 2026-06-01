@@ -43,6 +43,7 @@ import type { TickerEvent } from '@/features/map/model/ticker-adapter';
 import { createSwarmTickerAdapter } from '@/features/map/model/swarm-ticker-adapter';
 import {
     decideMarkerVisualMode,
+    shouldAnimatePersonaDots as shouldAnimatePersonaDotsForBudget,
     shouldRenderPersonaDots as shouldRenderPersonaDotsForBudget,
 } from '@/features/map/model/marker-visual-mode';
 import { useTheme } from '@/shared/model/use-theme';
@@ -159,6 +160,7 @@ export function MapClient() {
     void pagerSnap;
     const [viewportBbox, setViewportBbox] = useState<ViewportBbox | null>(null);
     const [mapZoom, setMapZoom] = useState(DEFAULT_MAP_ZOOM);
+    const [isCoarsePointer, setIsCoarsePointer] = useState(false);
     const isMapMarkerDeckOpen = selectedClusterId !== null;
     const isFeedPagerHidden = isMapMarkerDeckOpen || isPagerHiddenByMarkerDeck;
     // next-themes 의 resolvedTheme 은 초기 렌더에서 undefined — 이 상태로 MapV3Canvas 가 mount 되면
@@ -185,6 +187,23 @@ export function MapClient() {
         setTutorialStepIndex(0);
         setSelectedTutorialMarkerId(null);
         setTutorialOpen(true);
+    }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const media = window.matchMedia('(pointer: coarse)');
+        const updateCoarsePointer = () => setIsCoarsePointer(media.matches);
+        updateCoarsePointer();
+        if (typeof media.addEventListener === 'function') {
+            media.addEventListener('change', updateCoarsePointer);
+            return () => {
+                media.removeEventListener('change', updateCoarsePointer);
+            };
+        }
+        media.addListener?.(updateCoarsePointer);
+        return () => {
+            media.removeListener?.(updateCoarsePointer);
+        };
     }, []);
 
     useEffect(() => {
@@ -535,6 +554,13 @@ export function MapClient() {
     const shouldRenderPersonaDots = shouldRenderPersonaDotsForBudget({
         showPersonas,
     });
+    const shouldAnimatePersonaDots = shouldAnimatePersonaDotsForBudget({
+        showPersonas,
+        mapZoom,
+        viewportMarkerCount,
+        viewportReady: viewportBbox !== null,
+        isCoarsePointer,
+    });
 
     const handleClusterSelect = useCallback(
         (clusterId: string) => {
@@ -623,7 +649,7 @@ export function MapClient() {
                     <PersonaDotMarkerBlob
                         name={persona.name}
                         variant="ai"
-                        moving
+                        moving={shouldAnimatePersonaDots}
                     />
                 ),
             };
@@ -642,6 +668,7 @@ export function MapClient() {
         swarmSubscribe,
         swarmPositionsRef,
         shouldRenderPersonaDots,
+        shouldAnimatePersonaDots,
         inViewport,
     ]);
 
