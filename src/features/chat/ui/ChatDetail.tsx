@@ -61,6 +61,22 @@ interface ChatDetailProps {
     roomId: string;
 }
 
+type ChatSubmitKeyEvent = {
+    key: string;
+    shiftKey: boolean;
+    nativeEvent: {
+        isComposing: boolean;
+        keyCode?: number;
+    };
+};
+
+export function shouldSubmitChatDraft(event: ChatSubmitKeyEvent): boolean {
+    const isImeComposing =
+        event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229;
+
+    return event.key === 'Enter' && !event.shiftKey && !isImeComposing;
+}
+
 function isBackendChatRoomId(id: string): boolean {
     return /^\d+$/.test(id);
 }
@@ -643,7 +659,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     }
 
     function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-        if (event.key === 'Enter' && !event.shiftKey) {
+        if (shouldSubmitChatDraft(event)) {
             event.preventDefault();
             handleSend();
         }
