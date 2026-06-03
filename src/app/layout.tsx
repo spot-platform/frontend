@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { NotificationSSEProvider } from '@/app/providers/notification-sse-provider';
 import { QueryProvider } from '@/app/providers/query-provider';
 import { ThemeProvider } from '@/app/providers/theme-provider';
 import { PwaUpdatePrompt } from '@/shared/ui/pwa-update-prompt';
@@ -48,7 +49,10 @@ export default function RootLayout({
         <html lang="ko" suppressHydrationWarning>
             <body className="min-h-screen bg-background font-sans antialiased">
                 <ThemeProvider>
-                    <QueryProvider>{children}</QueryProvider>
+                    <QueryProvider>
+                        <NotificationSSEProvider />
+                        {children}
+                    </QueryProvider>
                 </ThemeProvider>
                 <PwaUpdatePrompt />
             </body>
