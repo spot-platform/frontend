@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { AppToaster } from '@frontend/design-system';
 import { NotificationSSEProvider } from '@/app/providers/notification-sse-provider';
 import { QueryProvider } from '@/app/providers/query-provider';
 import { ThemeProvider } from '@/app/providers/theme-provider';
@@ -52,6 +53,7 @@ export default function RootLayout({
                     <QueryProvider>
                         <NotificationSSEProvider />
                         {children}
+                        <AppToaster />
                     </QueryProvider>
                 </ThemeProvider>
                 <PwaUpdatePrompt />

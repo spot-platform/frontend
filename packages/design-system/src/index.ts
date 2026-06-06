@@ -55,3 +55,6 @@ export type { BottomSheetProps } from './components/BottomSheet';
 
 export { Modal } from './components/Modal';
 export type { ModalProps } from './components/Modal';
+
+export { AppToaster, toast } from './components/Toaster';
+export type { AppToasterProps } from './components/Toaster';

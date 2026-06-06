@@ -1,7 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { BottomSheet, Button, Input, Textarea } from '@frontend/design-system';
+import {
+    BottomSheet,
+    Button,
+    Input,
+    Textarea,
+    toast,
+} from '@frontend/design-system';
 import { IconX } from '@tabler/icons-react';
 import type { SpotForfeitPool } from '@/entities/spot/types';
 import { useSubmitSpotSettlement } from '../../model/use-spot';
@@ -97,15 +103,20 @@ export function SettlementSubmitSheet({
             }))
             .filter((item) => item.label.length > 0 && item.amount > 0);
 
-        await submit.mutateAsync({
-            id: spotId,
-            payload: { lineItems, summary: summary.trim() },
-        });
+        try {
+            await submit.mutateAsync({
+                id: spotId,
+                payload: { lineItems, summary: summary.trim() },
+            });
 
-        setItems([emptyLineItem(), emptyLineItem()]);
-        setSummary('');
-        onClose();
-        onSubmitted?.();
+            toast.success('정산을 제출했어요.');
+            setItems([emptyLineItem(), emptyLineItem()]);
+            setSummary('');
+            onClose();
+            onSubmitted?.();
+        } catch {
+            toast.error('정산 제출에 실패했어요.');
+        }
     };
 
     return (

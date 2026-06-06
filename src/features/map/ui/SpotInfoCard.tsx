@@ -175,7 +175,7 @@ export function SpotInfoCard({
             {variant === 'discovery' ? (
                 <div className="mt-3 rounded-xl border border-dashed border-border-soft bg-muted/45 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
                     동네에서 감지된 발견 신호예요. 실제 피드는 아니어서 자세히
-                    보기나 리퀘스트 전환 없이 주변 활동 분위기만 보여줘요.
+                    보기나 알려줘 전환 없이 주변 활동 분위기만 보여줘요.
                 </div>
             ) : (
                 <button

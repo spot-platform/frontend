@@ -4,12 +4,25 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from '@frontend/design-system';
 import { useAuthStore } from '@/shared/model/auth-store';
 import { Main, Section } from '@/shared/ui';
 import { formatNumber, getDisplayName } from '../model/my-page-helpers';
 import { useMyProfile } from '../model/use-my';
 
-const MY_GROUPS = [
+type MyGroupItem = {
+    href: string;
+    label: string;
+    description: string;
+    unavailable?: boolean;
+};
+
+type MyGroup = {
+    title: string;
+    items: MyGroupItem[];
+};
+
+const MY_GROUPS: MyGroup[] = [
     {
         title: '계정',
         items: [
@@ -32,6 +45,7 @@ const MY_GROUPS = [
                 href: '/my/support-register',
                 label: '서포터 등록 정보',
                 description: '분야, 소개, 인증 절차와 제출 자료',
+                unavailable: true,
             },
             {
                 href: '/my/support-profile',
@@ -47,11 +61,13 @@ const MY_GROUPS = [
                 href: '/my/point',
                 label: '포인트',
                 description: '내역, 충전, 출금, 연동 계좌',
+                unavailable: true,
             },
             {
                 href: '/my/history',
                 label: '히스토리',
                 description: '스팟 활동, 서포터 관련 기록, 리뷰',
+                unavailable: true,
             },
             {
                 href: '/my/favorite',
@@ -65,7 +81,7 @@ const MY_GROUPS = [
             },
         ],
     },
-] as const;
+];
 
 export function MyPageClient() {
     const router = useRouter();
@@ -138,20 +154,39 @@ export function MyPageClient() {
                         {group.title}
                     </h2>
                     <div className="divide-y divide-border-soft">
-                        {group.items.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className="block px-4 py-3 transition-colors hover:bg-muted active:bg-border-soft"
-                            >
-                                <p className="text-sm font-medium text-foreground">
-                                    {item.label}
-                                </p>
-                                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                                    {item.description}
-                                </p>
-                            </Link>
-                        ))}
+                        {group.items.map((item) => {
+                            const content = (
+                                <>
+                                    <p className="text-sm font-medium text-foreground">
+                                        {item.label}
+                                    </p>
+                                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                                        {item.description}
+                                    </p>
+                                </>
+                            );
+
+                            return item.unavailable ? (
+                                <button
+                                    key={item.href}
+                                    type="button"
+                                    onClick={() =>
+                                        toast.info('미구현 기능입니다.')
+                                    }
+                                    className="block w-full px-4 py-3 text-left transition-colors hover:bg-muted active:bg-border-soft"
+                                >
+                                    {content}
+                                </button>
+                            ) : (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className="block px-4 py-3 transition-colors hover:bg-muted active:bg-border-soft"
+                                >
+                                    {content}
+                                </Link>
+                            );
+                        })}
                     </div>
                 </Section>
             ))}

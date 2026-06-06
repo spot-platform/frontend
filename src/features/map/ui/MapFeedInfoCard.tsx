@@ -31,6 +31,7 @@ export function MapFeedInfoCard({
             ]}
             onCloseAction={onCloseAction}
             dismissBehavior="close"
+            disableContentClick
             chrome={
                 onBookmarkAction ? (
                     <button

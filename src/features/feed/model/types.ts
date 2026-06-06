@@ -119,7 +119,7 @@ export interface FeedItem {
     owner?: boolean;
     /**
      * 2026-04-30 — contextBuilder 시뮬레이션이 합성한 AI 피드 마커.
-     * 실제 호스트가 만든 글이 아니므로 참여 액션 대신 "리퀘스트 열기" 안내로 대체.
+     * 실제 호스트가 만든 글이 아니므로 참여 액션 대신 "알려줘 열기" 안내로 대체.
      */
     isAi?: boolean;
     // 2026-04-30 contextBuilder PlanV3/PriceBreakdown/Preparation/ResolvedPlace 통합.

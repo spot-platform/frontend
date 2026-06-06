@@ -41,13 +41,36 @@ export function usePostFormPrefill(): PostBaseFormPrefill | undefined {
         const category = searchParams.get('category');
         const location = searchParams.get('location');
         const content = searchParams.get('content');
+        const latRaw = searchParams.get('lat');
+        const lngRaw = searchParams.get('lng');
+        const parsedLat = latRaw == null ? undefined : Number(latRaw);
+        const parsedLng = lngRaw == null ? undefined : Number(lngRaw);
+        const lat =
+            parsedLat != null && Number.isFinite(parsedLat)
+                ? parsedLat
+                : undefined;
+        const lng =
+            parsedLng != null && Number.isFinite(parsedLng)
+                ? parsedLng
+                : undefined;
 
-        if (!title && !category && !location && !content) return undefined;
+        if (
+            !title &&
+            !category &&
+            !location &&
+            !content &&
+            lat == null &&
+            lng == null
+        ) {
+            return undefined;
+        }
 
         const prefill: PostBaseFormPrefill = {};
         if (title) prefill.title = title;
         if (category) prefill.categories = [mapSpotCategoryToPost(category)];
         if (location) prefill.location = location;
+        if (lat != null) prefill.locationLat = lat;
+        if (lng != null) prefill.locationLng = lng;
         if (content) prefill.content = content;
         return prefill;
     }, [searchParams]);

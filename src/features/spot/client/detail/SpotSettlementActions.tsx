@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Modal } from '@frontend/design-system';
+import { Button, Modal, toast } from '@frontend/design-system';
 import type {
     SpotForfeitPool,
     SpotStatus,
@@ -47,9 +47,14 @@ export function SpotSettlementActions({
     }
 
     const handleApprove = async () => {
-        await approve.mutateAsync(spotId);
-        setApproveOpen(false);
-        onSettled?.();
+        try {
+            await approve.mutateAsync(spotId);
+            toast.success('정산을 승인했어요.');
+            setApproveOpen(false);
+            onSettled?.();
+        } catch {
+            toast.error('정산 승인에 실패했어요.');
+        }
     };
 
     return (

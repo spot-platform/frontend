@@ -16,6 +16,7 @@ import {
 } from '@/features/feed/ui/MapFeedCardPager';
 import { FeedBottomSheet } from '@/features/feed/ui/FeedBottomSheet';
 import type { BottomSheetSnapPoint } from '@frontend/design-system';
+import { toast } from '@frontend/design-system';
 import { useLayerStore } from '@/features/layer/model/use-layer-store';
 import { useSimRun } from '@/features/simulation/model/use-sim-run';
 import { useSimDomain } from '@/features/simulation/model/sim-domain-adapter';
@@ -35,7 +36,10 @@ import {
     type MapTutorialMarkerInfo,
 } from '@/features/map/ui/MapTutorialOverlay';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
-import { useLayerAwareFeedList } from '@/features/feed/model/use-feed';
+import {
+    useLayerAwareFeedList,
+    useToggleFeedBookmark,
+} from '@/features/feed/model/use-feed';
 import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
 import { groupFeedMarkersByProximity } from '@/features/feed/model/feed-marker-group';
 import { filterHotspotsOverlappingFeedMarkers } from '@/features/map/model/hotspot-feed-overlap';
@@ -382,6 +386,8 @@ export function MapClient() {
                 feedType,
                 categories,
                 searchQuery,
+                excludeApplied: true,
+                onlyOpenFeeds: true,
             }),
         [feedData?.data, feedType, categories, searchQuery],
     );
@@ -389,6 +395,25 @@ export function MapClient() {
     const feedMarkerGroups = useMemo(
         () => groupFeedMarkersByProximity(visibleFeedItems),
         [visibleFeedItems],
+    );
+    const toggleFeedBookmark = useToggleFeedBookmark();
+    const handleFeedBookmark = useCallback(
+        (item: (typeof visibleFeedItems)[number]) => {
+            toggleFeedBookmark.mutate(
+                { feedId: item.id, bookmarked: Boolean(item.isBookmarked) },
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            item.isBookmarked
+                                ? '찜을 해제했어요.'
+                                : '찜에 추가했어요.',
+                        );
+                    },
+                    onError: () => toast.error('찜 상태를 바꾸지 못했어요.'),
+                },
+            );
+        },
+        [toggleFeedBookmark],
     );
 
     const activeLayer = useLayerStore((s) => s.activeLayer);
@@ -871,10 +896,7 @@ export function MapClient() {
                 onTutorialCardDetail={
                     tutorialOpen ? completeDeckTutorial : undefined
                 }
-                onBookmark={(item) => {
-                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                    console.info('[bookmark]', item.id, item.title);
-                }}
+                onBookmark={handleFeedBookmark}
             />
 
             <FeedBottomSheet
@@ -950,14 +972,7 @@ export function MapClient() {
                                 onCloseAction={() =>
                                     updateUrl({ cluster: null })
                                 }
-                                onBookmarkAction={(item) => {
-                                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                                    console.info(
-                                        '[bookmark]',
-                                        item.id,
-                                        item.title,
-                                    );
-                                }}
+                                onBookmarkAction={handleFeedBookmark}
                             />
                         );
                     }
@@ -979,14 +994,7 @@ export function MapClient() {
                                 onDetailAction={() =>
                                     router.push(`/feed/${selectedFeed.id}`)
                                 }
-                                onBookmarkAction={(item) => {
-                                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                                    console.info(
-                                        '[bookmark]',
-                                        item.id,
-                                        item.title,
-                                    );
-                                }}
+                                onBookmarkAction={handleFeedBookmark}
                             />
                         );
                     }
