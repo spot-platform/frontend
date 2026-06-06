@@ -20,7 +20,9 @@ type FeedRecentViewRecorderProps = {
 export function FeedRecentViewRecorder({ item }: FeedRecentViewRecorderProps) {
     useEffect(() => {
         recordRecentFeedView(item);
-    }, [item]);
+        // CodeRabbit QA: record only once per feed navigation, not on parent object re-renders.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [item.id]);
 
     return null;
 }

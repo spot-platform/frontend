@@ -30,7 +30,7 @@ import {
     useMainChatStore,
 } from '../model/use-main-chat-store';
 import { chatApi } from '../api/chat-api';
-import { isOwnedSpotRoom, isSupporterForSpot } from '../model/mock';
+import { computeChatRoomRoleContext } from '../model/room-role';
 import {
     getShareableSpotActionItems,
     getSpotScheduleActionId,
@@ -597,28 +597,14 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     const messageCount = messages.filter(
         (message) => message.kind !== 'system',
     ).length;
-    const roomLifecycleSource =
+    const roleContext =
         currentRoom.category === 'spot'
-            ? (currentRoom.sourceKind ??
-              (currentRoom.sourceFeedId && currentRoom.spot.status === 'OPEN'
-                  ? 'feed'
-                  : 'spot'))
+            ? computeChatRoomRoleContext(currentRoom)
             : null;
-    const userFeedRole =
-        currentRoom.category === 'spot'
-            ? (currentRoom.participationRole ??
-              (currentRoom.spot.isOwner || isOwnedSpotRoom(currentRoom)
-                  ? 'OWNER'
-                  : isSupporterForSpot(currentRoom)
-                    ? 'SUPPORTER'
-                    : 'PARTNER'))
-            : null;
-    const canManageOwnerActions =
-        currentRoom.category === 'spot' && userFeedRole === 'OWNER';
-    const canCreateReverseOffer =
-        currentRoom.category === 'spot' &&
-        roomLifecycleSource === 'feed' &&
-        userFeedRole === 'SUPPORTER';
+    const roomLifecycleSource = roleContext?.roomLifecycleSource ?? null;
+    const userFeedRole = roleContext?.userFeedRole ?? null;
+    const canManageOwnerActions = Boolean(roleContext?.canManageOwnerActions);
+    const canCreateReverseOffer = Boolean(roleContext?.canCreateReverseOffer);
     const conversationTitle =
         currentRoom.category === 'spot' && roomLifecycleSource === 'feed'
             ? '피드 대화'

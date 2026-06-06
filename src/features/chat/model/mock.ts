@@ -504,6 +504,10 @@ function buildSpotRoom(spotId: string): SpotChatRoom | null {
                   new Date(right.createdAt).getTime(),
           )
         : baseMessages;
+    const isCurrentUserSupporter =
+        spot.type === 'OFFER'
+            ? spot.authorId === CHAT_CURRENT_USER_ID
+            : spot.authorId !== CHAT_CURRENT_USER_ID;
 
     return {
         id: `spot-room-${spot.id}`,
@@ -519,22 +523,7 @@ function buildSpotRoom(spotId: string): SpotChatRoom | null {
         reverseOffer: reverseOfferScenario?.reverseOffer,
         sourceFeedId: spot.status === 'OPEN' ? `feed-${spot.id}` : undefined,
         sourceKind: spot.status === 'OPEN' ? 'feed' : 'spot',
-        participationRole: isSupporterForSpot({
-            id: `spot-room-${spot.id}`,
-            category: 'spot',
-            currentUserId: CHAT_CURRENT_USER_ID,
-            currentUserName: CHAT_CURRENT_USER_NAME,
-            title: spot.title,
-            subtitle: '',
-            description: spot.description,
-            metaLabel: '',
-            updatedAt: spot.updatedAt,
-            unreadCount: 0,
-            spot,
-            messages: [],
-        })
-            ? 'SUPPORTER'
-            : 'PARTNER',
+        participationRole: isCurrentUserSupporter ? 'SUPPORTER' : 'PARTNER',
         messages,
     };
 }

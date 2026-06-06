@@ -46,9 +46,9 @@ export function getRecentFeedViews(params?: { page?: number; size?: number }): {
     meta: { page: number; size: number; total: number; hasNext: boolean };
 } {
     const items = readRecentFeedViews();
-    const page = params?.page ?? 0;
+    const page = params?.page ?? 1;
     const size = params?.size ?? items.length;
-    const zeroBasedPage = page > 0 ? page - 1 : page;
+    const zeroBasedPage = Math.max(0, page - 1);
     const start = zeroBasedPage * size;
     const data = items.slice(start, start + size);
 

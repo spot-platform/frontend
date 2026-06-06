@@ -30,8 +30,8 @@ import { formatReverseOfferApprovalProgress } from '../model/types';
 import {
     CHAT_CURRENT_USER_ID,
     getChatDirectoryCandidates,
-    isSupporterForSpot,
 } from '../model/mock';
+import { computeChatRoomRoleContext } from '../model/room-role';
 import type {
     ChatReverseOfferFinancialSnapshot,
     ChatReverseOfferStatus,
@@ -875,22 +875,9 @@ function TeamCreationPanel({
         );
     }
 
-    const userFeedRole =
-        selectedSpotRoom.participationRole ??
-        (selectedSpotRoom.spot.isOwner ||
-        selectedSpotRoom.spot.authorId === selectedSpotRoom.currentUserId
-            ? 'OWNER'
-            : isSupporterForSpot(selectedSpotRoom)
-              ? 'SUPPORTER'
-              : 'PARTNER');
-    const roomLifecycleSource =
-        selectedSpotRoom.sourceKind ??
-        (selectedSpotRoom.sourceFeedId &&
-        selectedSpotRoom.spot.status === 'OPEN'
-            ? 'feed'
-            : 'spot');
-    const isOwner = userFeedRole === 'OWNER';
-    const isSupporter = userFeedRole === 'SUPPORTER';
+    const roleContext = computeChatRoomRoleContext(selectedSpotRoom);
+    const isOwner = roleContext.userFeedRole === 'OWNER';
+    const isSupporter = roleContext.userFeedRole === 'SUPPORTER';
 
     if (['vote', 'schedule', 'file'].includes(step) && !isOwner) {
         return (
@@ -902,7 +889,7 @@ function TeamCreationPanel({
 
     if (
         step === 'reverse-offer' &&
-        (roomLifecycleSource !== 'feed' || isOwner || !isSupporter)
+        (!roleContext.canCreateReverseOffer || isOwner || !isSupporter)
     ) {
         return (
             <div className="rounded-2xl bg-white/10 px-4 py-4 text-center text-sm text-white/60 pb-2">

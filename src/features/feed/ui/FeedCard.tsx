@@ -226,6 +226,15 @@ function AutoScrollList({ children }: { children: React.ReactNode }) {
     const posRef = useRef(0);
     const childArray = React.Children.toArray(children);
     const shouldLoop = childArray.length > 3;
+    const loopChildren = shouldLoop
+        ? childArray.map((child, index) =>
+              React.isValidElement(child)
+                  ? React.cloneElement(child, {
+                        key: `loop-${child.key ?? index}`,
+                    })
+                  : child,
+          )
+        : null;
 
     useEffect(() => {
         const el = ref.current;
@@ -284,7 +293,7 @@ function AutoScrollList({ children }: { children: React.ReactNode }) {
             }
         >
             {childArray}
-            {shouldLoop ? childArray : null}
+            {loopChildren}
         </div>
     );
 }
