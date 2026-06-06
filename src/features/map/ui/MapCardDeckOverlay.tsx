@@ -101,7 +101,20 @@ export function MapCardDeckOverlay({
         const gesture = resolveFeedStackGesture({
             dx: info.offset.x,
             dy: info.offset.y,
+            velocityX: info.velocity.x,
         });
+
+        if (gesture === 'detail-left' || gesture === 'detail-right') {
+            if (!topItem.onDetailAction) return;
+            setExitOverride({
+                id: topItem.id,
+                dir: gesture === 'detail-left' ? 'left' : 'right',
+            });
+            requestAnimationFrame(() => {
+                topItem.onDetailAction?.();
+            });
+            return;
+        }
 
         if (gesture === 'next') dismissTop('down');
     }
