@@ -36,6 +36,12 @@ function formatFileSize(sizeBytes: number): string {
     return `${sizeBytes}B`;
 }
 
+function getSpotMemberRoleLabel(role: SpotParticipant['role']): string {
+    if (role === 'OWNER' || role === 'AUTHOR') return '오너';
+    if (role === 'SUPPORTER') return '서포터';
+    return '파트너';
+}
+
 export function MatchedPhasePanel({ room }: Props) {
     const spot = room.spot;
 
@@ -170,12 +176,16 @@ function ParticipantsTile({
         >
             <div className="flex flex-wrap gap-2">
                 {participants.slice(0, MAX).map((p) => (
-                    <UserAvatarStatic
-                        key={p.userId}
-                        userId={p.userId}
-                        nickname={p.nickname}
-                        size="sm"
-                    />
+                    <div key={p.userId} className="flex items-center gap-1.5">
+                        <UserAvatarStatic
+                            userId={p.userId}
+                            nickname={p.nickname}
+                            size="sm"
+                        />
+                        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                            {getSpotMemberRoleLabel(p.role)}
+                        </span>
+                    </div>
                 ))}
                 {participants.length > MAX && (
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">

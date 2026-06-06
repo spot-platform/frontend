@@ -21,12 +21,7 @@ import type {
     SpotReview,
     SubmitSettlementPayload,
 } from '@/entities/spot/types';
-import {
-    approveMockSpotSettlement,
-    getMockSpotReviews,
-    submitMockSpotReview,
-    submitMockSpotSettlement,
-} from '../model/mock';
+import { getMockSpotReviews, submitMockSpotReview } from '../model/mock';
 
 export type SpotListParams = {
     type?: SpotType;
@@ -94,9 +89,34 @@ type BackendPaged<T> = {
     meta?: PagedResponse<T>['meta'];
 };
 
-type BackendSpot = Omit<Spot, 'type' | 'status'> & {
+type BackendSettlementLineItem = {
+    label?: string;
+    amount?: number;
+};
+
+type BackendSettlement = {
+    id?: string | number;
+    spotId?: string | number;
+    status?: SpotSettlementApproval['status'];
+    summary?: string;
+    totalAmount?: number;
+    requestedAmount?: number;
+    approvedAmount?: number;
+    lineItems?: BackendSettlementLineItem[];
+    requesterId?: string;
+    createdAt?: string;
+    approvedBy?: string;
+    approvedAt?: string | null;
+};
+
+type BackendSpot = Omit<Spot, 'id' | 'type' | 'status'> & {
+    id: string | number;
     type: Spot['type'] | 'RENT';
     status: Spot['status'];
+    settlement?: BackendSettlement | null;
+    participantCount?: number;
+    isOwner?: boolean;
+    timeline?: SpotDetail['timeline'];
 };
 
 type BackendSpotMapItem = Omit<SpotMapItem, 'id' | 'type'> & {
@@ -107,7 +127,7 @@ type BackendSpotMapItem = Omit<SpotMapItem, 'id' | 'type'> & {
 type BackendParticipant = {
     userId: string;
     nickname?: string;
-    role: SpotParticipant['role'];
+    role?: SpotParticipant['role'];
     joinedAt: string;
 };
 
@@ -172,7 +192,38 @@ type BackendNote = {
 function toSpot(spot: BackendSpot): Spot {
     return {
         ...spot,
+        id: String(spot.id),
         type: spot.type === 'RENT' ? 'OFFER' : spot.type,
+    };
+}
+
+function toSettlement(
+    settlement?: BackendSettlement | null,
+): SpotSettlementApproval | null {
+    if (!settlement) return null;
+
+    const requestedAmount =
+        settlement.requestedAmount ?? settlement.totalAmount ?? 0;
+    const approvedAmount =
+        settlement.approvedAmount ??
+        (settlement.status === 'APPROVED' ? requestedAmount : 0);
+
+    return {
+        id: settlement.id == null ? undefined : String(settlement.id),
+        spotId:
+            settlement.spotId == null ? undefined : String(settlement.spotId),
+        status: settlement.status ?? 'PENDING',
+        requestedAmount,
+        approvedAmount,
+        summary: settlement.summary ?? '',
+        lineItems: (settlement.lineItems ?? []).map((item) => ({
+            label: item.label ?? '정산 항목',
+            amount: item.amount ?? 0,
+        })),
+        submittedBy: settlement.requesterId,
+        submittedAt: settlement.createdAt,
+        approvedBy: settlement.approvedBy,
+        approvedAt: settlement.approvedAt ?? undefined,
     };
 }
 
@@ -187,7 +238,10 @@ function toSpotMapItem(item: BackendSpotMapItem): SpotMapItem {
 function toSpotDetail(spot: BackendSpot): SpotDetail {
     return {
         ...toSpot(spot),
-        timeline: [],
+        participantCount: spot.participantCount,
+        isOwner: spot.isOwner,
+        settlement: toSettlement(spot.settlement),
+        timeline: spot.timeline ?? [],
     };
 }
 
@@ -202,7 +256,7 @@ function toParticipant(participant: BackendParticipant): SpotParticipant {
     return {
         userId: participant.userId,
         nickname: participant.nickname ?? participant.userId,
-        role: participant.role,
+        role: (participant.role ?? 'PARTNER') as SpotParticipant['role'],
         joinedAt: participant.joinedAt,
     };
 }
@@ -680,10 +734,34 @@ export const spotsApi = {
         id: string,
         payload: SubmitSettlementPayload,
     ): Promise<{ data: SpotSettlementApproval }> =>
-        submitMockSpotSettlement(id, payload),
+        clientApiFetch<BackendSettlement>(endpoints.spots.settlement(id), {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        }).then((data) => ({
+            data: toSettlement(data) ?? {
+                status: 'PENDING',
+                requestedAmount: 0,
+                approvedAmount: 0,
+                summary: '',
+                lineItems: [],
+            },
+        })),
 
     approveSettlement: async (
         id: string,
     ): Promise<{ data: SpotSettlementApproval }> =>
-        approveMockSpotSettlement(id),
+        clientApiFetch<BackendSettlement>(
+            endpoints.spots.settlementApprove(id),
+            {
+                method: 'POST',
+            },
+        ).then((data) => ({
+            data: toSettlement(data) ?? {
+                status: 'APPROVED',
+                requestedAmount: 0,
+                approvedAmount: 0,
+                summary: '',
+                lineItems: [],
+            },
+        })),
 };

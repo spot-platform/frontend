@@ -22,6 +22,7 @@ import { VenueSection } from '@/features/feed/ui/detail/VenueSection';
 import { DetailHeader, DetailPageShell } from '@/shared/ui';
 import type {
     FeedApplication,
+    FeedAuthorProfile,
     FeedItem,
     FeedManagementFlow,
     SupporterApplication,
@@ -63,6 +64,76 @@ function formatPrice(price: number): string {
     return price.toLocaleString('ko-KR') + '원';
 }
 
+type FeedDisplayRole = FeedAuthorProfile['role'];
+
+function getFeedRoleLabel(role?: FeedDisplayRole): string {
+    if (role === 'OWNER') return '오너';
+    if (role === 'SUPPORTER') return '서포터';
+    return '파트너';
+}
+
+function SpotPromotionProgress({ item }: { item: FeedItem }) {
+    const progressPercent = Math.min(item.progressPercent ?? 0, 100);
+    const fundingGoal = item.fundingGoal ?? item.price;
+    const fundedAmount = item.fundedAmount ?? 0;
+    const remainingAmount = Math.max(
+        item.remainingAmount ?? fundingGoal - fundedAmount,
+        0,
+    );
+    const remainingParticipantCount = Math.max(
+        item.remainingParticipantCount ?? 0,
+        0,
+    );
+    const converted = Boolean(item.spotId) || item.status === 'MATCHED';
+
+    return (
+        <div className="mt-4 rounded-2xl border border-accent-border bg-accent-muted/60 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+                <div>
+                    <p className="text-xs font-semibold tracking-[0.12em] text-accent uppercase">
+                        스팟 전환 현황
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-gray-900">
+                        {converted
+                            ? '스팟으로 전환됐어요'
+                            : remainingParticipantCount > 0
+                              ? `${remainingParticipantCount}명만 더 모이면 스팟이 열려요`
+                              : remainingAmount > 0
+                                ? `${formatPrice(remainingAmount)} 더 필요해요`
+                                : '스팟 전환 조건을 채웠어요'}
+                    </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-accent">
+                    {progressPercent}%
+                </span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                <div
+                    className="h-full rounded-full bg-accent transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                />
+            </div>
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-gray-500">
+                <span>
+                    현재 {formatPrice(fundedAmount)} / 목표{' '}
+                    {formatPrice(fundingGoal)}
+                </span>
+                {!converted && remainingAmount > 0 && (
+                    <span>남은 금액 {formatPrice(remainingAmount)}</span>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function RoleBadge({ role }: { role?: FeedDisplayRole }) {
+    return (
+        <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
+            {getFeedRoleLabel(role)}
+        </span>
+    );
+}
+
 function AuthorSection({ item }: { item: FeedItem }) {
     const profile = item.authorProfile;
     const isSupporter = profile?.role === 'SUPPORTER';
@@ -88,11 +159,7 @@ function AuthorSection({ item }: { item: FeedItem }) {
                         <p className="font-semibold text-gray-900">
                             {item.authorNickname}
                         </p>
-                        {profile && (
-                            <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
-                                {isSupporter ? '서포터' : '파트너'}
-                            </span>
-                        )}
+                        {profile && <RoleBadge role={profile.role} />}
                     </div>
                     <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
                         <span>{item.location}</span>
@@ -162,6 +229,7 @@ function OfferDetailContent({ item }: { item: FeedItem }) {
                         </span>
                     )}
                 </div>
+                <SpotPromotionProgress item={item} />
             </div>
 
             {/* 본문 */}
@@ -249,6 +317,7 @@ function RequestDetailContent({
                     서포터와 매칭된 후 채팅을 통해 금액과 일정을 함께
                     조율합니다.
                 </p>
+                <SpotPromotionProgress item={item} />
             </div>
 
             {/* 서포터 지원 현황 */}

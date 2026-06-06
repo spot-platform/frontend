@@ -9,7 +9,12 @@ export type MainChatTopTab = 'personal' | 'team';
 export type PersonalCounterpartRole = 'SUPPORTER' | 'PARTNER';
 export type MainChatPersonalFilter = 'all' | 'unread' | 'SUPPORTER' | 'PARTNER';
 export type MainChatTeamFilter = 'all' | 'vote' | 'schedule' | 'file';
-export type ChatActionKind = 'vote' | 'schedule' | 'file' | 'reverse-offer';
+export type ChatActionKind =
+    | 'vote'
+    | 'schedule'
+    | 'file'
+    | 'reverse-offer'
+    | 'settlement';
 
 export type ChatReverseOfferStatus =
     | 'PARTNER_REVIEW'
@@ -241,5 +246,17 @@ export type SpotActionItem =
           roomId: string;
           roomTitle: string;
           reverseOffer: ChatReverseOfferSummary;
+          updatedAt: string;
+      }
+    | {
+          kind: Extract<ChatActionKind, 'settlement'>;
+          id: string;
+          roomId: string;
+          roomTitle: string;
+          settlement:
+              | import('@/entities/spot/types').SpotSettlementApproval
+              | null;
+          spotStatus: import('@/entities/spot/types').SpotStatus;
+          isAuthor: boolean;
           updatedAt: string;
       };

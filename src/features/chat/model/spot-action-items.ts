@@ -1,4 +1,9 @@
-import type { SharedFile, SpotSchedule, SpotVote } from '@/entities/spot/types';
+import type {
+    SharedFile,
+    SpotSchedule,
+    SpotSettlementApproval,
+    SpotVote,
+} from '@/entities/spot/types';
 import type {
     ChatScheduleDraft,
     ChatActionTarget,
@@ -110,8 +115,29 @@ function createReverseOfferActionItem(
     };
 }
 
+function createSettlementActionItem(
+    room: SpotChatRoom,
+    settlement: SpotSettlementApproval | null,
+): SpotActionItem {
+    return {
+        kind: 'settlement',
+        id: getSpotSettlementActionId(room.id),
+        roomId: room.id,
+        roomTitle: room.title,
+        settlement,
+        spotStatus: room.spot.status,
+        isAuthor: room.spot.authorId === room.currentUserId,
+        updatedAt:
+            settlement?.approvedAt ?? settlement?.submittedAt ?? room.updatedAt,
+    };
+}
+
 export function getSpotScheduleActionId(roomId: string): string {
     return `schedule-${roomId}`;
+}
+
+export function getSpotSettlementActionId(roomId: string): string {
+    return `settlement-${roomId}`;
 }
 
 export function getSpotActionItems(room: SpotChatRoom): SpotActionItem[] {
@@ -119,6 +145,12 @@ export function getSpotActionItems(room: SpotChatRoom): SpotActionItem[] {
 
     if (room.reverseOffer) {
         items.push(createReverseOfferActionItem(room, room.reverseOffer));
+    }
+
+    if (room.spot.status === 'CLOSED') {
+        items.push(
+            createSettlementActionItem(room, room.spot.settlement ?? null),
+        );
     }
 
     items.push(
@@ -180,6 +212,7 @@ export function isSupportedChatActionKind(
         value === 'vote' ||
         value === 'schedule' ||
         value === 'file' ||
-        value === 'reverse-offer'
+        value === 'reverse-offer' ||
+        value === 'settlement'
     );
 }

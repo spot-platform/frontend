@@ -11,7 +11,7 @@ export type FeedItemType = 'OFFER' | 'REQUEST' | 'RENT';
 export type FeedItemStatus = 'OPEN' | 'MATCHED' | 'CLOSED';
 export type FeedTabType = 'HOME' | 'EXPLORE';
 export type FeedCategory = '음악' | '요리' | '운동' | '공예' | '언어' | '기타';
-export type FeedAuthorRole = 'SUPPORTER' | 'PARTNER';
+export type FeedAuthorRole = 'OWNER' | 'SUPPORTER' | 'PARTNER';
 
 // 지원자 본인의 신청 생명주기 (SupporterApplicationStatus는 호스트 측 triage 라벨과 별개)
 export type FeedApplicationStatus =
@@ -69,6 +69,8 @@ export interface FeedApplication {
     applicantProfile?: FeedApplicationApplicantProfile | null;
     nickname?: string;
     avatarUrl?: string | null;
+    spotConverted?: boolean;
+    spotId?: string;
 }
 
 export interface FeedAuthorProfile {
@@ -91,6 +93,10 @@ export interface FeedItem {
     type: FeedItemType;
     status: FeedItemStatus;
     progressPercent?: number; // OFFER 타입일 때 펀딩 진행률 (0~100)
+    fundingGoal?: number;
+    fundedAmount?: number;
+    remainingAmount?: number;
+    remainingParticipantCount?: number;
     imageUrl?: string;
     views: number;
     likes: number;

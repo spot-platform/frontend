@@ -17,6 +17,7 @@ type Props = {
     currentUserId: string;
     authorId: string;
     forfeitPool?: SpotForfeitPool;
+    onSettled?: () => void;
 };
 
 export function SpotSettlementActions({
@@ -26,6 +27,7 @@ export function SpotSettlementActions({
     currentUserId,
     authorId,
     forfeitPool,
+    onSettled,
 }: Props) {
     const [sheetOpen, setSheetOpen] = useState(false);
     const [approveOpen, setApproveOpen] = useState(false);
@@ -47,6 +49,7 @@ export function SpotSettlementActions({
     const handleApprove = async () => {
         await approve.mutateAsync(spotId);
         setApproveOpen(false);
+        onSettled?.();
     };
 
     return (
@@ -79,6 +82,7 @@ export function SpotSettlementActions({
                 open={sheetOpen}
                 onClose={() => setSheetOpen(false)}
                 forfeitPool={forfeitPool}
+                onSubmitted={onSettled}
             />
 
             <Modal
