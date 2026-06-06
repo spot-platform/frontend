@@ -174,6 +174,7 @@ export interface SpotChatRoom extends ChatRoomBase {
     spot: SpotDetailFull;
     reverseOffer?: ChatReverseOfferSummary;
     sourceFeedId?: string;
+    sourceKind?: 'feed' | 'spot';
     participationRole?: 'SUPPORTER' | 'PARTNER';
 }
 

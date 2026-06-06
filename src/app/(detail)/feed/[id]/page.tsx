@@ -14,6 +14,7 @@ import {
     getServerFeedDetail,
 } from '@/features/feed/api/feed-server-api';
 import { FeedParticipationActions } from '@/features/feed/ui/detail/FeedParticipationActions';
+import { FeedRecentViewRecorder } from '@/features/feed/ui/detail/FeedRecentViewRecorder';
 import { EditPlanPreparationCard } from '@/features/feed/ui/detail/EditPlanPreparationCard';
 import { PlanSection } from '@/features/feed/ui/detail/PlanSection';
 import { PriceSection } from '@/features/feed/ui/detail/PriceSection';
@@ -229,7 +230,7 @@ function OfferDetailContent({ item }: { item: FeedItem }) {
                         </span>
                     )}
                 </div>
-                <SpotPromotionProgress item={item} />
+                {!item.isAi && <SpotPromotionProgress item={item} />}
             </div>
 
             {/* 본문 */}
@@ -317,7 +318,7 @@ function RequestDetailContent({
                     서포터와 매칭된 후 채팅을 통해 금액과 일정을 함께
                     조율합니다.
                 </p>
-                <SpotPromotionProgress item={item} />
+                {!item.isAi && <SpotPromotionProgress item={item} />}
             </div>
 
             {/* 서포터 지원 현황 */}
@@ -523,6 +524,7 @@ export default async function FeedDetailPage({ params }: Props) {
 
     return (
         <>
+            <FeedRecentViewRecorder item={item} />
             <DetailHeader showShare />
             <DetailPageShell
                 as="main"

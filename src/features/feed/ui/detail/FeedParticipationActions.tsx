@@ -35,6 +35,8 @@ import {
     useRejectFeedApplication,
 } from '../../model/use-feed';
 import { useAuthStore } from '@/shared/model/auth-store';
+import { getErrorMessage } from '@/features/my/ui/my-page/my-page-client-utils';
+import { savePostFormPrefillContext } from '@/features/post/model/use-post-form-prefill';
 
 function formatCurrency(value: number, maximumFractionDigits = 0) {
     return `${value.toLocaleString('ko-KR', {
@@ -366,16 +368,17 @@ export function FeedParticipationActions({
     );
 
     const handleApplicationDecision = async (
-        applicationId: string,
+        application: FeedApplication,
         decision: 'accept' | 'reject',
     ) => {
-        setProcessingApplicationId(applicationId);
+        setProcessingApplicationId(application.id);
+        const roleLabel = getRoleLabel(application.appliedRole);
 
         try {
             if (decision === 'accept') {
                 const response = await acceptFeedApplication.mutateAsync({
                     feedId: item.id,
-                    applicationId,
+                    applicationId: application.id,
                 });
                 const convertedSpotId = response.data.spotId ?? item.spotId;
 
@@ -398,16 +401,27 @@ export function FeedParticipationActions({
                             item.remainingAmount > 0
                           ? ` 앞으로 ${item.remainingAmount.toLocaleString('ko-KR')}P 더 필요해요.`
                           : '';
-                showBottomNavMessage(`신청자를 수락했어요.${remainCopy}`, '');
+                showBottomNavMessage(
+                    `${roleLabel} 신청을 수락했어요.${remainCopy}`,
+                    '',
+                );
             } else {
                 await rejectFeedApplication.mutateAsync({
                     feedId: item.id,
-                    applicationId,
+                    applicationId: application.id,
                 });
-                showBottomNavMessage('신청자를 거절했어요.', '');
+                showBottomNavMessage(`${roleLabel} 신청을 거절했어요.`, '');
+                toast.success(`${roleLabel} 신청을 거절했어요.`);
             }
 
             router.refresh();
+        } catch (error) {
+            toast.error(
+                getErrorMessage(
+                    error,
+                    `${roleLabel} 신청을 ${decision === 'accept' ? '수락' : '거절'}하지 못했어요.`,
+                ),
+            );
         } finally {
             setProcessingApplicationId(null);
         }
@@ -421,10 +435,6 @@ export function FeedParticipationActions({
                         <div>
                             <p className="text-sm font-semibold text-foreground">
                                 내 피드 신청 관리
-                            </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                                authorProfile.id 기준으로 내 피드라서 참여 버튼
-                                대신 승인 플로우를 보여줘요.
                             </p>
                         </div>
                         <span className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
@@ -480,7 +490,7 @@ export function FeedParticipationActions({
                                                     className="rounded-full px-3"
                                                     onClick={() =>
                                                         void handleApplicationDecision(
-                                                            application.id,
+                                                            application,
                                                             'reject',
                                                         )
                                                     }
@@ -494,7 +504,7 @@ export function FeedParticipationActions({
                                                     className="rounded-full bg-accent px-3"
                                                     onClick={() =>
                                                         void handleApplicationDecision(
-                                                            application.id,
+                                                            application,
                                                             'accept',
                                                         )
                                                     }
@@ -520,9 +530,34 @@ export function FeedParticipationActions({
     // AI 피드(시뮬레이터가 합성한 데이터) 는 실제 호스트가 없으므로 참여가 의미 없음.
     // 같은 자리에 "이런 알려줘 직접 열기" 액션만 보여주고 /post/request 로 prefill 라우팅.
     if (item.isAi) {
-        const openRequestFromAiFeed = () => {
+        const isAiOffer = item.type === 'OFFER' || item.type === 'RENT';
+        const targetPostType = isAiOffer ? 'offer' : 'request';
+        const actionLabel = isAiOffer ? '해볼래' : '알려줘';
+        const openPostFromAiFeed = () => {
+            const prefillKey = `ai-feed-${item.id}`;
+            savePostFormPrefillContext(prefillKey, {
+                spotName: item.title,
+                title: item.title,
+                location: item.location,
+                content: item.description ?? item.title,
+                detailDescription: item.description ?? item.title,
+                deadline: item.deadline,
+                maxPartnerCount: item.maxParticipants,
+                desiredPrice: isAiOffer
+                    ? (item.fundingGoal ??
+                      item.priceBreakdown?.base_fee ??
+                      item.price)
+                    : undefined,
+                priceCapPerPerson: !isAiOffer
+                    ? (item.priceBreakdown?.base_fee ?? item.price)
+                    : undefined,
+                plan: item.plan,
+                preparation: item.preparation,
+                priceBreakdown: item.priceBreakdown,
+            });
             const params = new URLSearchParams({
                 fromSpot: item.id,
+                prefillKey,
                 title: item.title,
                 category: item.category ?? '',
                 location: item.location,
@@ -532,22 +567,22 @@ export function FeedParticipationActions({
             const lng = item.lng ?? item.coord?.lng;
             if (typeof lat === 'number') params.set('lat', String(lat));
             if (typeof lng === 'number') params.set('lng', String(lng));
-            router.push(`/post/request?${params.toString()}`);
+            router.push(`/post/${targetPostType}?${params.toString()}`);
         };
 
         return (
             <div className="fixed right-0 bottom-0 left-0 z-30 border-t border-border-soft bg-card/95 px-4 py-3 backdrop-blur-sm">
                 <p className="mb-2 text-center text-[11px] text-muted-foreground">
-                    AI가 추천한 모임이에요. 마음에 들면 비슷한 알려줘를 직접
-                    열어보세요.
+                    AI가 추천한 모임이에요. 마음에 들면 비슷한 {actionLabel}를
+                    직접 열어보세요.
                 </p>
                 <Button
                     fullWidth
                     size="lg"
                     className="rounded-full bg-accent active:translate-y-px active:opacity-90"
-                    onClick={openRequestFromAiFeed}
+                    onClick={openPostFromAiFeed}
                 >
-                    알려줘 열기
+                    {actionLabel} 열기
                 </Button>
             </div>
         );

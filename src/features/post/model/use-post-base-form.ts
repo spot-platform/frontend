@@ -35,6 +35,8 @@ export type PostBaseFormPrefill = Partial<
         | 'locationLat'
         | 'locationLng'
         | 'content'
+        | 'spotName'
+        | 'deadline'
     >
 >;
 
@@ -46,11 +48,13 @@ function applyPrefill(
     return {
         ...base,
         title: prefill.title ?? base.title,
+        spotName: prefill.spotName ?? base.spotName,
         categories: prefill.categories ?? base.categories,
         location: prefill.location ?? base.location,
         locationLat: prefill.locationLat ?? base.locationLat,
         locationLng: prefill.locationLng ?? base.locationLng,
         content: prefill.content ?? base.content,
+        deadline: prefill.deadline ?? base.deadline,
     };
 }
 

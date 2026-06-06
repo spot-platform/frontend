@@ -30,7 +30,7 @@ import {
     useMainChatStore,
 } from '../model/use-main-chat-store';
 import { chatApi } from '../api/chat-api';
-import { isOwnedSpotRoom, isSupporterForSpot } from '../model/mock';
+import { computeChatRoomRoleContext } from '../model/room-role';
 import {
     getShareableSpotActionItems,
     getSpotScheduleActionId,
@@ -597,12 +597,26 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
     const messageCount = messages.filter(
         (message) => message.kind !== 'system',
     ).length;
-    const canManageOwnerActions =
-        currentRoom.category === 'spot' && isOwnedSpotRoom(currentRoom);
-    const canCreateReverseOffer =
-        currentRoom.category === 'spot' &&
-        !canManageOwnerActions &&
-        isSupporterForSpot(currentRoom);
+    const roleContext =
+        currentRoom.category === 'spot'
+            ? computeChatRoomRoleContext(currentRoom)
+            : null;
+    const roomLifecycleSource = roleContext?.roomLifecycleSource ?? null;
+    const userFeedRole = roleContext?.userFeedRole ?? null;
+    const canManageOwnerActions = Boolean(roleContext?.canManageOwnerActions);
+    const canCreateReverseOffer = Boolean(roleContext?.canCreateReverseOffer);
+    const conversationTitle =
+        currentRoom.category === 'spot' && roomLifecycleSource === 'feed'
+            ? '피드 대화'
+            : currentRoom.category === 'spot'
+              ? '스팟 대화'
+              : '개인 대화';
+    const roleInfoLabel =
+        userFeedRole === 'OWNER'
+            ? '오너 정보'
+            : userFeedRole === 'SUPPORTER'
+              ? '서포터 정보'
+              : '파트너 정보';
     const creationItems = [
         ...(canManageOwnerActions
             ? [
@@ -634,7 +648,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                   {
                       step: 'reverse-offer' as const,
                       label: '역제안',
-                      description: '파트너에게 역제안',
+                      description: '오너에게 역제안',
                       icon: <IconHeartHandshake size={18} />,
                       tone: 'bg-emerald-50 text-emerald-700',
                   },
@@ -785,7 +799,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => openRoomInfo(currentRoom.id)}
-                                    label="참여자 정보"
+                                    label={roleInfoLabel}
                                     className="h-9 w-9 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
                                     icon={<IconUsers size={18} stroke={1.75} />}
                                 />
@@ -820,9 +834,7 @@ export function ChatDetail({ roomId }: ChatDetailProps) {
                         <section className="pb-2">
                             <div className="mb-3 flex items-center justify-between gap-3 px-1">
                                 <h2 className="text-[15px] font-bold tracking-[-0.01em] text-zinc-900">
-                                    {currentRoom.category === 'spot'
-                                        ? '스팟 대화'
-                                        : '개인 대화'}
+                                    {conversationTitle}
                                 </h2>
                                 <span className="text-[11px] font-medium text-zinc-400 tabular-nums">
                                     {messageCount}개 메시지

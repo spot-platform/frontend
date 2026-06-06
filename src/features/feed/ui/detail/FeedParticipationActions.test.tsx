@@ -362,7 +362,7 @@ describe('FeedParticipationActions', () => {
             );
         });
         expect(mockShowMessage).toHaveBeenCalledWith(
-            '신청자를 수락했어요.',
+            '파트너 신청을 수락했어요.',
             '',
         );
         expect(mockRefresh).toHaveBeenCalled();
