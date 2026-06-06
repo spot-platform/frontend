@@ -13,6 +13,7 @@ export const myKeys = {
     supporterProfile: ['my', 'supporter-profile'] as const,
     participations: (params?: object) =>
         ['my', 'participations', params] as const,
+    feedApplications: ['my', 'feed-applications'] as const,
     favorites: (params?: object) => ['my', 'favorites', params] as const,
     recentViews: (params?: object) => ['my', 'recent-views', params] as const,
     supportActivitySummary: ['my', 'support-activity-summary'] as const,
@@ -29,6 +30,28 @@ export function useMyParticipations(params?: { page?: number; size?: number }) {
     return useQuery({
         queryKey: myKeys.participations(params),
         queryFn: () => myApi.participations(params),
+    });
+}
+
+export function useMyFeedApplications() {
+    return useQuery({
+        queryKey: myKeys.feedApplications,
+        queryFn: myApi.feedApplications,
+    });
+}
+
+export function useCancelMyFeedApplication() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (feedItemId: string) =>
+            myApi.cancelFeedApplication(feedItemId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: myKeys.feedApplications,
+            });
+            queryClient.invalidateQueries({ queryKey: ['feed'] });
+            queryClient.invalidateQueries({ queryKey: ['pay'] });
+        },
     });
 }
 

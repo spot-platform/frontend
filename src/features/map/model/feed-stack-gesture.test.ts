@@ -5,47 +5,54 @@ describe('resolveFeedStackGesture', () => {
     it('snaps back to center when horizontal drag is below the side threshold', () => {
         expect(
             resolveFeedStackGesture({
-                dx: 96,
+                dx: 32,
                 dy: 10,
             }),
         ).toBe('center');
     });
 
-    it('keeps both side swipes centered instead of opening detail', () => {
+    it('uses both side swipes to open feed detail', () => {
         expect(
             resolveFeedStackGesture({
-                dx: -150,
+                dx: -96,
                 dy: 12,
             }),
-        ).toBe('center');
+        ).toBe('detail-left');
 
         expect(
             resolveFeedStackGesture({
-                dx: 150,
+                dx: 96,
                 dy: 12,
             }),
-        ).toBe('center');
+        ).toBe('detail-right');
     });
 
-    it('keeps fast side flicks centered instead of opening detail', () => {
+    it('lets fast side flicks open detail even with shorter travel', () => {
         expect(
             resolveFeedStackGesture({
-                dx: -64,
+                dx: -42,
                 dy: 8,
                 velocityX: -820,
             }),
-        ).toBe('center');
+        ).toBe('detail-left');
 
         expect(
             resolveFeedStackGesture({
-                dx: 64,
+                dx: 42,
                 dy: 8,
                 velocityX: 820,
             }),
-        ).toBe('center');
+        ).toBe('detail-right');
     });
 
-    it('requires vertical dominance before next actions', () => {
+    it('requires axis dominance before side or next actions', () => {
+        expect(
+            resolveFeedStackGesture({
+                dx: 96,
+                dy: 92,
+            }),
+        ).toBe('center');
+
         expect(
             resolveFeedStackGesture({
                 dx: 150,
