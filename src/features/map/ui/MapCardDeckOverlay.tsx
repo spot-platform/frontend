@@ -95,12 +95,6 @@ export function MapCardDeckOverlay({
         if (prefersReducedMotion) onCloseAction();
     }
 
-    function openDetail(dir: Extract<ExitDirection, 'left' | 'right'>) {
-        if (!topItem?.onDetailAction) return;
-        setExitOverride({ id: topItem.id, dir });
-        requestAnimationFrame(topItem.onDetailAction);
-    }
-
     function handleTopDragEnd(_event: unknown, info: PanInfo) {
         if (!topItem) return;
 
@@ -109,16 +103,6 @@ export function MapCardDeckOverlay({
             dy: info.offset.y,
             velocityX: info.velocity.x,
         });
-
-        if (gesture === 'detail-left') {
-            openDetail('left');
-            return;
-        }
-
-        if (gesture === 'detail-right') {
-            openDetail('right');
-            return;
-        }
 
         if (gesture === 'next') dismissTop('down');
     }

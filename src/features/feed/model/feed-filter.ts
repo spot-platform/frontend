@@ -6,15 +6,22 @@ export type FeedMarkerFilter = {
     feedType: 'all' | 'offer' | 'request';
     categories: readonly SpotCategory[];
     searchQuery: string;
+    excludeApplied?: boolean;
 };
 
 export function filterVisibleFeedItems(
     feedItems: readonly FeedItem[],
-    { feedType, categories, searchQuery }: FeedMarkerFilter,
+    {
+        feedType,
+        categories,
+        searchQuery,
+        excludeApplied = false,
+    }: FeedMarkerFilter,
 ): FeedItem[] {
     const q = searchQuery.trim().toLowerCase();
 
     return feedItems.filter((item) => {
+        if (excludeApplied && isSearchExcludedFeedItem(item)) return false;
         if (feedType === 'offer' && item.type !== 'OFFER') return false;
         if (feedType === 'request' && item.type !== 'REQUEST') return false;
         if (

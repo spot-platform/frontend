@@ -35,7 +35,10 @@ import {
     type MapTutorialMarkerInfo,
 } from '@/features/map/ui/MapTutorialOverlay';
 import { LiveTicker } from '@/features/map/ui/LiveTicker';
-import { useLayerAwareFeedList } from '@/features/feed/model/use-feed';
+import {
+    useLayerAwareFeedList,
+    useToggleFeedBookmark,
+} from '@/features/feed/model/use-feed';
 import { filterVisibleFeedItems } from '@/features/feed/model/feed-filter';
 import { groupFeedMarkersByProximity } from '@/features/feed/model/feed-marker-group';
 import { filterHotspotsOverlappingFeedMarkers } from '@/features/map/model/hotspot-feed-overlap';
@@ -373,6 +376,7 @@ export function MapClient() {
     const feedQuery = useLayerAwareFeedList(mapFeedParams, {
         keepPreviousData: true,
     });
+    const toggleFeedBookmark = useToggleFeedBookmark();
     const feedData = feedQuery.data;
     const isInitialFeedLoading = feedQuery.isPending && !feedData;
     const totalVisibleFeedCount = feedData?.meta?.total;
@@ -382,8 +386,19 @@ export function MapClient() {
                 feedType,
                 categories,
                 searchQuery,
+                excludeApplied: true,
             }),
         [feedData?.data, feedType, categories, searchQuery],
+    );
+
+    const handleFeedBookmark = useCallback(
+        (item: (typeof visibleFeedItems)[number]) => {
+            toggleFeedBookmark.mutate({
+                feedId: item.id,
+                bookmarked: Boolean(item.isBookmarked),
+            });
+        },
+        [toggleFeedBookmark],
     );
 
     const feedMarkerGroups = useMemo(
@@ -871,10 +886,7 @@ export function MapClient() {
                 onTutorialCardDetail={
                     tutorialOpen ? completeDeckTutorial : undefined
                 }
-                onBookmark={(item) => {
-                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                    console.info('[bookmark]', item.id, item.title);
-                }}
+                onBookmark={handleFeedBookmark}
             />
 
             <FeedBottomSheet
@@ -950,14 +962,7 @@ export function MapClient() {
                                 onCloseAction={() =>
                                     updateUrl({ cluster: null })
                                 }
-                                onBookmarkAction={(item) => {
-                                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                                    console.info(
-                                        '[bookmark]',
-                                        item.id,
-                                        item.title,
-                                    );
-                                }}
+                                onBookmarkAction={handleFeedBookmark}
                             />
                         );
                     }
@@ -979,14 +984,7 @@ export function MapClient() {
                                 onDetailAction={() =>
                                     router.push(`/feed/${selectedFeed.id}`)
                                 }
-                                onBookmarkAction={(item) => {
-                                    // TODO: 다음 PR에서 useAddFavorite mutation 연결
-                                    console.info(
-                                        '[bookmark]',
-                                        item.id,
-                                        item.title,
-                                    );
-                                }}
+                                onBookmarkAction={handleFeedBookmark}
                             />
                         );
                     }

@@ -179,7 +179,7 @@ export function MyToggleRow({
             >
                 <span
                     className={cn(
-                        'absolute top-0.5 h-5.5 w-5.5 rounded-full bg-card transition-transform',
+                        'absolute top-0.5 h-[22px] w-[22px] rounded-full bg-card transition-transform',
                         checked ? 'translate-x-6' : 'translate-x-0.5',
                     )}
                 />
