@@ -25,6 +25,7 @@ type Props = {
     open: boolean;
     onClose: () => void;
     forfeitPool?: SpotForfeitPool;
+    onSubmitted?: () => void;
 };
 
 export function SettlementSubmitSheet({
@@ -32,6 +33,7 @@ export function SettlementSubmitSheet({
     open,
     onClose,
     forfeitPool,
+    onSubmitted,
 }: Props) {
     const [items, setItems] = useState<LineItemDraft[]>([
         emptyLineItem(),
@@ -103,6 +105,7 @@ export function SettlementSubmitSheet({
         setItems([emptyLineItem(), emptyLineItem()]);
         setSummary('');
         onClose();
+        onSubmitted?.();
     };
 
     return (

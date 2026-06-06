@@ -1,7 +1,13 @@
 'use client';
 
 import { IconStar } from '@tabler/icons-react';
-import type { SpotReview, TimelineEvent } from '@/entities/spot/types';
+import type {
+    SpotReview,
+    SpotSettlementApproval,
+    TimelineEvent,
+} from '@/entities/spot/types';
+import { SpotSettlementActions } from '@/features/spot/client/detail/SpotSettlementActions';
+import { useMainChatStore } from '../../model/use-main-chat-store';
 import type { SpotChatRoom } from '../../model/types';
 
 type Props = { room: SpotChatRoom };
@@ -13,12 +19,79 @@ function formatDate(iso: string): string {
     }).format(new Date(iso));
 }
 
+function formatPoints(value: number): string {
+    return `${value.toLocaleString('ko-KR')}P`;
+}
+
+function SettlementTile({
+    settlement,
+}: {
+    settlement?: SpotSettlementApproval | null;
+}) {
+    if (!settlement) {
+        return (
+            <div className="rounded-xl border border-dashed border-border-soft bg-card p-3">
+                <p className="text-sm font-semibold text-foreground">정산</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                    아직 정산 요청이 없어요. 오너가 활동 내역을 정리해 제출해야
+                    해요.
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="rounded-xl border border-border-soft bg-card p-3">
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-foreground">정산</p>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                    {settlement.status === 'APPROVED'
+                        ? '승인 완료'
+                        : '승인 대기'}
+                </span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-text-secondary">
+                {settlement.summary || '정산 내역 확인이 필요해요.'}
+            </p>
+            <div className="mt-2 space-y-1.5">
+                {settlement.lineItems.map((item) => (
+                    <div
+                        key={item.label}
+                        className="flex items-center justify-between text-xs"
+                    >
+                        <span className="text-muted-foreground">
+                            {item.label}
+                        </span>
+                        <span className="font-semibold text-foreground">
+                            {formatPoints(item.amount)}
+                        </span>
+                    </div>
+                ))}
+            </div>
+            <div className="mt-2 border-t border-border-soft pt-2 text-xs">
+                <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">요청 금액</span>
+                    <span className="font-bold text-foreground">
+                        {formatPoints(settlement.requestedAmount)}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function ClosedPhasePanel({ room }: Props) {
     const spot = room.spot;
+    const loadRoom = useMainChatStore((state) => state.loadRoom);
     const reviews = spot.reviews;
     const closedEvent = spot.timeline.find(
         (e) => e.kind === 'COMPLETED' || e.kind === 'CANCELLED',
     );
+    const workflow = {
+        spotId: spot.id,
+        progressLabel: '활동 종료 · 정산 단계',
+        settlementApproval: spot.settlement ?? undefined,
+    };
 
     return (
         <section className="space-y-3 rounded-2xl border border-border-soft bg-muted p-4">
@@ -38,6 +111,16 @@ export function ClosedPhasePanel({ room }: Props) {
                 )}
             </div>
 
+            <SettlementTile settlement={spot.settlement} />
+            <SpotSettlementActions
+                spotId={spot.id}
+                spotStatus={spot.status}
+                workflow={workflow}
+                currentUserId={room.currentUserId}
+                authorId={spot.authorId}
+                forfeitPool={spot.forfeitPool}
+                onSettled={() => void loadRoom(room.id)}
+            />
             <ReviewTile reviews={reviews} />
             <TimelineTile events={spot.timeline} />
         </section>

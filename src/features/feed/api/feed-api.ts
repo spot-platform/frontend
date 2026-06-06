@@ -82,6 +82,8 @@ export type BackendFeedApplication = Omit<
     applicantProfile?: FeedApplication['applicantProfile'];
     appliedRole?: FeedApplicationRole;
     deposit?: number;
+    spotConverted?: boolean;
+    spotId?: string | number | null;
 };
 
 export function toFeedApplication(
@@ -106,6 +108,9 @@ export function toFeedApplication(
                 : undefined),
         appliedRole: application.appliedRole ?? fallback?.role ?? 'PARTNER',
         deposit: application.deposit ?? fallback?.deposit ?? 0,
+        spotConverted: application.spotConverted,
+        spotId:
+            application.spotId == null ? undefined : String(application.spotId),
     };
 }
 

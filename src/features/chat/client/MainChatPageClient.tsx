@@ -11,6 +11,7 @@ import {
     IconFileText,
     IconHeartHandshake,
     IconMap,
+    IconReceipt,
 } from '@tabler/icons-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/shared/lib/cn';
@@ -307,6 +308,11 @@ function SpotItemList({
             ): item is Extract<SpotActionItem, { kind: 'reverse-offer' }> =>
                 item.kind === 'reverse-offer',
         ) ?? null;
+    const settlementItem =
+        actionItems.find(
+            (item): item is Extract<SpotActionItem, { kind: 'settlement' }> =>
+                item.kind === 'settlement',
+        ) ?? null;
     const voteItems = actionItems.filter(
         (item): item is Extract<SpotActionItem, { kind: 'vote' }> =>
             item.kind === 'vote',
@@ -316,6 +322,7 @@ function SpotItemList({
     const hasFiles = room.spot.files.length > 0;
     const hasItems =
         Boolean(reverseOfferItem) ||
+        Boolean(settlementItem) ||
         voteItems.length > 0 ||
         hasSchedule ||
         hasFiles;
@@ -398,6 +405,41 @@ function SpotItemList({
                     </div>
                 </button>
             ))}
+
+            {settlementItem && (
+                <button
+                    type="button"
+                    onClick={() => onActionItem(settlementItem)}
+                    className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors active:bg-zinc-100"
+                >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-600">
+                        <IconReceipt size={16} stroke={1.75} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-2">
+                            <span className="truncate text-[13.5px] font-semibold text-zinc-900">
+                                정산
+                            </span>
+                            <span
+                                suppressHydrationWarning
+                                className="shrink-0 text-[10.5px] font-medium text-zinc-400 tabular-nums"
+                            >
+                                {formatListTime(settlementItem.updatedAt)}
+                            </span>
+                        </div>
+                        <p className="mt-0.5 truncate text-[12.5px] leading-snug text-zinc-500">
+                            {settlementItem.settlement
+                                ? settlementItem.settlement.status ===
+                                  'APPROVED'
+                                    ? `승인 완료 · ${settlementItem.settlement.approvedAmount.toLocaleString('ko-KR')}P`
+                                    : `승인 대기 · ${settlementItem.settlement.requestedAmount.toLocaleString('ko-KR')}P`
+                                : settlementItem.isAuthor
+                                  ? '아직 정산 요청 전 · 제출 필요'
+                                  : '오너 정산 요청 대기 중'}
+                        </p>
+                    </div>
+                </button>
+            )}
 
             {hasSchedule && room.spot.schedule && (
                 <button

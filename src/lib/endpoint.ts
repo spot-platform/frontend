@@ -83,6 +83,10 @@ export const endpoints = {
         cancel: (spotId: string) => backendEndpoint(`/spots/${spotId}/cancel`),
         complete: (spotId: string) =>
             backendEndpoint(`/spots/${spotId}/complete`),
+        settlement: (spotId: string) =>
+            backendEndpoint(`/spots/${spotId}/settlement`),
+        settlementApprove: (spotId: string) =>
+            backendEndpoint(`/spots/${spotId}/settlement/approve`),
     },
     feeds: {
         root: backendEndpoint('/feeds'),

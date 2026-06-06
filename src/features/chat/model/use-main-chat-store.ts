@@ -269,7 +269,11 @@ async function enrichSpotRoomWithBackend(
     room: SpotChatRoom,
 ): Promise<SpotChatRoom> {
     const spotId = room.spot.id;
-    const [participants, schedule, votes, files] = await Promise.all([
+    const [detail, participants, schedule, votes, files] = await Promise.all([
+        spotsApi
+            .get(spotId)
+            .then((response) => response.data)
+            .catch(() => room.spot),
         spotsApi
             .getParticipants(spotId)
             .then((response) => response.data)
@@ -288,15 +292,22 @@ async function enrichSpotRoomWithBackend(
             .catch(() => room.spot.files),
     ]);
     const owner = participants.find(
-        (participant) => participant.role === 'AUTHOR',
+        (participant) =>
+            participant.role === 'OWNER' || participant.role === 'AUTHOR',
     );
 
     return {
         ...room,
         spot: {
             ...room.spot,
-            authorId: room.spot.authorId || owner?.userId || '',
-            authorNickname: room.spot.authorNickname || owner?.nickname || '',
+            ...detail,
+            authorId:
+                detail.authorId || room.spot.authorId || owner?.userId || '',
+            authorNickname:
+                detail.authorNickname ||
+                room.spot.authorNickname ||
+                owner?.nickname ||
+                '',
             participants,
             schedule: schedule ?? undefined,
             votes,

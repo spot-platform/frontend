@@ -367,11 +367,32 @@ export function FeedParticipationActions({
 
         try {
             if (decision === 'accept') {
-                await acceptFeedApplication.mutateAsync({
+                const response = await acceptFeedApplication.mutateAsync({
                     feedId: item.id,
                     applicationId,
                 });
-                showBottomNavMessage('신청자를 수락했어요.', '');
+                const convertedSpotId = response.data.spotId ?? item.spotId;
+
+                if (response.data.spotConverted && convertedSpotId) {
+                    showBottomNavMessage(
+                        '스팟이 생성됐어요. 팀 채팅으로 이동할게요.',
+                        '',
+                    );
+                    router.push(
+                        `/chat?tab=team&spotId=${encodeURIComponent(convertedSpotId)}`,
+                    );
+                    return;
+                }
+
+                const remainCopy =
+                    item.remainingParticipantCount != null &&
+                    item.remainingParticipantCount > 0
+                        ? ` 앞으로 ${item.remainingParticipantCount}명 더 필요해요.`
+                        : item.remainingAmount != null &&
+                            item.remainingAmount > 0
+                          ? ` 앞으로 ${item.remainingAmount.toLocaleString('ko-KR')}P 더 필요해요.`
+                          : '';
+                showBottomNavMessage(`신청자를 수락했어요.${remainCopy}`, '');
             } else {
                 await rejectFeedApplication.mutateAsync({
                     feedId: item.id,

@@ -33,6 +33,7 @@ export type PagedResponse<T> = ApiResponse<T[]>;
 
 export type SpotType = 'OFFER' | 'REQUEST';
 export type SpotStatus = 'OPEN' | 'MATCHED' | 'CLOSED' | 'CANCELLED';
+export type SpotMemberRole = 'OWNER' | 'SUPPORTER' | 'PARTNER';
 
 export type SpotForfeitPool = {
     toPool: number;
@@ -73,6 +74,9 @@ export type TimelineEvent = {
 
 export type SpotDetail = Spot & {
     timeline: TimelineEvent[];
+    settlement?: SpotSettlementApproval | null;
+    participantCount?: number;
+    isOwner?: boolean;
 };
 
 // ─── 목록 필터 ────────────────────────────────────────────────────────────────
@@ -83,7 +87,7 @@ export type SpotDashboardTab = 'OFFER' | 'REQUEST' | 'RENT';
 export type SpotParticipant = {
     userId: string;
     nickname: string;
-    role: 'AUTHOR' | 'PARTICIPANT';
+    role: SpotMemberRole | 'AUTHOR' | 'PARTICIPANT';
     joinedAt: string;
 };
 
@@ -191,6 +195,8 @@ export type SpotSettlementLineItem = {
 };
 
 export type SpotSettlementApproval = {
+    id?: string;
+    spotId?: string;
     status: WorkflowApprovalStatus;
     requestedAmount: number;
     approvedAmount: number;

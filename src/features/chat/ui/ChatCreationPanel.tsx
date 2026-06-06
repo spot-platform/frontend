@@ -13,6 +13,7 @@ import {
     IconHeartHandshake,
     IconLink,
     IconPlus,
+    IconReceipt,
     IconTrash,
     IconUpload,
     IconUsers,
@@ -22,6 +23,7 @@ import { UserAvatarStatic } from '@/shared/ui';
 import { SearchBar } from '@/shared/ui/SearchBar';
 import { useChatNavStore } from '@/shared/model/chat-nav-store';
 import { formatKrw } from '@/features/post/model/pricing-preview';
+import { spotsApi } from '@/features/spot/api/spot-api';
 import { useMainChatStore } from '../model/use-main-chat-store';
 import { resolveReverseOfferFinancialSummary } from '../model/reverse-offer-finance';
 import { formatReverseOfferApprovalProgress } from '../model/types';
@@ -1506,6 +1508,144 @@ function FileActionPanel({
     );
 }
 
+function SettlementActionPanel({
+    item,
+    onClose,
+}: {
+    item: Extract<SpotActionItem, { kind: 'settlement' }>;
+    onClose: () => void;
+}) {
+    const liveRoom = useMainChatStore(
+        (state) =>
+            state.rooms.find(
+                (candidate): candidate is SpotChatRoom =>
+                    candidate.id === item.roomId &&
+                    candidate.category === 'spot',
+            ) ?? null,
+    );
+    const loadRoom = useMainChatStore((state) => state.loadRoom);
+    const [isApproving, setIsApproving] = useState(false);
+    const [approveError, setApproveError] = useState<string | null>(null);
+    const settlement = liveRoom?.spot.settlement ?? item.settlement;
+    const isAuthor = liveRoom
+        ? liveRoom.spot.authorId === liveRoom.currentUserId
+        : item.isAuthor;
+    const canApprove =
+        Boolean(liveRoom) && !isAuthor && settlement?.status === 'PENDING';
+
+    async function handleApprove() {
+        if (!liveRoom || !canApprove || isApproving) return;
+
+        setIsApproving(true);
+        setApproveError(null);
+
+        try {
+            await spotsApi.approveSettlement(liveRoom.spot.id);
+            await loadRoom(liveRoom.id);
+            onClose();
+        } catch {
+            setApproveError(
+                '정산 승인에 실패했어요. 잠시 후 다시 시도해주세요.',
+            );
+        } finally {
+            setIsApproving(false);
+        }
+    }
+
+    const totalAmount =
+        settlement?.approvedAmount ?? settlement?.requestedAmount ?? 0;
+    const statusLabel = !settlement
+        ? isAuthor
+            ? '정산 제출 필요'
+            : '오너 정산 요청 대기'
+        : settlement.status === 'APPROVED'
+          ? '승인 완료'
+          : '승인 대기';
+
+    return (
+        <div className="pb-2">
+            <div className="mb-1 flex items-center justify-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/20 text-amber-200">
+                    <IconReceipt size={16} />
+                </div>
+            </div>
+            <p className="mb-1 text-center text-sm font-semibold text-white">
+                정산
+            </p>
+            <p className="mb-4 text-center text-xs text-white/40">
+                {item.roomTitle} · {statusLabel}
+            </p>
+
+            <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
+                <p className="text-[11px] font-semibold tracking-[0.14em] text-white/35 uppercase">
+                    Settlement
+                </p>
+                <p className="mt-2 text-sm font-semibold text-white">
+                    {statusLabel}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/65">
+                    {settlement?.summary ??
+                        (isAuthor
+                            ? '종료된 스팟이라 정산 요청을 제출해야 해요. 채팅방 본문 종료 단계에서 항목을 입력할 수 있어요.'
+                            : '아직 오너가 정산 요청을 제출하지 않았어요.')}
+                </p>
+            </div>
+
+            {settlement ? (
+                <div className="mb-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
+                    <div className="space-y-2">
+                        {settlement.lineItems.map((lineItem) => (
+                            <div
+                                key={lineItem.label}
+                                className="flex items-center justify-between gap-3 text-sm"
+                            >
+                                <span className="truncate text-white/60">
+                                    {lineItem.label}
+                                </span>
+                                <span className="shrink-0 font-semibold text-white">
+                                    {lineItem.amount.toLocaleString('ko-KR')}P
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-3 border-t border-white/10 pt-3">
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="text-white/50">총 금액</span>
+                            <span className="font-bold text-white">
+                                {totalAmount.toLocaleString('ko-KR')}P
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            {approveError ? (
+                <p className="mb-3 rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                    {approveError}
+                </p>
+            ) : null}
+
+            <Button
+                fullWidth
+                size="lg"
+                disabled={!canApprove || isApproving}
+                className={
+                    canApprove
+                        ? 'bg-amber-300 text-brand-900 hover:bg-amber-200 focus-visible:ring-amber-200/40'
+                        : 'bg-white/10 text-white/50'
+                }
+                onClick={canApprove ? handleApprove : onClose}
+            >
+                {isApproving
+                    ? '승인 중...'
+                    : canApprove
+                      ? '정산 승인하기'
+                      : '닫기'}
+            </Button>
+        </div>
+    );
+}
+
 function ReverseOfferActionPanel({
     item,
     onClose,
@@ -1791,6 +1931,13 @@ export function ChatCreationPanel({ onClose }: ChatCreationPanelProps) {
         if (activeActionItem.kind === 'file')
             return (
                 <FileActionPanel item={activeActionItem} onClose={onClose} />
+            );
+        if (activeActionItem.kind === 'settlement')
+            return (
+                <SettlementActionPanel
+                    item={activeActionItem}
+                    onClose={onClose}
+                />
             );
         if (activeActionItem.kind === 'reverse-offer')
             return (
