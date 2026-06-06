@@ -23,10 +23,17 @@ export function filterVisibleFeedItems(
     const q = searchQuery.trim().toLowerCase();
 
     return feedItems.filter((item) => {
-        if (onlyOpenFeeds && (item.status !== 'OPEN' || item.spotId)) {
+        const isRealFeed = item.isAi !== true;
+
+        if (
+            isRealFeed &&
+            onlyOpenFeeds &&
+            (item.status !== 'OPEN' || item.spotId)
+        ) {
             return false;
         }
-        if (excludeApplied && isSearchExcludedFeedItem(item)) return false;
+        if (isRealFeed && excludeApplied && isSearchExcludedFeedItem(item))
+            return false;
         if (feedType === 'offer' && item.type !== 'OFFER') return false;
         if (feedType === 'request' && item.type !== 'REQUEST') return false;
         if (
@@ -37,7 +44,7 @@ export function filterVisibleFeedItems(
             return false;
         }
         if (q.length > 0) {
-            if (isSearchExcludedFeedItem(item)) return false;
+            if (isRealFeed && isSearchExcludedFeedItem(item)) return false;
 
             const haystack = [
                 item.title,

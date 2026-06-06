@@ -94,6 +94,33 @@ describe('feed map helpers', () => {
         ).toEqual(['offer']);
     });
 
+    it('keeps AI feeds visible on the map even when real-feed cleanup filters are enabled', () => {
+        const feeds = [
+            makeFeed({
+                id: 'converted-real',
+                status: 'MATCHED',
+                spotId: 'spot-1',
+            }),
+            makeFeed({
+                id: 'ai-pd',
+                isAi: true,
+                status: 'MATCHED',
+                spotId: 'synthetic-spot',
+                myApplicationStatus: 'ACCEPTED',
+            }),
+        ];
+
+        expect(
+            filterVisibleFeedItems(feeds, {
+                feedType: 'all',
+                categories: [],
+                searchQuery: '',
+                excludeApplied: true,
+                onlyOpenFeeds: true,
+            }).map((item) => item.id),
+        ).toEqual(['ai-pd']);
+    });
+
     it('maps map layer state to backend isAi feed list filtering', () => {
         expect(getFeedListIsAiParamByLayer('real')).toBe(false);
         expect(getFeedListIsAiParamByLayer('mixed')).toBeUndefined();
