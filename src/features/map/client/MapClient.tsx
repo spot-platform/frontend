@@ -565,6 +565,14 @@ export function MapClient() {
         return visibleClusterCount + visibleFeedMarkerCount;
     }, [clusters, feedMarkerGroups, inViewport]);
 
+    const viewportFeedItems = useMemo(
+        () =>
+            feedMarkerGroups
+                .filter((group) => inViewport(group.coord))
+                .flatMap((group) => group.items),
+        [feedMarkerGroups, inViewport],
+    );
+
     const getMarkerVisualMode = useCallback(
         (selected: boolean) =>
             decideMarkerVisualMode({
@@ -889,7 +897,7 @@ export function MapClient() {
                 onSnapChange={setPagerSnap}
                 promotedCount={pagerPromotedCount}
                 onPromotedCountChange={setPagerPromotedCount}
-                items={visibleFeedItems}
+                items={viewportFeedItems}
                 isInitialLoading={isInitialFeedLoading}
                 onTutorialCardPromote={showCardTutorialStep}
                 onTutorialCardDismiss={completeDeckTutorial}

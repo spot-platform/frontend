@@ -172,6 +172,7 @@ export function useToggleFeedBookmark() {
             queryClient.invalidateQueries({
                 queryKey: feedKeys.detail(feedId),
             });
+            queryClient.invalidateQueries({ queryKey: ['my', 'favorites'] });
         },
     });
 }

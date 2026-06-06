@@ -51,6 +51,7 @@ export function OfferFormClient() {
         );
     }, [searchParams]);
 
+    const postPrefill = usePostFormPrefill();
     const {
         spotName,
         title,
@@ -69,7 +70,7 @@ export function OfferFormClient() {
         handleAddPhoto,
         handleRemovePhoto,
         clearDraft,
-    } = usePostBaseForm(usePostFormPrefill());
+    } = usePostBaseForm(postPrefill);
 
     const [detailDescription, setDetailDescription] = useState('');
     const [supporterPhotoPreview, setSupporterPhotoPreview] = useState<
@@ -86,6 +87,37 @@ export function OfferFormClient() {
     const [priceBreakdown, setPriceBreakdown] = useState<
         PriceBreakdown | undefined
     >(undefined);
+
+    const postPrefillKey = JSON.stringify(postPrefill ?? null);
+    useEffect(() => {
+        if (!postPrefill) return;
+        setDetailDescription(
+            (value) =>
+                value ||
+                postPrefill.detailDescription ||
+                postPrefill.content ||
+                '',
+        );
+        setQualifications((value) => value || postPrefill.qualifications || '');
+        setDesiredPrice(
+            (value) =>
+                value ||
+                (postPrefill.desiredPrice != null
+                    ? String(postPrefill.desiredPrice)
+                    : ''),
+        );
+        setMaxPartnerCount(
+            (value) =>
+                value ||
+                (postPrefill.maxPartnerCount != null
+                    ? String(postPrefill.maxPartnerCount)
+                    : ''),
+        );
+        setPlan((value) => value ?? postPrefill.plan);
+        setPreparation((value) => value ?? postPrefill.preparation);
+        setPriceBreakdown((value) => value ?? postPrefill.priceBreakdown);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [postPrefillKey]);
 
     const isStep0Valid =
         spotName.trim() !== '' &&

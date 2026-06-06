@@ -875,9 +875,22 @@ function TeamCreationPanel({
         );
     }
 
-    const isOwner =
-        selectedSpotRoom.spot.authorId === selectedSpotRoom.currentUserId;
-    const isSupporter = isSupporterForSpot(selectedSpotRoom);
+    const userFeedRole =
+        selectedSpotRoom.participationRole ??
+        (selectedSpotRoom.spot.isOwner ||
+        selectedSpotRoom.spot.authorId === selectedSpotRoom.currentUserId
+            ? 'OWNER'
+            : isSupporterForSpot(selectedSpotRoom)
+              ? 'SUPPORTER'
+              : 'PARTNER');
+    const roomLifecycleSource =
+        selectedSpotRoom.sourceKind ??
+        (selectedSpotRoom.sourceFeedId &&
+        selectedSpotRoom.spot.status === 'OPEN'
+            ? 'feed'
+            : 'spot');
+    const isOwner = userFeedRole === 'OWNER';
+    const isSupporter = userFeedRole === 'SUPPORTER';
 
     if (['vote', 'schedule', 'file'].includes(step) && !isOwner) {
         return (
@@ -887,10 +900,13 @@ function TeamCreationPanel({
         );
     }
 
-    if (step === 'reverse-offer' && (isOwner || !isSupporter)) {
+    if (
+        step === 'reverse-offer' &&
+        (roomLifecycleSource !== 'feed' || isOwner || !isSupporter)
+    ) {
         return (
             <div className="rounded-2xl bg-white/10 px-4 py-4 text-center text-sm text-white/60 pb-2">
-                역제안은 참여 중인 서포터만 등록할 수 있어요.
+                역제안은 피드 상태에서 참여 중인 서포터만 등록할 수 있어요.
             </div>
         );
     }

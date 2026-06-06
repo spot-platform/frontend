@@ -51,6 +51,7 @@ export function RequestFormClient() {
         );
     }, [searchParams]);
 
+    const postPrefill = usePostFormPrefill();
     const {
         spotName,
         title,
@@ -69,7 +70,7 @@ export function RequestFormClient() {
         handleAddPhoto,
         handleRemovePhoto,
         clearDraft,
-    } = usePostBaseForm(usePostFormPrefill());
+    } = usePostBaseForm(postPrefill);
 
     const [detailDescription, setDetailDescription] = useState('');
     const [stylePhotoPreview, setStylePhotoPreview] = useState<string | null>(
@@ -86,6 +87,39 @@ export function RequestFormClient() {
     const [priceBreakdown, setPriceBreakdown] = useState<
         PriceBreakdown | undefined
     >(undefined);
+
+    const postPrefillKey = JSON.stringify(postPrefill ?? null);
+    useEffect(() => {
+        if (!postPrefill) return;
+        setDetailDescription(
+            (value) =>
+                value ||
+                postPrefill.detailDescription ||
+                postPrefill.content ||
+                '',
+        );
+        setPreferredSchedule(
+            (value) => value || postPrefill.preferredSchedule || '',
+        );
+        setMaxPartnerCount(
+            (value) =>
+                value ||
+                (postPrefill.maxPartnerCount != null
+                    ? String(postPrefill.maxPartnerCount)
+                    : ''),
+        );
+        setPriceCapPerPerson(
+            (value) =>
+                value ||
+                (postPrefill.priceCapPerPerson != null
+                    ? String(postPrefill.priceCapPerPerson)
+                    : ''),
+        );
+        setPlan((value) => value ?? postPrefill.plan);
+        setPreparation((value) => value ?? postPrefill.preparation);
+        setPriceBreakdown((value) => value ?? postPrefill.priceBreakdown);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [postPrefillKey]);
 
     const isStep0Valid =
         spotName.trim() !== '' &&

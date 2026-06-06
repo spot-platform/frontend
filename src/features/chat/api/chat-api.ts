@@ -1,5 +1,6 @@
 import { buildQueryString, clientApiFetch } from '@/lib/client-api';
 import { backendProxyEndpoint, endpoints } from '@/lib/endpoint';
+import type { SpotStatus, SpotType } from '@/entities/spot/types';
 import type { ChatMessage, ChatRoom } from '../model/types';
 
 export type ChatRoomsQuery = {
@@ -42,6 +43,17 @@ type BackendRoom = {
     feedId?: number | string | null;
     spotId?: number | string | null;
     type?: 'GROUP' | 'PERSONAL';
+    feedType?: SpotType | 'RENT' | null;
+    spotType?: SpotType | 'RENT' | null;
+    status?: SpotStatus | null;
+    feedStatus?: SpotStatus | null;
+    spotStatus?: SpotStatus | null;
+    currentUserRole?: 'OWNER' | 'SUPPORTER' | 'PARTNER' | null;
+    participationRole?: 'SUPPORTER' | 'PARTNER' | null;
+    owner?: boolean | null;
+    isOwner?: boolean | null;
+    authorId?: string | null;
+    authorNickname?: string | null;
     title?: string;
     subtitle?: string;
     currentUserId?: string;
@@ -108,6 +120,15 @@ function toChatRoom(room: BackendRoom): ChatRoom {
     const id = String(room.id);
     const feedId = room.feedId == null ? undefined : String(room.feedId);
     const spotId = room.spotId == null ? undefined : String(room.spotId);
+    const sourceKind = feedId && !spotId ? 'feed' : 'spot';
+    const rawType = room.spotType ?? room.feedType ?? 'REQUEST';
+    const spotType: SpotType = rawType === 'RENT' ? 'OFFER' : rawType;
+    const status =
+        room.spotStatus ??
+        room.feedStatus ??
+        room.status ??
+        (sourceKind === 'feed' ? 'OPEN' : 'MATCHED');
+    const currentUserRole = room.currentUserRole ?? room.participationRole;
     const isSpotRoom =
         room.type === 'GROUP' || Boolean(feedId) || Boolean(spotId);
     const updatedAt =
@@ -124,22 +145,31 @@ function toChatRoom(room: BackendRoom): ChatRoom {
                 (room.spotId ? `스팟 ${room.spotId}` : `팀 채팅 ${id}`),
             subtitle: room.subtitle ?? '팀 채팅',
             description: room.lastMessagePreview ?? '아직 메시지가 없어요.',
-            metaLabel: '팀 채팅',
+            metaLabel: sourceKind === 'feed' ? '피드 대화' : '스팟 대화',
             updatedAt,
             unreadCount: room.unreadCount ?? 0,
             messages: [],
             sourceFeedId: feedId,
+            sourceKind,
+            participationRole:
+                currentUserRole === 'SUPPORTER' || currentUserRole === 'PARTNER'
+                    ? currentUserRole
+                    : undefined,
             spot: {
                 id: spotId ?? id,
-                type: 'REQUEST',
-                status: 'OPEN',
-                title: room.spotId ? `스팟 ${room.spotId}` : `팀 채팅 ${id}`,
-                description: '아직 메시지가 없어요.',
+                type: spotType,
+                status,
+                title:
+                    room.title ??
+                    (spotId ? `스팟 ${spotId}` : `피드 ${feedId ?? id}`),
+                description: room.lastMessagePreview ?? '아직 메시지가 없어요.',
                 pointCost: 0,
-                authorId: '',
-                authorNickname: '',
+                authorId: room.authorId ?? '',
+                authorNickname: room.authorNickname ?? '',
                 createdAt: updatedAt,
                 updatedAt,
+                isOwner:
+                    room.isOwner ?? room.owner ?? currentUserRole === 'OWNER',
                 timeline: [],
                 participants: [],
                 votes: [],

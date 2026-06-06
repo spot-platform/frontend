@@ -517,7 +517,24 @@ function buildSpotRoom(spotId: string): SpotChatRoom | null {
         updatedAt: spot.updatedAt,
         spot,
         reverseOffer: reverseOfferScenario?.reverseOffer,
-        sourceFeedId: spot.type === 'OFFER' ? `feed-${spot.id}` : undefined,
+        sourceFeedId: spot.status === 'OPEN' ? `feed-${spot.id}` : undefined,
+        sourceKind: spot.status === 'OPEN' ? 'feed' : 'spot',
+        participationRole: isSupporterForSpot({
+            id: `spot-room-${spot.id}`,
+            category: 'spot',
+            currentUserId: CHAT_CURRENT_USER_ID,
+            currentUserName: CHAT_CURRENT_USER_NAME,
+            title: spot.title,
+            subtitle: '',
+            description: spot.description,
+            metaLabel: '',
+            updatedAt: spot.updatedAt,
+            unreadCount: 0,
+            spot,
+            messages: [],
+        })
+            ? 'SUPPORTER'
+            : 'PARTNER',
         messages,
     };
 }

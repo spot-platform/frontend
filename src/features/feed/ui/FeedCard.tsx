@@ -59,8 +59,9 @@ function FeedRow({
 
 function createAuthorProfile(item: FeedItem): FeedParticipantProfile {
     return {
-        id: `author-${item.id}`,
-        nickname: item.authorNickname,
+        id: item.authorProfile?.id ?? `author-${item.id}`,
+        nickname: item.authorProfile?.nickname ?? item.authorNickname,
+        avatarUrl: item.authorProfile?.avatarUrl,
     };
 }
 
@@ -195,8 +196,8 @@ function ExploreSlotToken({ slot }: { slot: ExploreSlot }) {
                     avatarUrl={slot.profile.avatarUrl}
                     size="sm"
                 />
-                <span className="text-[10px] font-medium text-muted-foreground">
-                    {slot.label}
+                <span className="max-w-14 truncate text-[10px] font-medium text-muted-foreground">
+                    {slot.profile.nickname}
                 </span>
             </div>
         );
@@ -223,10 +224,13 @@ function AutoScrollList({ children }: { children: React.ReactNode }) {
     const rafRef = useRef<number>(0);
     const pausedRef = useRef(false);
     const posRef = useRef(0);
+    const childArray = React.Children.toArray(children);
+    const shouldLoop = childArray.length > 3;
 
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
+        if (!shouldLoop) return;
 
         const SPEED = 0.4;
 
@@ -268,14 +272,19 @@ function AutoScrollList({ children }: { children: React.ReactNode }) {
             el.removeEventListener('touchstart', pause);
             el.removeEventListener('touchend', resume);
         };
-    }, []);
-
-    const childArray = React.Children.toArray(children);
+    }, [shouldLoop]);
 
     return (
-        <div ref={ref} className="flex gap-2 overflow-x-hidden pb-1">
+        <div
+            ref={ref}
+            className={
+                shouldLoop
+                    ? 'flex gap-2 overflow-x-hidden pb-1'
+                    : 'flex gap-2 overflow-x-auto pb-1'
+            }
+        >
             {childArray}
-            {childArray}
+            {shouldLoop ? childArray : null}
         </div>
     );
 }

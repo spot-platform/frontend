@@ -455,12 +455,25 @@ export function MapFeedCardPager({
                                                     onPointerDown={(e) =>
                                                         e.stopPropagation()
                                                     }
-                                                    aria-label="찜에 추가"
-                                                    className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border-soft/70 bg-card/90 text-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                                                    aria-label={
+                                                        item.isBookmarked
+                                                            ? '찜 해제'
+                                                            : '찜에 추가'
+                                                    }
+                                                    className={
+                                                        item.isBookmarked
+                                                            ? 'absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 shadow-sm backdrop-blur-md transition-colors hover:bg-red-100'
+                                                            : 'absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border-soft/70 bg-card/90 text-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-destructive hover:text-destructive-foreground'
+                                                    }
                                                 >
                                                     <IconHeart
                                                         size={16}
                                                         stroke={2}
+                                                        fill={
+                                                            item.isBookmarked
+                                                                ? 'currentColor'
+                                                                : 'none'
+                                                        }
                                                     />
                                                 </button>
                                             </>

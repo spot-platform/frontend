@@ -5,6 +5,11 @@ import type {
     SupporterRegistration,
 } from '@/entities/user/types';
 import { myApi } from '../api/my-api';
+import {
+    clearRecentFeedViews,
+    getRecentFeedViews,
+    removeRecentFeedView,
+} from './recent-feed-views-store';
 
 export const myKeys = {
     profile: ['my', 'profile'] as const,
@@ -86,7 +91,16 @@ export function useMyFavorites(params?: { page?: number; size?: number }) {
 export function useMyRecentViews(params?: { page?: number; size?: number }) {
     return useQuery({
         queryKey: myKeys.recentViews(params),
-        queryFn: () => myApi.recentViews(params),
+        queryFn: async () => {
+            try {
+                const remote = await myApi.recentViews(params);
+                return remote.data.length > 0
+                    ? remote
+                    : getRecentFeedViews(params);
+            } catch {
+                return getRecentFeedViews(params);
+            }
+        },
     });
 }
 
@@ -178,8 +192,14 @@ export function useRemoveFavorite() {
 export function useRemoveRecentView() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (recentViewId: string) =>
-            myApi.removeRecentView(recentViewId),
+        mutationFn: async (recentViewId: string) => {
+            removeRecentFeedView(recentViewId);
+            try {
+                await myApi.removeRecentView(recentViewId);
+            } catch {
+                // 로컬 캐시 항목은 백엔드에 없을 수 있다.
+            }
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my', 'recent-views'] });
         },
@@ -189,7 +209,14 @@ export function useRemoveRecentView() {
 export function useClearRecentViews() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: () => myApi.clearRecentViews(),
+        mutationFn: async () => {
+            clearRecentFeedViews();
+            try {
+                await myApi.clearRecentViews();
+            } catch {
+                // 로컬 캐시만 있는 환경에서도 전체 삭제 UX는 유지한다.
+            }
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my', 'recent-views'] });
         },
