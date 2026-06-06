@@ -11,30 +11,30 @@ describe('resolveFeedStackGesture', () => {
         ).toBe('center');
     });
 
-    it('treats both side swipes as detail triggers', () => {
+    it('keeps both side swipes centered instead of opening detail', () => {
         expect(
             resolveFeedStackGesture({
                 dx: -150,
                 dy: 12,
             }),
-        ).toBe('detail-left');
+        ).toBe('center');
 
         expect(
             resolveFeedStackGesture({
                 dx: 150,
                 dy: 12,
             }),
-        ).toBe('detail-right');
+        ).toBe('center');
     });
 
-    it('uses fast side flicks as detail triggers even with short drag distance', () => {
+    it('keeps fast side flicks centered instead of opening detail', () => {
         expect(
             resolveFeedStackGesture({
                 dx: -64,
                 dy: 8,
                 velocityX: -820,
             }),
-        ).toBe('detail-left');
+        ).toBe('center');
 
         expect(
             resolveFeedStackGesture({
@@ -42,10 +42,10 @@ describe('resolveFeedStackGesture', () => {
                 dy: 8,
                 velocityX: 820,
             }),
-        ).toBe('detail-right');
+        ).toBe('center');
     });
 
-    it('requires horizontal dominance before side actions', () => {
+    it('requires vertical dominance before next actions', () => {
         expect(
             resolveFeedStackGesture({
                 dx: 150,

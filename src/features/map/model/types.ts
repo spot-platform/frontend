@@ -20,7 +20,7 @@ export type ActivityCluster = {
     arrivedCount?: number;
     /**
      * 클러스터 시각 변형.
-     * - discovery: 시뮬레이션상 생기는 동네 발견 신호. 상세/리퀘스트 전환보다 배경 발견 역할.
+     * - discovery: 시뮬레이션상 생기는 동네 발견 신호. 상세/알려줘 전환보다 배경 발견 역할.
      * - ai-feed: LLM 검증 추천 피드. 상세 진입 가능.
      * - user-feed: 실제 사용자 피드. 가장 높은 우선도.
      * - feed-group: 정확히 같거나 가까운 좌표에 쌓인 여러 피드 묶음.

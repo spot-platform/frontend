@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Modal } from '@frontend/design-system';
+import { Button, Input, Modal, toast } from '@frontend/design-system';
 import { usePointBalance } from '@/features/pay';
 import { BottomSheet } from '@/shared/ui';
 import { useBottomNavMessageStore } from '@/shared/model/bottom-nav-message-store';
@@ -285,6 +285,7 @@ export function FeedParticipationActions({
                 '참여 신청이 완료되었어요. 승인되면 팀 채팅에 참여할 수 있어요.',
                 '',
             );
+            toast.success('참여 신청이 완료되었어요.');
             setSelectedRole(null);
             router.refresh();
         } finally {
@@ -295,6 +296,8 @@ export function FeedParticipationActions({
     const hasPendingApplication =
         item.myApplicationStatus === 'APPLIED' ||
         item.myApplicationStatus === 'PENDING';
+    const hasActiveApplication =
+        hasPendingApplication || item.myApplicationStatus === 'ACCEPTED';
 
     const cancelOutcome: CancellationOutcome | null = useMemo(() => {
         if (
@@ -327,6 +330,7 @@ export function FeedParticipationActions({
             await cancelFeedApplication.mutateAsync(item.id);
 
             showBottomNavMessage('신청을 취소했어요.', '');
+            toast.success('신청을 취소했어요.');
             setCancelOpen(false);
             router.refresh();
         } finally {
@@ -354,7 +358,7 @@ export function FeedParticipationActions({
         return '신청 후 승인되면 팀 채팅에 참여할 수 있어요.';
     })();
 
-    const isApplied = hasPendingApplication;
+    const isApplied = hasActiveApplication;
     const pendingApplications = (applicationsQuery.data?.data ?? []).filter(
         isPendingApplication,
     );
@@ -512,25 +516,36 @@ export function FeedParticipationActions({
     }
 
     // AI 피드(시뮬레이터가 합성한 데이터) 는 실제 호스트가 없으므로 참여가 의미 없음.
-    // 같은 자리에 "이런 리퀘스트 직접 열기" 액션만 보여주고 /post/request 로 prefill 라우팅.
+    // 같은 자리에 "이런 알려줘 직접 열기" 액션만 보여주고 /post/request 로 prefill 라우팅.
     if (item.isAi) {
+        const openRequestFromAiFeed = () => {
+            const params = new URLSearchParams({
+                fromSpot: item.id,
+                title: item.title,
+                category: item.category ?? '',
+                location: item.location,
+                content: item.description ?? item.title,
+            });
+            const lat = item.lat ?? item.coord?.lat;
+            const lng = item.lng ?? item.coord?.lng;
+            if (typeof lat === 'number') params.set('lat', String(lat));
+            if (typeof lng === 'number') params.set('lng', String(lng));
+            router.push(`/post/request?${params.toString()}`);
+        };
+
         return (
             <div className="fixed right-0 bottom-0 left-0 z-30 border-t border-border-soft bg-card/95 px-4 py-3 backdrop-blur-sm">
                 <p className="mb-2 text-center text-[11px] text-muted-foreground">
-                    AI 가 추천한 모임이에요. 마음에 들면 비슷한 리퀘스트를 직접
+                    AI가 추천한 모임이에요. 마음에 들면 비슷한 알려줘를 직접
                     열어보세요.
                 </p>
                 <Button
                     fullWidth
                     size="lg"
                     className="rounded-full bg-accent active:translate-y-px active:opacity-90"
-                    onClick={() =>
-                        router.push(
-                            `/post/request?fromSpot=${encodeURIComponent(item.id)}`,
-                        )
-                    }
+                    onClick={openRequestFromAiFeed}
                 >
-                    리퀘스트 열기
+                    알려줘 열기
                 </Button>
             </div>
         );
@@ -545,9 +560,12 @@ export function FeedParticipationActions({
                         size="lg"
                         variant="secondary"
                         className="rounded-full"
+                        disabled={!hasPendingApplication}
                         onClick={() => setCancelOpen(true)}
                     >
-                        신청 취소
+                        {hasPendingApplication
+                            ? '신청 취소'
+                            : '이미 참여 중인 피드예요'}
                     </Button>
                 ) : (
                     <div className="grid grid-cols-2 gap-2">

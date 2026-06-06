@@ -27,7 +27,15 @@ interface BaseFormDraft {
 }
 
 export type PostBaseFormPrefill = Partial<
-    Pick<BaseFormDraft, 'title' | 'categories' | 'location' | 'content'>
+    Pick<
+        BaseFormDraft,
+        | 'title'
+        | 'categories'
+        | 'location'
+        | 'locationLat'
+        | 'locationLng'
+        | 'content'
+    >
 >;
 
 function applyPrefill(
@@ -40,6 +48,8 @@ function applyPrefill(
         title: prefill.title ?? base.title,
         categories: prefill.categories ?? base.categories,
         location: prefill.location ?? base.location,
+        locationLat: prefill.locationLat ?? base.locationLat,
+        locationLng: prefill.locationLng ?? base.locationLng,
         content: prefill.content ?? base.content,
     };
 }

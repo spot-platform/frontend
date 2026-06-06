@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from '@frontend/design-system';
 import { AnimatePresence } from 'framer-motion';
 import { ScheduleModal } from '../../ui/detail/schedule/ScheduleModal';
 import { VoteModal } from '../../ui/detail/vote/VoteModal';
@@ -35,9 +36,15 @@ export function SpotDetailClient({
 }: SpotDetailClientProps) {
     const { activeModal, selectedVoteId, closeModal } = useSpotDetailStore();
 
-    const { mutate: matchSpot } = useMatchSpot();
-    const { mutate: cancelSpot } = useCancelSpot();
-    const { mutate: completeSpot } = useCompleteSpot();
+    const { mutate: matchSpot, isPending: isMatching } = useMatchSpot();
+    const { mutate: cancelSpot, isPending: isCancelling } = useCancelSpot();
+    const { mutate: completeSpot, isPending: isCompleting } = useCompleteSpot();
+
+    const participantRole = participants.find(
+        (participant) => participant.userId === currentUserId,
+    )?.role;
+    const canManageSpot =
+        spot.authorId === currentUserId || participantRole === 'SUPPORTER';
 
     const partnerNickname =
         participants.find((p) => p.userId !== currentUserId)?.nickname ?? '';
@@ -47,9 +54,29 @@ export function SpotDetailClient({
             <ActionBar
                 spot={spot}
                 currentUserId={currentUserId}
-                onMatch={() => matchSpot(spot.id)}
-                onCancel={() => cancelSpot(spot.id)}
-                onComplete={() => completeSpot(spot.id)}
+                canManageSpot={canManageSpot}
+                isBusy={isMatching || isCancelling || isCompleting}
+                onMatch={() =>
+                    matchSpot(spot.id, {
+                        onSuccess: () =>
+                            toast.success('스팟 매칭을 시작했어요.'),
+                        onError: () => toast.error('스팟 매칭에 실패했어요.'),
+                    })
+                }
+                onCancel={() =>
+                    cancelSpot(spot.id, {
+                        onSuccess: () => toast.success('스팟을 취소했어요.'),
+                        onError: () => toast.error('스팟 취소에 실패했어요.'),
+                    })
+                }
+                onComplete={() =>
+                    completeSpot(spot.id, {
+                        onSuccess: () =>
+                            toast.success('스팟 완료를 요청했어요.'),
+                        onError: () =>
+                            toast.error('스팟 완료 처리에 실패했어요.'),
+                    })
+                }
             />
 
             <AnimatePresence>

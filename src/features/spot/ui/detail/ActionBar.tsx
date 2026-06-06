@@ -6,6 +6,8 @@ import type { Spot } from '@/entities/spot/types';
 interface ActionBarProps {
     spot: Spot;
     currentUserId: string;
+    canManageSpot?: boolean;
+    isBusy?: boolean;
     onMatch: () => void;
     onCancel: () => void;
     onComplete: () => void;
@@ -14,6 +16,8 @@ interface ActionBarProps {
 export function ActionBar({
     spot,
     currentUserId,
+    canManageSpot = false,
+    isBusy = false,
     onMatch,
     onCancel,
     onComplete,
@@ -30,21 +34,27 @@ export function ActionBar({
                         <Button
                             variant="secondary"
                             onClick={onCancel}
+                            disabled={isBusy}
                             className="flex-1 text-text-secondary"
                         >
                             취소하기
                         </Button>
-                        <Button onClick={onMatch} className="flex-[2]">
+                        <Button
+                            onClick={onMatch}
+                            disabled={isBusy}
+                            className="flex-[2]"
+                        >
                             매칭하기
                         </Button>
                     </>
                 )}
 
-                {spot.status === 'MATCHED' && isAuthor && (
+                {spot.status === 'MATCHED' && canManageSpot && (
                     <>
                         <Button
                             variant="secondary"
                             onClick={onCancel}
+                            disabled={isBusy}
                             className="flex-1 text-text-secondary"
                         >
                             취소하기
@@ -52,6 +62,7 @@ export function ActionBar({
                         <Button
                             variant="secondary"
                             onClick={onComplete}
+                            disabled={isBusy}
                             className="flex-[2] border-transparent bg-accent text-white shadow-[0_16px_32px_rgba(249,115,22,0.24)] hover:bg-orange-500 focus-visible:ring-orange-100"
                         >
                             완료하기
@@ -59,7 +70,7 @@ export function ActionBar({
                     </>
                 )}
 
-                {spot.status === 'MATCHED' && !isAuthor && (
+                {spot.status === 'MATCHED' && !canManageSpot && (
                     <Button
                         variant="secondary"
                         disabled

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from '@frontend/design-system';
 import { usePostBaseForm } from '../model/use-post-base-form';
 import { usePostFormPrefill } from '../model/use-post-form-prefill';
 import { readSimulationConversionContext } from '@/features/simulation/model/simulation-conversion-context';
@@ -147,6 +148,7 @@ export function RequestFormClient() {
                 });
 
                 clearDraft();
+                toast.success('알려줘 피드를 만들었어요.');
                 router.push(
                     `/chat?tab=team&spotId=${encodeURIComponent(created.spotId ?? created.id)}`,
                 );

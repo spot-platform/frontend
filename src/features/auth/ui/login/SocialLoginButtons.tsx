@@ -1,9 +1,18 @@
+'use client';
+
+import type { MouseEvent } from 'react';
+import { toast } from '@frontend/design-system';
 import { SiGoogle, SiNaver } from 'react-icons/si';
 
 type SocialLoginButtonsProps = {
     naverHref: string;
     googleHref: string;
 };
+
+function showBlockedOAuth(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    toast.info('시연 중에는 소셜 로그인을 잠시 막아뒀어요.');
+}
 
 export function SocialLoginButtons({
     naverHref,
@@ -20,6 +29,7 @@ export function SocialLoginButtons({
             <div className="relative grid gap-3">
                 <a
                     href={naverHref}
+                    onClick={showBlockedOAuth}
                     className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-[#03C75A] bg-[#03C75A] px-4 text-sm font-semibold text-white transition hover:brightness-95"
                 >
                     <SiNaver size={18} />
@@ -27,6 +37,7 @@ export function SocialLoginButtons({
                 </a>
                 <a
                     href={googleHref}
+                    onClick={showBlockedOAuth}
                     className="flex h-12 items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:border-brand-200 hover:bg-brand-50"
                 >
                     <SiGoogle size={18} className="text-[#EA4335]" />

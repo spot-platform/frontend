@@ -174,12 +174,12 @@ export function MyToggleRow({
                     'relative h-7 w-12 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-60',
                     checked
                         ? 'border-foreground bg-foreground'
-                        : 'border-border-strong bg-border-soft',
+                        : 'border-border-strong bg-muted',
                 )}
             >
                 <span
                     className={cn(
-                        'absolute top-0.5 h-5.5 w-5.5 rounded-full bg-card transition-transform',
+                        'absolute top-0.5 h-[22px] w-[22px] rounded-full bg-card transition-transform',
                         checked ? 'translate-x-6' : 'translate-x-0.5',
                     )}
                 />
