@@ -1,5 +1,6 @@
 export { myApi } from './api/my-api';
 export { MyPageClient } from './client/MyPageClient';
+export { MyApplicationsPageClient } from './client/page/MyApplicationsPageClient';
 export { MyFavoritePageClient } from './client/page/MyFavoritePageClient';
 export { MyHistoryPageClient } from './client/page/MyHistoryPageClient';
 export { MyNotificationSettingsPageClient } from './client/page/MyNotificationSettingsPageClient';
@@ -12,6 +13,8 @@ export {
     myKeys,
     useMyProfile,
     useMyParticipations,
+    useMyFeedApplications,
+    useCancelMyFeedApplication,
     useNotificationSettings,
     useSupporterRegistration,
     useSupporterProfile,

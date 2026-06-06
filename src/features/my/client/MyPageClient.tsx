@@ -70,6 +70,11 @@ const MY_GROUPS: MyGroup[] = [
                 unavailable: true,
             },
             {
+                href: '/my/applications',
+                label: '신청한 피드',
+                description: '신청 상태 확인, 상세 보기, 신청 취소',
+            },
+            {
                 href: '/my/favorite',
                 label: '찜한 게시글',
                 description: '저장해 둔 게시글 모아보기',

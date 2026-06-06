@@ -11,6 +11,7 @@ import type {
 } from '@/entities/user/types';
 import type { PagedResponse } from '@/entities/spot/types';
 import type { FeedItem } from '@/features/feed/model/types';
+import type { FeedApplicationRole } from '@/features/feed/model/types';
 import { clientApiFetch } from '@/lib/client-api';
 import { endpoints } from '@/lib/endpoint';
 import {
@@ -37,6 +38,32 @@ type BackendParticipation = {
     joinedAt: string;
 };
 
+export type MyFeedApplicationStatus =
+    | 'APPLIED'
+    | 'PENDING'
+    | 'ACCEPTED'
+    | 'REJECTED'
+    | 'CANCELLED';
+
+export type MyFeedApplication = {
+    applicationId: string;
+    feedItemId: string;
+    feedTitle: string;
+    status: MyFeedApplicationStatus;
+    appliedRole: FeedApplicationRole;
+    deposit: number;
+    createdAt: string;
+};
+
+type BackendMyFeedApplication = Omit<
+    MyFeedApplication,
+    'applicationId' | 'feedItemId' | 'deposit'
+> & {
+    applicationId: string | number;
+    feedItemId: string | number;
+    deposit?: number | null;
+};
+
 type BackendInvolvedFeedItem = Omit<FeedItem, 'id' | 'spotId' | 'isAi'> & {
     id: string | number;
     spotId?: string | number;
@@ -61,6 +88,17 @@ function toParticipation(item: BackendParticipation): Participation {
         status: item.status,
         role: item.role,
         joinedAt: item.joinedAt,
+    };
+}
+
+function toMyFeedApplication(
+    item: BackendMyFeedApplication,
+): MyFeedApplication {
+    return {
+        ...item,
+        applicationId: String(item.applicationId),
+        feedItemId: String(item.feedItemId),
+        deposit: item.deposit ?? 0,
     };
 }
 
@@ -111,6 +149,20 @@ export const myApi = {
         clientApiFetch<BackendInvolvedFeedItem[]>(
             endpoints.me.involvedFeeds,
         ).then((items) => ({ data: (items ?? []).map(toInvolvedFeedItem) })),
+
+    feedApplications: async (): Promise<{ data: MyFeedApplication[] }> =>
+        clientApiFetch<
+            BackendMyFeedApplication[] | { data?: BackendMyFeedApplication[] }
+        >(endpoints.me.feedApplications).then((payload) => ({
+            data: (Array.isArray(payload) ? payload : (payload.data ?? [])).map(
+                toMyFeedApplication,
+            ),
+        })),
+
+    cancelFeedApplication: async (feedItemId: string): Promise<void> =>
+        clientApiFetch<void>(endpoints.feeds.myApplication(feedItemId), {
+            method: 'DELETE',
+        }),
 
     deleteUser: async (payload?: { password?: string }): Promise<void> =>
         clientApiFetch<void>(endpoints.me.profile, {

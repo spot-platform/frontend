@@ -285,7 +285,9 @@ export function FeedParticipationActions({
                 '참여 신청이 완료되었어요. 승인되면 팀 채팅에 참여할 수 있어요.',
                 '',
             );
-            toast.success('참여 신청이 완료되었어요.');
+            toast.success(
+                '신청한 피드는 맵에서 숨겨져요. 마이페이지 > 신청한 피드에서 확인하거나 취소할 수 있어요.',
+            );
             setSelectedRole(null);
             router.refresh();
         } finally {
