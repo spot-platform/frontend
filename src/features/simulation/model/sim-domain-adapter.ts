@@ -18,6 +18,7 @@ import type { GeoCoord } from '@/entities/spot/types';
 import type {
     LifecycleEvent,
     Movement,
+    SimHotspotSignal,
     SimManifest,
 } from '@/entities/spot/sim-stream-types';
 import type { ActivityCluster, PersonaRef } from '@/features/map/model/types';
@@ -79,7 +80,9 @@ type SpotLifecycleSeed = {
     createdTick: number;
     matchedTick: number | null;
     closedTick: number;
-    /** participants(host + joiner). joinedAtMs 는 movement.depart_tick 기준. leftAtMs 는 NO_SHOW 시 closed 직전. */
+    /** simulator-origin hotspot 신호. AI feed copy 가 아니라 지도 형성/모집 상태 메타데이터다. */
+    hotspotSignal?: SimHotspotSignal;
+    /** participants(host + joiner). joinedAtMs 는 movement.depart_tick 기준. leftAtMs 는 NO_SHOW/leave 시점. */
     participants: Array<{
         personaId: string;
         joinedTick: number;
@@ -111,10 +114,13 @@ export function buildSpotLifecycleSeeds(
         if (existing) return existing;
         const place = placeMap.get(spotId);
         if (!place || place.place_type !== 'spot') return null;
+        const anchor = place.map_anchor;
         const tracker: Tracker = {
             seed: {
                 spotId,
-                location: { lat: place.lat, lng: place.lng },
+                location: anchor
+                    ? { lat: anchor.lat, lng: anchor.lng }
+                    : { lat: place.lat, lng: place.lng },
                 category: place.category ?? '운동',
                 intent: place.intent ?? 'offer',
                 title: place.title ?? spotId,
@@ -135,6 +141,27 @@ export function buildSpotLifecycleSeeds(
         switch (ev.event_type) {
             case 'SPOT_CREATED':
                 t.seed.createdTick = ev.tick;
+                if (
+                    ev.scheduled_tick !== undefined &&
+                    ev.scheduled_tick !== null
+                ) {
+                    t.seed.matchedTick = ev.scheduled_tick;
+                }
+                if (
+                    ev.expected_closed_at_tick !== undefined &&
+                    ev.expected_closed_at_tick !== null
+                ) {
+                    t.seed.closedTick = ev.expected_closed_at_tick;
+                }
+                if (ev.map_anchor) {
+                    t.seed.location = {
+                        lat: ev.map_anchor.lat,
+                        lng: ev.map_anchor.lng,
+                    };
+                }
+                if (ev.hotspot_signal) {
+                    t.seed.hotspotSignal = ev.hotspot_signal;
+                }
                 break;
             case 'SPOT_MATCHED':
                 t.seed.matchedTick = ev.tick;
@@ -143,7 +170,7 @@ export function buildSpotLifecycleSeeds(
                 t.startedTick = ev.tick;
                 break;
             case 'SPOT_COMPLETED':
-                t.seed.closedTick = ev.tick;
+                t.seed.closedTick = ev.expected_closed_at_tick ?? ev.tick;
                 break;
             // SPOT_CONFIRMED 는 seed 에 별도 필드 없음(matched 와 close 사이의 진행 단계).
             // NO_SHOW 는 movement 단계 후 처리.
@@ -172,11 +199,21 @@ export function buildSpotLifecycleSeeds(
     }
 
     // NO_SHOW: agent 가 시작 직전에 이탈한 것으로 표현.
+    // PERSONA_LEAVE_SPOT: 완료 후 linger/travel 시작 tick 에 cluster 참여에서 빠진다.
     for (const ev of lifecycle) {
-        if (ev.event_type !== 'NO_SHOW' || !ev.agent_id) continue;
+        if (
+            ev.event_type !== 'NO_SHOW' &&
+            ev.event_type !== 'PERSONA_LEAVE_SPOT'
+        ) {
+            continue;
+        }
+        if (!ev.agent_id) continue;
         const t = map.get(ev.spot_id);
         if (!t) continue;
-        const cutoff = (t.startedTick ?? ev.tick) - 0.01;
+        const cutoff =
+            ev.event_type === 'NO_SHOW'
+                ? (t.startedTick ?? ev.tick) - 0.01
+                : ev.tick;
         for (const p of t.seed.participants) {
             if (p.personaId === ev.agent_id && p.leftTick === null) {
                 p.leftTick = cutoff;
@@ -203,6 +240,7 @@ function shiftSeedForCycle(
         matchedTick:
             seed.matchedTick === null ? null : seed.matchedTick + offset,
         closedTick: seed.closedTick + offset,
+        hotspotSignal: seed.hotspotSignal,
         participants: seed.participants.map((p) => ({
             personaId: renderId(cycle, p.personaId),
             joinedTick: p.joinedTick + offset,
@@ -377,6 +415,7 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
             const arrivedParticipantIds = new Set<string>();
             const clusters: ActivityCluster[] = [];
             const positions = positionsRef.current;
+            const seedById = new Map(seeds.map((seed) => [seed.spotId, seed]));
 
             for (const lc of lifecycles) {
                 if (now < lc.createdAtMs) continue;
@@ -436,6 +475,9 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
                     arrivedCount: idsToRender.filter((id) =>
                         arrivedParticipantIds.has(id),
                     ).length,
+                    variant: 'discovery',
+                    variantLabel: lc.intent === 'offer' ? '형성 중' : '모집 중',
+                    hotspotSignal: seedById.get(lc.spotId)?.hotspotSignal,
                 });
                 // ageMs 만 쓰면 lifespan 미사용 경고 — explicit void.
                 void lifespan;
@@ -444,7 +486,7 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
             const signature = `${lifecycles.length}:${clusters
                 .map(
                     (cluster) =>
-                        `${cluster.id}:${cluster.personas.length}:${cluster.arrivedCount ?? 0}:${cluster.isDying ? 1 : 0}`,
+                        `${cluster.id}:${cluster.centerCoord.lat.toFixed(6)},${cluster.centerCoord.lng.toFixed(6)}:${cluster.personas.length}:${cluster.arrivedCount ?? 0}:${cluster.isDying ? 1 : 0}:${JSON.stringify(cluster.hotspotSignal ?? null)}`,
                 )
                 .join('|')}:${arrivedParticipantIds.size}`;
             if (signature === lastSnapshotSignatureRef.current) return;
