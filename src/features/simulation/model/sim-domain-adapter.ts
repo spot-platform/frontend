@@ -31,27 +31,40 @@ import type {
 // 화면이 한 점에 뭉치는 것 + 휴면 dot 의미 없음 → Persona 변환에서 제외한다.
 // (region 통계 같은 비시각 용도가 필요해지면 별도 export 함수에서 다룬다.)
 
-export function simAgentsToPersonas(manifest: SimManifest): Persona[] {
+function renderId(cycle: number, id: string): string {
+    return `${cycle}:${id}`;
+}
+
+function loopPeriodTicks(manifest: SimManifest): number {
+    return Math.max(1, manifest.loop_period_ticks ?? manifest.total_ticks);
+}
+
+export function simAgentsToPersonas(
+    manifest: SimManifest,
+    cycles: number[] = [0],
+): Persona[] {
     const placeMap = new Map(
         manifest.places.map((p) => [p.place_id, p] as const),
     );
-    return manifest.agents
-        .filter((a) => a.agent_role === 'protagonist')
-        .map((a) => {
-            const home = placeMap.get(a.home_region_id);
-            const initialCoord: GeoCoord = home
-                ? { lat: home.lat, lng: home.lng }
-                : { lat: 0, lng: 0 };
-            return {
-                id: a.agent_id,
-                emoji: a.emoji,
-                name: a.name,
-                archetype: a.archetype,
-                initialCoord,
-                category: a.category,
-                intent: a.intent,
-            };
-        });
+    return cycles.flatMap((cycle) =>
+        manifest.agents
+            .filter((a) => a.agent_role === 'protagonist')
+            .map((a) => {
+                const home = placeMap.get(a.home_region_id);
+                const initialCoord: GeoCoord = home
+                    ? { lat: home.lat, lng: home.lng }
+                    : { lat: 0, lng: 0 };
+                return {
+                    id: renderId(cycle, a.agent_id),
+                    emoji: a.emoji,
+                    name: a.name,
+                    archetype: a.archetype,
+                    initialCoord,
+                    category: a.category,
+                    intent: a.intent,
+                };
+            }),
+    );
 }
 
 // ─── lifecycle 이벤트 + movement 청크 → SpotLifecycle[] ────────────────────
@@ -177,6 +190,40 @@ export function buildSpotLifecycleSeeds(
         .filter((s) => s.participants.length > 0);
 }
 
+function shiftSeedForCycle(
+    seed: SpotLifecycleSeed,
+    cycle: number,
+    loopPeriod: number,
+): SpotLifecycleSeed {
+    const offset = cycle * loopPeriod;
+    return {
+        ...seed,
+        spotId: renderId(cycle, seed.spotId),
+        createdTick: seed.createdTick + offset,
+        matchedTick:
+            seed.matchedTick === null ? null : seed.matchedTick + offset,
+        closedTick: seed.closedTick + offset,
+        participants: seed.participants.map((p) => ({
+            personaId: renderId(cycle, p.personaId),
+            joinedTick: p.joinedTick + offset,
+            leftTick: p.leftTick === null ? null : p.leftTick + offset,
+        })),
+    };
+}
+
+function loopedSpotLifecycleSeeds(
+    manifest: SimManifest,
+    baseSeeds: SpotLifecycleSeed[],
+    currentCycle: number,
+): SpotLifecycleSeed[] {
+    const loopPeriod = loopPeriodTicks(manifest);
+    const cycles = [...new Set([Math.max(0, currentCycle - 1), currentCycle])];
+    const loopSeeds = baseSeeds.filter((seed) => seed.createdTick < loopPeriod);
+    return cycles.flatMap((cycle) =>
+        loopSeeds.map((seed) => shiftSeedForCycle(seed, cycle, loopPeriod)),
+    );
+}
+
 // ─── seed (tick 단위) → SpotLifecycle (ms 단위) ────────────────────────────
 
 export function seedToSpotLifecycle(
@@ -226,6 +273,7 @@ type UseSimDomainOptions = {
     manifest: SimManifest | null;
     isReady: boolean;
     currentTick: number;
+    currentCycle: number;
     /** rAF emit 마다 호출되는 subscribe — 좌표 ref 갱신 통지. */
     subscribe: (cb: () => void) => () => void;
     positionsRef: React.RefObject<Map<string, GeoCoord>>;
@@ -251,6 +299,7 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         manifest,
         isReady,
         currentTick,
+        currentCycle,
         subscribe,
         positionsRef,
         playbackStartMsRef,
@@ -261,23 +310,29 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         snapshotThrottleMs = 800,
     } = options;
 
+    const renderCycles = useMemo(
+        () => [...new Set([Math.max(0, currentCycle - 1), currentCycle])],
+        [currentCycle],
+    );
+
     const personas = useMemo(
-        () => (manifest ? simAgentsToPersonas(manifest) : []),
-        [manifest],
+        () => (manifest ? simAgentsToPersonas(manifest, renderCycles) : []),
+        [manifest, renderCycles],
     );
 
     // useSimRun 버퍼에 도착한 청크만 기존 도메인 seed 로 변환한다.
     // 여기서 API를 직접 호출하지 않아야 재생 pacing 과 무관한 eager full-run drain 이 생기지 않는다.
     const seeds = useMemo(() => {
         if (!manifest || !isReady) return [];
-        return buildSpotLifecycleSeeds(
+        const baseSeeds = buildSpotLifecycleSeeds(
             manifest,
             bufferedLifecycleEventsRef.current,
             bufferedMovementsRef.current,
         );
+        return loopedSpotLifecycleSeeds(manifest, baseSeeds, currentCycle);
         // refs 자체는 안정적이므로 새 청크 도착 신호인 bufferedChunkVersion 으로 재계산한다.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [manifest, isReady, bufferedChunkVersion]);
+    }, [manifest, isReady, bufferedChunkVersion, currentCycle]);
 
     // currentTick + positionsRef 기반 cluster/lifecycle 빌드.
     // 매 emit 마다 호출되도록 subscribe 후크에서 트리거.
@@ -409,6 +464,7 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         playbackStartMsRef,
         tickDurationMsRef,
         currentTick,
+        currentCycle,
         snapshotThrottleMs,
     ]);
 

@@ -338,6 +338,7 @@ export function MapClient() {
         manifest: sim.manifest,
         isReady: sim.isReady,
         currentTick: sim.currentTick,
+        currentCycle: sim.currentCycle,
         subscribe: sim.subscribe,
         positionsRef: sim.positionsRef,
         playbackStartMsRef: sim.playbackStartMsRef,

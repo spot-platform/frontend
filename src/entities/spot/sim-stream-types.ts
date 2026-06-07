@@ -69,8 +69,14 @@ export type SimManifest = {
     approved_spot_count: number;
     /** 향후 'all' 옵션 대비. 현재는 항상 'published_only'. */
     filter_kind: SimRunFilterKind;
-    /** 전체 tick 수(예: 48). 재생 길이 표시용. */
+    /** 한 재생 사이클의 tick 수. loop_period_ticks 가 없으면 이 값을 loop period 로 사용한다. */
     total_ticks: number;
+    /** total_ticks 이후에도 이전 사이클 잔상/종료 상태를 유지할 때의 loop period. */
+    loop_period_ticks?: number;
+    /** loop 이후 이전 사이클을 겹쳐 보여줄 tail 길이. */
+    projection_tail_ticks?: number;
+    /** tail 데이터 로드를 허용하는 최대 raw tick. inclusive. */
+    max_projected_tick?: number;
     /** 클라이언트 디폴트 1 tick 길이. 사용자가 prop 으로 오버라이드 가능. */
     tick_duration_ms_default: number;
     /** prefetch 청크 크기(tick). */
