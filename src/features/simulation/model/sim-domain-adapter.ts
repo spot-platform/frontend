@@ -48,23 +48,21 @@ export function simAgentsToPersonas(
         manifest.places.map((p) => [p.place_id, p] as const),
     );
     return cycles.flatMap((cycle) =>
-        manifest.agents
-            .filter((a) => a.agent_role === 'protagonist')
-            .map((a) => {
-                const home = placeMap.get(a.home_region_id);
-                const initialCoord: GeoCoord = home
-                    ? { lat: home.lat, lng: home.lng }
-                    : { lat: 0, lng: 0 };
-                return {
-                    id: renderId(cycle, a.agent_id),
-                    emoji: a.emoji,
-                    name: a.name,
-                    archetype: a.archetype,
-                    initialCoord,
-                    category: a.category,
-                    intent: a.intent,
-                };
-            }),
+        manifest.agents.map((a) => {
+            const home = placeMap.get(a.home_region_id);
+            const initialCoord: GeoCoord = home
+                ? { lat: home.lat, lng: home.lng }
+                : { lat: 0, lng: 0 };
+            return {
+                id: renderId(cycle, a.agent_id),
+                emoji: a.emoji,
+                name: a.name,
+                archetype: a.archetype,
+                initialCoord,
+                category: a.category,
+                intent: a.intent,
+            };
+        }),
     );
 }
 
