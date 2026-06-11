@@ -231,8 +231,9 @@ function shiftSeedForCycle(
     seed: SpotLifecycleSeed,
     cycle: number,
     loopPeriod: number,
+    cycleOffsetTicks = 0,
 ): SpotLifecycleSeed {
-    const offset = cycle * loopPeriod;
+    const offset = cycle * loopPeriod + cycleOffsetTicks;
     return {
         ...seed,
         spotId: renderId(cycle, seed.spotId),
@@ -249,17 +250,51 @@ function shiftSeedForCycle(
     };
 }
 
+function previewOverlapTicks(manifest: SimManifest): number {
+    const declaredTail = manifest.projection_tail_ticks ?? 0;
+    if (declaredTail <= 0) return 0;
+    return Math.min(MAX_PREVIEW_OVERLAP_TICKS, declaredTail);
+}
+
+function shouldPreviewNextCycle(
+    manifest: SimManifest,
+    currentTick: number,
+): boolean {
+    const previewTicks = previewOverlapTicks(manifest);
+    if (previewTicks <= 0) return false;
+    return currentTick >= loopPeriodTicks(manifest) - previewTicks;
+}
+
+function renderCyclesForTick(
+    manifest: SimManifest,
+    currentCycle: number,
+    currentTick: number,
+): number[] {
+    const cycles = [Math.max(0, currentCycle - 1), currentCycle];
+    if (shouldPreviewNextCycle(manifest, currentTick)) {
+        cycles.push(currentCycle + 1);
+    }
+    return [...new Set(cycles)];
+}
+
 function loopedSpotLifecycleSeeds(
     manifest: SimManifest,
     baseSeeds: SpotLifecycleSeed[],
     currentCycle: number,
+    currentTick: number,
 ): SpotLifecycleSeed[] {
     const loopPeriod = loopPeriodTicks(manifest);
-    const cycles = [...new Set([Math.max(0, currentCycle - 1), currentCycle])];
+    const cycles = renderCyclesForTick(manifest, currentCycle, currentTick);
+    const previewTicks = previewOverlapTicks(manifest);
+    const previewNext = shouldPreviewNextCycle(manifest, currentTick);
     const loopSeeds = baseSeeds.filter((seed) => seed.createdTick < loopPeriod);
-    return cycles.flatMap((cycle) =>
-        loopSeeds.map((seed) => shiftSeedForCycle(seed, cycle, loopPeriod)),
-    );
+    return cycles.flatMap((cycle) => {
+        const offset =
+            previewNext && cycle === currentCycle + 1 ? -previewTicks : 0;
+        return loopSeeds.map((seed) =>
+            shiftSeedForCycle(seed, cycle, loopPeriod, offset),
+        );
+    });
 }
 
 // ─── seed (tick 단위) → SpotLifecycle (ms 단위) ────────────────────────────
@@ -306,6 +341,7 @@ export type SimDomainResult = {
 const ARRIVAL_THRESHOLD_DEG = 0.0005; // ~55m
 const BIRTH_PULSE_TICKS = 1.2;
 const DEATH_GRACE_TICKS = 0.8;
+const MAX_PREVIEW_OVERLAP_TICKS = 24;
 
 type UseSimDomainOptions = {
     manifest: SimManifest | null;
@@ -349,8 +385,11 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
     } = options;
 
     const renderCycles = useMemo(
-        () => [...new Set([Math.max(0, currentCycle - 1), currentCycle])],
-        [currentCycle],
+        () =>
+            manifest
+                ? renderCyclesForTick(manifest, currentCycle, currentTick)
+                : [],
+        [manifest, currentCycle, currentTick],
     );
 
     const personas = useMemo(
@@ -367,10 +406,15 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
             bufferedLifecycleEventsRef.current,
             bufferedMovementsRef.current,
         );
-        return loopedSpotLifecycleSeeds(manifest, baseSeeds, currentCycle);
+        return loopedSpotLifecycleSeeds(
+            manifest,
+            baseSeeds,
+            currentCycle,
+            currentTick,
+        );
         // refs 자체는 안정적이므로 새 청크 도착 신호인 bufferedChunkVersion 으로 재계산한다.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [manifest, isReady, bufferedChunkVersion, currentCycle]);
+    }, [manifest, isReady, bufferedChunkVersion, currentCycle, currentTick]);
 
     // currentTick + positionsRef 기반 cluster/lifecycle 빌드.
     // 매 emit 마다 호출되도록 subscribe 후크에서 트리거.

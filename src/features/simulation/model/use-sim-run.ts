@@ -101,6 +101,12 @@ const DEFAULT_PREFETCH_AHEAD = 6;
 const DEFAULT_DWELL_JITTER_M = 20;
 const DEFAULT_SPAWN_SCATTER_M = 180;
 const MIN_EMPTY_SKIP_TICKS = 3;
+const MAX_PREVIEW_OVERLAP_TICKS = 24;
+
+type RenderCycleTick = {
+    cycle: number;
+    rawTick: number;
+};
 
 function loopPeriodTicks(manifest: SimManifest): number {
     return Math.max(1, manifest.loop_period_ticks ?? manifest.total_ticks);
@@ -126,6 +132,45 @@ function cycleForTick(tFloat: number, period: number): number {
 
 function tickInCycle(tFloat: number, period: number): number {
     return ((tFloat % period) + period) % period;
+}
+
+function previewOverlapTicks(manifest: SimManifest): number {
+    const declaredTail = manifest.projection_tail_ticks ?? 0;
+    if (declaredTail <= 0) return 0;
+    return Math.min(MAX_PREVIEW_OVERLAP_TICKS, declaredTail);
+}
+
+function renderCycleTicks(
+    tFloat: number,
+    manifest: SimManifest,
+): RenderCycleTick[] {
+    const loopPeriod = loopPeriodTicks(manifest);
+    const dataWindow = dataWindowTicks(manifest);
+    const currentCycle = cycleForTick(tFloat, loopPeriod);
+    const ticks: RenderCycleTick[] = [];
+
+    for (const cycle of [Math.max(0, currentCycle - 1), currentCycle]) {
+        const rawTick = tFloat - cycle * loopPeriod;
+        if (rawTick >= 0 && rawTick < dataWindow) {
+            ticks.push({ cycle, rawTick });
+        }
+    }
+
+    const previewTicks = previewOverlapTicks(manifest);
+    const rawInCycle = tickInCycle(tFloat, loopPeriod);
+    const previewStart = loopPeriod - previewTicks;
+    if (previewTicks > 0 && rawInCycle >= previewStart) {
+        const nextRawTick = rawInCycle - previewStart;
+        ticks.push({ cycle: currentCycle + 1, rawTick: nextRawTick });
+    }
+
+    const seen = new Set<string>();
+    return ticks.filter((tick) => {
+        const key = `${tick.cycle}:${Math.floor(tick.rawTick * 1000)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
 }
 
 export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
@@ -423,19 +468,15 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         const next = positionsRef.current;
         const m = manifest;
         const loopPeriod = m ? loopPeriodTicks(m) : Number.POSITIVE_INFINITY;
-        const dataWindow = m ? dataWindowTicks(m) : loopPeriod;
         const currentCycleValue = Number.isFinite(loopPeriod)
             ? cycleForTick(tFloat, loopPeriod)
             : 0;
-        const cycleTicks = Number.isFinite(loopPeriod)
-            ? [Math.max(0, currentCycleValue - 1), currentCycleValue]
-            : [0];
+        const cycleTicks = m
+            ? renderCycleTicks(tFloat, m)
+            : [{ cycle: 0, rawTick: tFloat }];
         const activeKeys = new Set<string>();
 
-        for (const cycle of cycleTicks) {
-            const rawTick = tFloat - cycle * loopPeriod;
-            if (rawTick < 0 || rawTick >= dataWindow) continue;
-
+        for (const { cycle, rawTick } of cycleTicks) {
             for (const a of agents) {
                 if (a.agent_role === 'background') {
                     // 서버 movement 가 없는 background 는 시각화에서 제외(어댑터에서 hide).
@@ -509,8 +550,13 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             lastEmittedTickRef.current = tickInt;
             setCurrentTick(tickInt);
             setCurrentCycle(currentCycleValue);
-            const lc = lifecycleByTickRef.current.get(tickInt) ?? [];
-            setCurrentLifecycleEvents(lc);
+            const lifecycleTicks = [
+                ...new Set(cycleTicks.map((tick) => Math.floor(tick.rawTick))),
+            ];
+            const lifecycleEvents = lifecycleTicks.flatMap(
+                (tick) => lifecycleByTickRef.current.get(tick) ?? [],
+            );
+            setCurrentLifecycleEvents(lifecycleEvents);
         }
         notify();
     }
