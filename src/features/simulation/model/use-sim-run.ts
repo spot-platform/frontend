@@ -74,6 +74,8 @@ export type UseSimRunResult = {
     currentCycle: number;
     /** 현재 tick 에 발화한 lifecycle 이벤트들. 다음 emit 까지 동일. */
     currentLifecycleEvents: LifecycleEvent[];
+    /** 실제 재생/렌더링에 쓰는 loop period. demo fold 모드에서는 manifest 값보다 짧다. */
+    effectiveLoopPeriodTicks: number | null;
     /** Play / Pause 토글. */
     isPlaying: boolean;
     play: () => void;
@@ -102,6 +104,10 @@ const DEFAULT_DWELL_JITTER_M = 20;
 const DEFAULT_SPAWN_SCATTER_M = 180;
 const MIN_EMPTY_SKIP_TICKS = 3;
 const MAX_PREVIEW_OVERLAP_TICKS = 24;
+const DEMO_TAIL_FOLD_START_TICK = 24;
+const DEMO_TAIL_FOLD_SOURCE_START_TICK = 48;
+const DEMO_TAIL_FOLD_WINDOW_TICKS = 24;
+const DEMO_TAIL_FOLD_PLAYBACK_LOOP_TICKS = 72;
 
 type RenderCycleTick = {
     cycle: number;
@@ -134,18 +140,58 @@ function tickInCycle(tFloat: number, period: number): number {
     return ((tFloat % period) + period) % period;
 }
 
-function previewOverlapTicks(manifest: SimManifest): number {
+function shouldUseDemoTailFold(manifest: SimManifest, runId: string): boolean {
+    return (
+        runId === DEMO_RUN_ID &&
+        manifest.run_id === DEMO_RUN_ID &&
+        dataWindowTicks(manifest) > DEMO_TAIL_FOLD_SOURCE_START_TICK
+    );
+}
+
+function playbackLoopPeriodTicks(manifest: SimManifest, runId: string): number {
+    if (shouldUseDemoTailFold(manifest, runId)) {
+        return DEMO_TAIL_FOLD_PLAYBACK_LOOP_TICKS;
+    }
+    return loopPeriodTicks(manifest);
+}
+
+function previewOverlapTicks(manifest: SimManifest, runId: string): number {
+    if (shouldUseDemoTailFold(manifest, runId)) return 0;
     const declaredTail = manifest.projection_tail_ticks ?? 0;
     if (declaredTail <= 0) return 0;
     return Math.min(MAX_PREVIEW_OVERLAP_TICKS, declaredTail);
 }
 
+function foldedTailTick(rawTick: number, spotBaseTick: number | null): number {
+    if (rawTick < DEMO_TAIL_FOLD_SOURCE_START_TICK) return rawTick;
+    if (
+        spotBaseTick !== null &&
+        spotBaseTick >= DEMO_TAIL_FOLD_SOURCE_START_TICK
+    ) {
+        const foldedBaseOffset =
+            (spotBaseTick - DEMO_TAIL_FOLD_START_TICK) %
+            DEMO_TAIL_FOLD_WINDOW_TICKS;
+        const relativeTick = rawTick - spotBaseTick;
+        return (
+            DEMO_TAIL_FOLD_START_TICK +
+            ((foldedBaseOffset + relativeTick) % DEMO_TAIL_FOLD_WINDOW_TICKS)
+        );
+    }
+    return (
+        DEMO_TAIL_FOLD_START_TICK +
+        ((rawTick - DEMO_TAIL_FOLD_START_TICK) % DEMO_TAIL_FOLD_WINDOW_TICKS)
+    );
+}
+
 function renderCycleTicks(
     tFloat: number,
     manifest: SimManifest,
+    runId: string,
 ): RenderCycleTick[] {
-    const loopPeriod = loopPeriodTicks(manifest);
-    const dataWindow = dataWindowTicks(manifest);
+    const loopPeriod = playbackLoopPeriodTicks(manifest, runId);
+    const dataWindow = shouldUseDemoTailFold(manifest, runId)
+        ? loopPeriod
+        : dataWindowTicks(manifest);
     const currentCycle = cycleForTick(tFloat, loopPeriod);
     const ticks: RenderCycleTick[] = [];
 
@@ -156,7 +202,7 @@ function renderCycleTicks(
         }
     }
 
-    const previewTicks = previewOverlapTicks(manifest);
+    const previewTicks = previewOverlapTicks(manifest, runId);
     const rawInCycle = tickInCycle(tFloat, loopPeriod);
     const previewStart = loopPeriod - previewTicks;
     if (previewTicks > 0 && rawInCycle >= previewStart) {
@@ -194,6 +240,8 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     >([]);
     const [currentCycle, setCurrentCycle] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const activeManifestRef = useRef<SimManifest | null>(null);
+    const activeRunIdRef = useRef<string | null>(null);
 
     // ── refs (rAF 루프가 직접 참조) ────────────────────────────────────────
     const positionsRef = useRef<Map<string, GeoCoord>>(new Map());
@@ -201,6 +249,8 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
     const placeMapRef = useRef<PlaceMap>(new Map());
     const agentsRef = useRef<SimAgent[]>([]);
+    const agentByIdRef = useRef<Map<string, SimAgent>>(new Map());
+    const foldedAgentAliasBySpotRef = useRef<Map<string, string>>(new Map());
     const timelinesRef = useRef<AgentTimelineMap>(new Map());
     const lifecycleByTickRef = useRef<Map<number, LifecycleEvent[]>>(new Map());
     const loadedWindowRef = useRef<{ from: number; to: number } | null>(null);
@@ -229,8 +279,12 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
     // ── manifest 로드 + 첫 청크 ────────────────────────────────────────────
     useEffect(() => {
-        if (!enabled) return;
+        if (!enabled) {
+            activeRunIdRef.current = null;
+            return;
+        }
         let mounted = true;
+        activeRunIdRef.current = runId;
         setIsReady(false);
         setError(null);
 
@@ -238,6 +292,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             try {
                 const m = await fetchSimManifest(runId);
                 if (!mounted) return;
+                activeManifestRef.current = m;
                 setManifest(m);
                 tickDurationMsRef.current =
                     tickDurationMs ?? m.tick_duration_ms_default;
@@ -245,6 +300,10 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                     m.places.map((p) => [p.place_id, p] as const),
                 );
                 agentsRef.current = m.agents;
+                agentByIdRef.current = new Map(
+                    m.agents.map((agent) => [agent.agent_id, agent] as const),
+                );
+                foldedAgentAliasBySpotRef.current = new Map();
                 timelinesRef.current = new Map();
                 lifecycleByTickRef.current = new Map();
                 loadedWindowRef.current = null;
@@ -270,11 +329,14 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                 positionsRef.current = init;
 
                 // 첫 청크
-                await loadChunk(
-                    0,
-                    Math.min(m.chunk_size_ticks, dataWindowTicks(m)),
-                    runId,
+                const initialChunkTo = Math.min(
+                    m.chunk_size_ticks,
+                    dataWindowTicks(m),
                 );
+                await loadChunk(0, initialChunkTo, runId);
+                if (shouldUseDemoTailFold(m, runId)) {
+                    await loadChunk(initialChunkTo, dataWindowTicks(m), runId);
+                }
                 if (!mounted) return;
                 setIsReady(true);
                 notify();
@@ -286,6 +348,9 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
         return () => {
             mounted = false;
+            if (activeRunIdRef.current === runId) {
+                activeRunIdRef.current = null;
+            }
         };
         // tickDurationMs 변경은 별도 effect 에서 처리.
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,6 +362,148 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             tickDurationMsRef.current = tickDurationMs;
         }
     }, [tickDurationMs]);
+
+    // ── demo tail fold helpers ───────────────────────────────────────────────
+    function ensureFoldedAgentAlias(agentId: string, spotId: string): string {
+        const key = `${spotId}:${agentId}`;
+        const existing = foldedAgentAliasBySpotRef.current.get(key);
+        if (existing) return existing;
+
+        const cloneId = `${agentId}__fold_${spotId}`;
+        foldedAgentAliasBySpotRef.current.set(key, cloneId);
+        if (!agentByIdRef.current.has(cloneId)) {
+            const source = agentByIdRef.current.get(agentId);
+            const spot = placeMapRef.current.get(spotId);
+            const clone: SimAgent = source
+                ? { ...source, agent_id: cloneId, agent_role: 'protagonist' }
+                : {
+                      agent_id: cloneId,
+                      agent_role: 'protagonist',
+                      archetype: 'learner',
+                      name: '시연 페르소나',
+                      emoji: '🙂',
+                      home_region_id: spot?.region_id ?? 'emd_ingye',
+                      category: spot?.category ?? '공예',
+                      intent: spot?.intent ?? 'request',
+                  };
+            agentByIdRef.current.set(cloneId, clone);
+            agentsRef.current = [...agentsRef.current, clone];
+            setManifest((prev) => {
+                if (!prev || prev.run_id !== runId) return prev;
+                const next = { ...prev, agents: agentsRef.current };
+                activeManifestRef.current = next;
+                return next;
+            });
+        }
+        return cloneId;
+    }
+
+    function transformDemoTailFoldChunk(
+        movements: Movement[],
+        lifecycleEvents: LifecycleEvent[],
+    ): { movements: Movement[]; lifecycleEvents: LifecycleEvent[] } {
+        const activeManifest = activeManifestRef.current ?? manifest;
+        if (!activeManifest || !shouldUseDemoTailFold(activeManifest, runId)) {
+            return { movements, lifecycleEvents };
+        }
+
+        const spotBaseTicks = new Map<string, number>();
+        for (const ev of [
+            ...bufferedLifecycleEventsRef.current,
+            ...lifecycleEvents,
+        ]) {
+            if (ev.event_type !== 'SPOT_CREATED') continue;
+            const prev = spotBaseTicks.get(ev.spot_id);
+            if (prev === undefined || ev.tick < prev) {
+                spotBaseTicks.set(ev.spot_id, ev.tick);
+            }
+        }
+        for (const m of movements) {
+            if (!m.spot_id) continue;
+            const prev = spotBaseTicks.get(m.spot_id);
+            if (prev === undefined || m.depart_tick < prev) {
+                spotBaseTicks.set(m.spot_id, m.depart_tick);
+            }
+        }
+
+        const transformAgentId = (
+            agentId: string | undefined,
+            spotId: string,
+            rawTick: number,
+        ): string | undefined => {
+            if (!agentId) return undefined;
+            if (rawTick < DEMO_TAIL_FOLD_SOURCE_START_TICK) return agentId;
+            return ensureFoldedAgentAlias(agentId, spotId);
+        };
+
+        const foldedMovements = movements.map((m) => {
+            const spotBaseTick = m.spot_id
+                ? (spotBaseTicks.get(m.spot_id) ?? null)
+                : null;
+            const departTick = foldedTailTick(m.depart_tick, spotBaseTick);
+            const agentId = m.spot_id
+                ? transformAgentId(m.agent_id, m.spot_id, m.depart_tick)
+                : m.agent_id;
+            return {
+                ...m,
+                agent_id: agentId ?? m.agent_id,
+                depart_tick: departTick,
+                arrive_tick: departTick + (m.arrive_tick - m.depart_tick),
+            };
+        });
+
+        const foldedLifecycleEvents = lifecycleEvents.map((ev) => {
+            const spotBaseTick = spotBaseTicks.get(ev.spot_id) ?? null;
+            const tick = foldedTailTick(ev.tick, spotBaseTick);
+            const agentId = transformAgentId(ev.agent_id, ev.spot_id, ev.tick);
+            const payload = ev.payload ? { ...ev.payload } : undefined;
+            if (payload && typeof payload.persona_id === 'string') {
+                payload.persona_id = transformAgentId(
+                    payload.persona_id,
+                    ev.spot_id,
+                    ev.tick,
+                );
+            }
+            if (payload && typeof payload.agent_id === 'string') {
+                payload.agent_id = transformAgentId(
+                    payload.agent_id,
+                    ev.spot_id,
+                    ev.tick,
+                );
+            }
+            if (payload && typeof payload.host_persona_id === 'string') {
+                payload.host_persona_id = transformAgentId(
+                    payload.host_persona_id,
+                    ev.spot_id,
+                    ev.tick,
+                );
+            }
+            return {
+                ...ev,
+                tick,
+                agent_id: agentId,
+                payload,
+                scheduled_tick:
+                    ev.scheduled_tick === undefined ||
+                    ev.scheduled_tick === null
+                        ? ev.scheduled_tick
+                        : Math.max(tick, tick + (ev.scheduled_tick - ev.tick)),
+                expected_closed_at_tick:
+                    ev.expected_closed_at_tick === undefined ||
+                    ev.expected_closed_at_tick === null
+                        ? ev.expected_closed_at_tick
+                        : Math.max(
+                              tick,
+                              tick + (ev.expected_closed_at_tick - ev.tick),
+                          ),
+            };
+        });
+
+        return {
+            movements: foldedMovements,
+            lifecycleEvents: foldedLifecycleEvents,
+        };
+    }
 
     // ── 청크 로더 ──────────────────────────────────────────────────────────
     async function loadChunk(
@@ -315,25 +522,30 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                 fetchSimMovements(rid, from, to),
                 fetchSimLifecycle(rid, from, to),
             ]);
+            if (activeRunIdRef.current !== rid) return;
+            const { movements, lifecycleEvents } = transformDemoTailFoldChunk(
+                moveChunk.movements,
+                lifeChunk.events,
+            );
 
             loadedChunkKeysRef.current.add(key);
             bufferedMovementsRef.current = [
                 ...bufferedMovementsRef.current,
-                ...moveChunk.movements,
+                ...movements,
             ];
             bufferedLifecycleEventsRef.current = [
                 ...bufferedLifecycleEventsRef.current,
-                ...lifeChunk.events,
+                ...lifecycleEvents,
             ];
 
             timelinesRef.current = buildAgentTimelines(
-                moveChunk.movements,
+                movements,
                 timelinesRef.current,
                 { staggerCrowdedStarts: true },
             );
 
             const lcMap = lifecycleByTickRef.current;
-            for (const ev of lifeChunk.events) {
+            for (const ev of lifecycleEvents) {
                 const arr = lcMap.get(ev.tick);
                 if (arr) arr.push(ev);
                 else lcMap.set(ev.tick, [ev]);
@@ -363,6 +575,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         const nextTo = Math.min(nextFrom + m.chunk_size_ticks, dataWindow);
         inflightChunkRef.current = loadChunk(nextFrom, nextTo, rid)
             .catch((e) => {
+                if (activeRunIdRef.current !== rid) return;
                 setError(e instanceof Error ? e : new Error(String(e)));
             })
             .finally(() => {
@@ -386,7 +599,9 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
     function findNextActivityTick(tFloat: number): number | null {
         const w = loadedWindowRef.current;
-        const loopPeriod = manifest ? loopPeriodTicks(manifest) : null;
+        const loopPeriod = manifest
+            ? playbackLoopPeriodTicks(manifest, runId)
+            : null;
         if (!w) return null;
         let nextTick = Number.POSITIVE_INFINITY;
 
@@ -409,7 +624,9 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
     function maybeSkipEmptyEventTicks(tFloat: number, now: number): number {
         if (!skipEmptyEventTicks) return tFloat;
-        if (manifest && tFloat >= loopPeriodTicks(manifest)) return tFloat;
+        if (manifest && tFloat >= playbackLoopPeriodTicks(manifest, runId)) {
+            return tFloat;
+        }
         const tickInt = Math.floor(tFloat);
         if (lifecycleByTickRef.current.get(tickInt)?.length) return tFloat;
         if (hasActiveMovement(tFloat)) return tFloat;
@@ -421,7 +638,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
         const skippedTick = Math.min(
             nextTick,
-            manifest ? loopPeriodTicks(manifest) : nextTick,
+            manifest ? playbackLoopPeriodTicks(manifest, runId) : nextTick,
         );
         pausedAtTickRef.current = skippedTick;
         playbackStartMsRef.current =
@@ -467,22 +684,24 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         const agents = agentsRef.current;
         const next = positionsRef.current;
         const m = manifest;
-        const loopPeriod = m ? loopPeriodTicks(m) : Number.POSITIVE_INFINITY;
+        const loopPeriod = m
+            ? playbackLoopPeriodTicks(m, runId)
+            : Number.POSITIVE_INFINITY;
         const currentCycleValue = Number.isFinite(loopPeriod)
             ? cycleForTick(tFloat, loopPeriod)
             : 0;
         const cycleTicks = m
-            ? renderCycleTicks(tFloat, m)
+            ? renderCycleTicks(tFloat, m, runId)
             : [{ cycle: 0, rawTick: tFloat }];
         const activeKeys = new Set<string>();
 
         for (const { cycle, rawTick } of cycleTicks) {
             for (const a of agents) {
-                if (a.agent_role === 'background') {
-                    // 서버 movement 가 없는 background 는 시각화에서 제외(어댑터에서 hide).
+                const tl = timelines.get(a.agent_id);
+                if (a.agent_role === 'background' && (!tl || tl.length === 0)) {
+                    // movement 없는 background 는 시각화에서 제외한다.
                     continue;
                 }
-                const tl = timelines.get(a.agent_id);
                 const renderAgentId = `${cycle}:${a.agent_id}`;
                 activeKeys.add(renderAgentId);
 
@@ -583,7 +802,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             if (!manifest) return;
             const clamped = Math.max(
                 0,
-                Math.min(tick, loopPeriodTicks(manifest)),
+                Math.min(tick, playbackLoopPeriodTicks(manifest, runId)),
             );
             pausedAtTickRef.current = clamped;
             playbackStartMsRef.current =
@@ -594,8 +813,12 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         // emitFrame 은 컴포넌트 본체의 일반 함수 선언이라 매 렌더 새 참조다.
         // ref 들만 읽고 클로저 캡처가 없으므로 deps 에서 의도적으로 제외.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [manifest],
+        [manifest, runId],
     );
+
+    const effectiveLoopPeriodTicks = manifest
+        ? playbackLoopPeriodTicks(manifest, runId)
+        : null;
 
     return useMemo(
         () => ({
@@ -607,6 +830,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             currentTick,
             currentCycle,
             currentLifecycleEvents,
+            effectiveLoopPeriodTicks,
             isPlaying,
             play,
             pause,
@@ -625,6 +849,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             currentTick,
             currentCycle,
             currentLifecycleEvents,
+            effectiveLoopPeriodTicks,
             isPlaying,
             play,
             pause,

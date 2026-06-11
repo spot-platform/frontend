@@ -48,23 +48,21 @@ export function simAgentsToPersonas(
         manifest.places.map((p) => [p.place_id, p] as const),
     );
     return cycles.flatMap((cycle) =>
-        manifest.agents
-            .filter((a) => a.agent_role === 'protagonist')
-            .map((a) => {
-                const home = placeMap.get(a.home_region_id);
-                const initialCoord: GeoCoord = home
-                    ? { lat: home.lat, lng: home.lng }
-                    : { lat: 0, lng: 0 };
-                return {
-                    id: renderId(cycle, a.agent_id),
-                    emoji: a.emoji,
-                    name: a.name,
-                    archetype: a.archetype,
-                    initialCoord,
-                    category: a.category,
-                    intent: a.intent,
-                };
-            }),
+        manifest.agents.map((a) => {
+            const home = placeMap.get(a.home_region_id);
+            const initialCoord: GeoCoord = home
+                ? { lat: home.lat, lng: home.lng }
+                : { lat: 0, lng: 0 };
+            return {
+                id: renderId(cycle, a.agent_id),
+                emoji: a.emoji,
+                name: a.name,
+                archetype: a.archetype,
+                initialCoord,
+                category: a.category,
+                intent: a.intent,
+            };
+        }),
     );
 }
 
@@ -250,7 +248,17 @@ function shiftSeedForCycle(
     };
 }
 
-function previewOverlapTicks(manifest: SimManifest): number {
+function previewOverlapTicks(
+    manifest: SimManifest,
+    effectiveLoopPeriodTicks?: number | null,
+): number {
+    if (
+        effectiveLoopPeriodTicks !== undefined &&
+        effectiveLoopPeriodTicks !== null &&
+        effectiveLoopPeriodTicks < loopPeriodTicks(manifest)
+    ) {
+        return 0;
+    }
     const declaredTail = manifest.projection_tail_ticks ?? 0;
     if (declaredTail <= 0) return 0;
     return Math.min(MAX_PREVIEW_OVERLAP_TICKS, declaredTail);
@@ -259,19 +267,33 @@ function previewOverlapTicks(manifest: SimManifest): number {
 function shouldPreviewNextCycle(
     manifest: SimManifest,
     currentTick: number,
+    loopPeriod: number,
+    effectiveLoopPeriodTicks?: number | null,
 ): boolean {
-    const previewTicks = previewOverlapTicks(manifest);
+    const previewTicks = previewOverlapTicks(
+        manifest,
+        effectiveLoopPeriodTicks,
+    );
     if (previewTicks <= 0) return false;
-    return currentTick >= loopPeriodTicks(manifest) - previewTicks;
+    return currentTick >= loopPeriod - previewTicks;
 }
 
 function renderCyclesForTick(
     manifest: SimManifest,
     currentCycle: number,
     currentTick: number,
+    loopPeriod: number,
+    effectiveLoopPeriodTicks?: number | null,
 ): number[] {
     const cycles = [Math.max(0, currentCycle - 1), currentCycle];
-    if (shouldPreviewNextCycle(manifest, currentTick)) {
+    if (
+        shouldPreviewNextCycle(
+            manifest,
+            currentTick,
+            loopPeriod,
+            effectiveLoopPeriodTicks,
+        )
+    ) {
         cycles.push(currentCycle + 1);
     }
     return [...new Set(cycles)];
@@ -282,11 +304,26 @@ function loopedSpotLifecycleSeeds(
     baseSeeds: SpotLifecycleSeed[],
     currentCycle: number,
     currentTick: number,
+    effectiveLoopPeriodTicks?: number | null,
 ): SpotLifecycleSeed[] {
-    const loopPeriod = loopPeriodTicks(manifest);
-    const cycles = renderCyclesForTick(manifest, currentCycle, currentTick);
-    const previewTicks = previewOverlapTicks(manifest);
-    const previewNext = shouldPreviewNextCycle(manifest, currentTick);
+    const loopPeriod = effectiveLoopPeriodTicks ?? loopPeriodTicks(manifest);
+    const cycles = renderCyclesForTick(
+        manifest,
+        currentCycle,
+        currentTick,
+        loopPeriod,
+        effectiveLoopPeriodTicks,
+    );
+    const previewTicks = previewOverlapTicks(
+        manifest,
+        effectiveLoopPeriodTicks,
+    );
+    const previewNext = shouldPreviewNextCycle(
+        manifest,
+        currentTick,
+        loopPeriod,
+        effectiveLoopPeriodTicks,
+    );
     const loopSeeds = baseSeeds.filter((seed) => seed.createdTick < loopPeriod);
     return cycles.flatMap((cycle) => {
         const offset =
@@ -358,6 +395,8 @@ type UseSimDomainOptions = {
     bufferedChunkVersion: number;
     /** domain snapshot 재계산 최소 간격. 좌표 이동은 ref로 유지하고 React state 갱신만 줄인다. */
     snapshotThrottleMs?: number;
+    /** useSimRun 이 실제 재생/렌더링에 쓰는 loop period. */
+    effectiveLoopPeriodTicks?: number | null;
 };
 
 /**
@@ -382,15 +421,21 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
         bufferedLifecycleEventsRef,
         bufferedChunkVersion,
         snapshotThrottleMs = 800,
+        effectiveLoopPeriodTicks,
     } = options;
 
-    const renderCycles = useMemo(
-        () =>
-            manifest
-                ? renderCyclesForTick(manifest, currentCycle, currentTick)
-                : [],
-        [manifest, currentCycle, currentTick],
-    );
+    const renderCycles = useMemo(() => {
+        if (!manifest) return [];
+        const loopPeriod =
+            effectiveLoopPeriodTicks ?? loopPeriodTicks(manifest);
+        return renderCyclesForTick(
+            manifest,
+            currentCycle,
+            currentTick,
+            loopPeriod,
+            effectiveLoopPeriodTicks,
+        );
+    }, [manifest, currentCycle, currentTick, effectiveLoopPeriodTicks]);
 
     const personas = useMemo(
         () => (manifest ? simAgentsToPersonas(manifest, renderCycles) : []),
@@ -411,10 +456,18 @@ export function useSimDomain(options: UseSimDomainOptions): SimDomainResult {
             baseSeeds,
             currentCycle,
             currentTick,
+            effectiveLoopPeriodTicks,
         );
         // refs 자체는 안정적이므로 새 청크 도착 신호인 bufferedChunkVersion 으로 재계산한다.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [manifest, isReady, bufferedChunkVersion, currentCycle, currentTick]);
+    }, [
+        manifest,
+        isReady,
+        bufferedChunkVersion,
+        currentCycle,
+        currentTick,
+        effectiveLoopPeriodTicks,
+    ]);
 
     // currentTick + positionsRef 기반 cluster/lifecycle 빌드.
     // 매 emit 마다 호출되도록 subscribe 후크에서 트리거.
