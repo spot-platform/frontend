@@ -74,6 +74,8 @@ export type UseSimRunResult = {
     currentCycle: number;
     /** 현재 tick 에 발화한 lifecycle 이벤트들. 다음 emit 까지 동일. */
     currentLifecycleEvents: LifecycleEvent[];
+    /** 실제 재생/렌더링에 쓰는 loop period. demo fold 모드에서는 manifest 값보다 짧다. */
+    effectiveLoopPeriodTicks: number | null;
     /** Play / Pause 토글. */
     isPlaying: boolean;
     play: () => void;
@@ -814,6 +816,10 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         [manifest, runId],
     );
 
+    const effectiveLoopPeriodTicks = manifest
+        ? playbackLoopPeriodTicks(manifest, runId)
+        : null;
+
     return useMemo(
         () => ({
             manifest,
@@ -824,6 +830,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             currentTick,
             currentCycle,
             currentLifecycleEvents,
+            effectiveLoopPeriodTicks,
             isPlaying,
             play,
             pause,
@@ -842,6 +849,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             currentTick,
             currentCycle,
             currentLifecycleEvents,
+            effectiveLoopPeriodTicks,
             isPlaying,
             play,
             pause,

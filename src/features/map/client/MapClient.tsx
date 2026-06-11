@@ -317,7 +317,8 @@ export function MapClient() {
             sim.isReady &&
             sim.manifest &&
             !sim.isPlaying &&
-            sim.currentTick >= sim.manifest.total_ticks - 1
+            sim.currentTick >=
+                (sim.effectiveLoopPeriodTicks ?? sim.manifest.total_ticks) - 1
         ) {
             simSeek(0);
             simPlay();
@@ -327,6 +328,7 @@ export function MapClient() {
         sim.isPlaying,
         sim.currentTick,
         sim.manifest,
+        sim.effectiveLoopPeriodTicks,
         simSeek,
         simPlay,
     ]);
@@ -346,6 +348,7 @@ export function MapClient() {
         bufferedMovementsRef: sim.bufferedMovementsRef,
         bufferedLifecycleEventsRef: sim.bufferedLifecycleEventsRef,
         bufferedChunkVersion: sim.bufferedChunkVersion,
+        effectiveLoopPeriodTicks: sim.effectiveLoopPeriodTicks,
         snapshotThrottleMs: 800,
     });
 
