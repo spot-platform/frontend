@@ -70,6 +70,8 @@ export type UseSimRunResult = {
     subscribe: (cb: () => void) => () => void;
     /** 현재 tick (정수). UI 라벨 용. */
     currentTick: number;
+    /** 현재 재생 cycle. cycle 이 바뀌면 같은 agent 도 별도 render instance 로 취급한다. */
+    currentCycle: number;
     /** 현재 tick 에 발화한 lifecycle 이벤트들. 다음 emit 까지 동일. */
     currentLifecycleEvents: LifecycleEvent[];
     /** Play / Pause 토글. */
@@ -100,6 +102,25 @@ const DEFAULT_DWELL_JITTER_M = 20;
 const DEFAULT_SPAWN_SCATTER_M = 180;
 const MIN_EMPTY_SKIP_TICKS = 3;
 
+function loopPeriodTicks(manifest: SimManifest): number {
+    return Math.max(1, manifest.loop_period_ticks ?? manifest.total_ticks);
+}
+
+function dataWindowTicks(manifest: SimManifest): number {
+    return Math.max(
+        manifest.total_ticks,
+        (manifest.max_projected_tick ?? manifest.total_ticks - 1) + 1,
+    );
+}
+
+function cycleForTick(tFloat: number, period: number): number {
+    return Math.max(0, Math.floor(tFloat / period));
+}
+
+function tickInCycle(tFloat: number, period: number): number {
+    return ((tFloat % period) + period) % period;
+}
+
 export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const {
         runId = DEMO_RUN_ID,
@@ -119,6 +140,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const [currentLifecycleEvents, setCurrentLifecycleEvents] = useState<
         LifecycleEvent[]
     >([]);
+    const [currentCycle, setCurrentCycle] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
 
     // ── refs (rAF 루프가 직접 참조) ────────────────────────────────────────
@@ -198,7 +220,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                 // 첫 청크
                 await loadChunk(
                     0,
-                    Math.min(m.chunk_size_ticks, m.total_ticks),
+                    Math.min(m.chunk_size_ticks, dataWindowTicks(m)),
                     runId,
                 );
                 if (!mounted) return;
@@ -279,13 +301,14 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
     function maybePrefetch(tFloat: number, m: SimManifest, rid: string): void {
         const w = loadedWindowRef.current;
+        const dataWindow = dataWindowTicks(m);
         if (!w) return;
-        if (w.to >= m.total_ticks) return;
+        if (w.to >= dataWindow) return;
         if (inflightChunkRef.current) return;
         if (tFloat < w.to - prefetchAheadTicks) return;
 
         const nextFrom = w.to;
-        const nextTo = Math.min(nextFrom + m.chunk_size_ticks, m.total_ticks);
+        const nextTo = Math.min(nextFrom + m.chunk_size_ticks, dataWindow);
         inflightChunkRef.current = loadChunk(nextFrom, nextTo, rid)
             .catch((e) => {
                 setError(e instanceof Error ? e : new Error(String(e)));
@@ -311,6 +334,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
     function findNextActivityTick(tFloat: number): number | null {
         const w = loadedWindowRef.current;
+        const loopPeriod = manifest ? loopPeriodTicks(manifest) : null;
         if (!w) return null;
         let nextTick = Number.POSITIVE_INFINITY;
 
@@ -326,12 +350,14 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         }
 
         if (!Number.isFinite(nextTick)) return null;
+        if (loopPeriod !== null && nextTick >= loopPeriod) return null;
         // 로드된 범위 안에서만 안전하게 건너뛴다. 다음 청크 내용은 아직 모르므로 추측하지 않는다.
         return nextTick <= w.to ? nextTick : null;
     }
 
     function maybeSkipEmptyEventTicks(tFloat: number, now: number): number {
         if (!skipEmptyEventTicks) return tFloat;
+        if (manifest && tFloat >= loopPeriodTicks(manifest)) return tFloat;
         const tickInt = Math.floor(tFloat);
         if (lifecycleByTickRef.current.get(tickInt)?.length) return tFloat;
         if (hasActiveMovement(tFloat)) return tFloat;
@@ -343,7 +369,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
 
         const skippedTick = Math.min(
             nextTick,
-            manifest?.total_ticks ?? nextTick,
+            manifest ? loopPeriodTicks(manifest) : nextTick,
         );
         pausedAtTickRef.current = skippedTick;
         playbackStartMsRef.current =
@@ -364,24 +390,17 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
                 (now - playbackStartMsRef.current) /
                 Math.max(1, tickDurationMsRef.current);
             const effectiveTFloat = maybeSkipEmptyEventTicks(tFloat, now);
-            const clamped = Math.min(
-                effectiveTFloat,
-                manifest.total_ticks - 0.0001,
-            );
 
             if (now - lastEmitMs >= emitThrottleMs) {
                 lastEmitMs = now;
-                emitFrame(clamped);
+                emitFrame(effectiveTFloat);
             }
 
-            maybePrefetch(clamped, manifest, runId);
-
-            // 재생 종료
-            if (effectiveTFloat >= manifest.total_ticks) {
-                pausedAtTickRef.current = manifest.total_ticks;
-                setIsPlaying(false);
-                return;
-            }
+            maybePrefetch(
+                Math.min(effectiveTFloat, dataWindowTicks(manifest)),
+                manifest,
+                runId,
+            );
             rafId = requestAnimationFrame(loop);
         };
 
@@ -395,63 +414,94 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
         const timelines = timelinesRef.current;
         const agents = agentsRef.current;
         const next = positionsRef.current;
+        const m = manifest;
+        const loopPeriod = m ? loopPeriodTicks(m) : Number.POSITIVE_INFINITY;
+        const dataWindow = m ? dataWindowTicks(m) : loopPeriod;
+        const currentCycleValue = Number.isFinite(loopPeriod)
+            ? cycleForTick(tFloat, loopPeriod)
+            : 0;
+        const cycleTicks = Number.isFinite(loopPeriod)
+            ? [Math.max(0, currentCycleValue - 1), currentCycleValue]
+            : [0];
+        const activeKeys = new Set<string>();
 
-        for (const a of agents) {
-            if (a.agent_role === 'background') {
-                // 서버 movement 가 없는 background 는 시각화에서 제외(어댑터에서 hide).
-                continue;
+        for (const cycle of cycleTicks) {
+            const rawTick = tFloat - cycle * loopPeriod;
+            if (rawTick < 0 || rawTick >= dataWindow) continue;
+
+            for (const a of agents) {
+                if (a.agent_role === 'background') {
+                    // 서버 movement 가 없는 background 는 시각화에서 제외(어댑터에서 hide).
+                    continue;
+                }
+                const tl = timelines.get(a.agent_id);
+                const renderAgentId = `${cycle}:${a.agent_id}`;
+                activeKeys.add(renderAgentId);
+
+                // 대기 상태 정의:
+                //   - timeline 비었음 → 항상 대기
+                //   - 첫 movement 전 (rawTick < first.depart_tick) → 대기
+                //   - 마지막 movement 가 go_home 이고 도착 완료 → 다시 대기(귀가)
+                // 대기 중인 agent 는 positionsRef 에서 좌표를 제거해 마커 자체를 hide.
+                const isIdle =
+                    !tl ||
+                    tl.length === 0 ||
+                    rawTick < tl[0].depart_tick ||
+                    (tl[tl.length - 1].reason === 'go_home' &&
+                        rawTick >= tl[tl.length - 1].arrive_tick);
+
+                if (isIdle) {
+                    next.delete(renderAgentId);
+                    continue;
+                }
+
+                const recentMovement = tl
+                    ? findRecentMovement(tl, rawTick)
+                    : null;
+                const hasReturnedHome =
+                    recentMovement?.reason === 'go_home' &&
+                    recentMovement.arrive_tick <= rawTick;
+                if (hasReturnedHome) {
+                    next.delete(renderAgentId);
+                    continue;
+                }
+
+                const pos = resolveAgentPosition(
+                    a,
+                    timelines,
+                    rawTick,
+                    placeMap,
+                    {
+                        spawnScatterM,
+                    },
+                );
+                if (!pos) continue;
+                // spot 도착 후 dwell 은 잔잔한 jitter 만(움직이지 않는 모임 멤버 표현).
+                const isDwell =
+                    recentMovement !== null &&
+                    recentMovement.arrive_tick <= rawTick;
+                next.set(
+                    renderAgentId,
+                    isDwell && dwellJitterM > 0
+                        ? jitterAround(
+                              pos,
+                              renderAgentId + ':' + Math.floor(rawTick),
+                              dwellJitterM,
+                          )
+                        : pos,
+                );
             }
-            const tl = timelines.get(a.agent_id);
-
-            // 대기 상태 정의:
-            //   - timeline 비었음 → 항상 대기
-            //   - 첫 movement 전 (tFloat < first.depart_tick) → 대기
-            //   - 마지막 movement 가 go_home 이고 도착 완료 → 다시 대기(귀가)
-            // 대기 중인 agent 는 positionsRef 에서 좌표를 제거해 마커 자체를 hide.
-            const isIdle =
-                !tl ||
-                tl.length === 0 ||
-                tFloat < tl[0].depart_tick ||
-                (tl[tl.length - 1].reason === 'go_home' &&
-                    tFloat >= tl[tl.length - 1].arrive_tick);
-
-            if (isIdle) {
-                next.delete(a.agent_id);
-                continue;
-            }
-
-            const recentMovement = tl ? findRecentMovement(tl, tFloat) : null;
-            const hasReturnedHome =
-                recentMovement?.reason === 'go_home' &&
-                recentMovement.arrive_tick <= tFloat;
-            if (hasReturnedHome) {
-                next.delete(a.agent_id);
-                continue;
-            }
-
-            const pos = resolveAgentPosition(a, timelines, tFloat, placeMap, {
-                spawnScatterM,
-            });
-            if (!pos) continue;
-            // spot 도착 후 dwell 은 잔잔한 jitter 만(움직이지 않는 모임 멤버 표현).
-            const isDwell =
-                recentMovement !== null && recentMovement.arrive_tick <= tFloat;
-            next.set(
-                a.agent_id,
-                isDwell && dwellJitterM > 0
-                    ? jitterAround(
-                          pos,
-                          a.agent_id + ':' + Math.floor(tFloat),
-                          dwellJitterM,
-                      )
-                    : pos,
-            );
         }
 
-        const tickInt = Math.floor(tFloat);
+        for (const key of [...next.keys()]) {
+            if (!activeKeys.has(key)) next.delete(key);
+        }
+
+        const tickInt = Math.floor(tickInCycle(tFloat, loopPeriod));
         if (tickInt !== lastEmittedTickRef.current) {
             lastEmittedTickRef.current = tickInt;
             setCurrentTick(tickInt);
+            setCurrentCycle(currentCycleValue);
             const lc = lifecycleByTickRef.current.get(tickInt) ?? [];
             setCurrentLifecycleEvents(lc);
         }
@@ -478,7 +528,10 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
     const seek = useCallback(
         (tick: number) => {
             if (!manifest) return;
-            const clamped = Math.max(0, Math.min(tick, manifest.total_ticks));
+            const clamped = Math.max(
+                0,
+                Math.min(tick, loopPeriodTicks(manifest)),
+            );
             pausedAtTickRef.current = clamped;
             playbackStartMsRef.current =
                 performance.now() - clamped * tickDurationMsRef.current;
@@ -499,6 +552,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             positionsRef,
             subscribe,
             currentTick,
+            currentCycle,
             currentLifecycleEvents,
             isPlaying,
             play,
@@ -516,6 +570,7 @@ export function useSimRun(options: UseSimRunOptions = {}): UseSimRunResult {
             error,
             subscribe,
             currentTick,
+            currentCycle,
             currentLifecycleEvents,
             isPlaying,
             play,

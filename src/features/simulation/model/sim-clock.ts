@@ -62,6 +62,14 @@ export function findNextMovement(
     return timeline[lo];
 }
 
+function placeCoord(place: {
+    lat: number;
+    lng: number;
+    map_anchor?: GeoCoord;
+}): GeoCoord {
+    return place.map_anchor ?? { lat: place.lat, lng: place.lng };
+}
+
 type PositionAtOptions = {
     fromCoord?: GeoCoord;
 };
@@ -82,19 +90,20 @@ export function positionAt(
     const to = placeMap.get(m.to_place_id);
     if (!from || !to) return null;
 
-    const fromCoord = options?.fromCoord ?? { lat: from.lat, lng: from.lng };
+    const fromCoord = options?.fromCoord ?? placeCoord(from);
+    const toCoord = placeCoord(to);
 
     if (tFloat <= m.depart_tick) {
         return fromCoord;
     }
     if (tFloat >= m.arrive_tick) {
-        return { lat: to.lat, lng: to.lng };
+        return toCoord;
     }
     const span = m.arrive_tick - m.depart_tick;
     const p = span <= 0 ? 1 : (tFloat - m.depart_tick) / span;
     return {
-        lat: lerp(fromCoord.lat, to.lat, p),
-        lng: lerp(fromCoord.lng, to.lng, p),
+        lat: lerp(fromCoord.lat, toCoord.lat, p),
+        lng: lerp(fromCoord.lng, toCoord.lng, p),
     };
 }
 

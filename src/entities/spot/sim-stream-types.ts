@@ -16,6 +16,25 @@ import type { PersonaArchetype, PersonaIntent } from '@/entities/persona/types';
 
 export type PlaceType = 'region' | 'spot';
 
+export type SimMapAnchor = {
+    type?: string;
+    lat: number;
+    lng: number;
+    region_id?: string;
+    category?: string;
+    confidence?: number;
+    match_reason?: string;
+};
+
+export type SimHotspotSignal = {
+    signal_type?: 'teach_spot' | string;
+    state?: 'forming' | 'recruiting' | 'active' | string;
+    host_persona_type?: string;
+    participant_target_count?: number;
+    reason_tags?: string[];
+    region_character?: Record<string, number>;
+};
+
 export type PlaceGeometry = {
     place_id: string;
     place_type: PlaceType;
@@ -30,6 +49,8 @@ export type PlaceGeometry = {
     intent?: PersonaIntent;
     /** spot 일 때 UI 카드 제목(template 기반 합성). */
     title?: string;
+    /** simulator 가 제공한 public/proxy map anchor. spot 좌표보다 우선 사용한다. */
+    map_anchor?: SimMapAnchor;
 };
 
 // ─── Agent ───────────────────────────────────────────────────────────────────
@@ -69,8 +90,14 @@ export type SimManifest = {
     approved_spot_count: number;
     /** 향후 'all' 옵션 대비. 현재는 항상 'published_only'. */
     filter_kind: SimRunFilterKind;
-    /** 전체 tick 수(예: 48). 재생 길이 표시용. */
+    /** 한 재생 사이클의 tick 수. loop_period_ticks 가 없으면 이 값을 loop period 로 사용한다. */
     total_ticks: number;
+    /** total_ticks 이후에도 이전 사이클 잔상/종료 상태를 유지할 때의 loop period. */
+    loop_period_ticks?: number;
+    /** loop 이후 이전 사이클을 겹쳐 보여줄 tail 길이. */
+    projection_tail_ticks?: number;
+    /** tail 데이터 로드를 허용하는 최대 raw tick. inclusive. */
+    max_projected_tick?: number;
     /** 클라이언트 디폴트 1 tick 길이. 사용자가 prop 으로 오버라이드 가능. */
     tick_duration_ms_default: number;
     /** prefetch 청크 크기(tick). */
@@ -114,14 +141,23 @@ export type LifecycleEventType =
     | 'SPOT_CONFIRMED'
     | 'SPOT_STARTED'
     | 'SPOT_COMPLETED'
-    | 'NO_SHOW';
+    | 'NO_SHOW'
+    | 'PERSONA_LEAVE_SPOT'
+    | 'PERSONA_RETURN_HOME';
 
 export type LifecycleEvent = {
     tick: number;
     event_type: LifecycleEventType;
     spot_id: string;
-    /** NO_SHOW 등 agent 가 특정될 때만. */
+    /** NO_SHOW / PERSONA_* 등 agent 가 특정될 때만. */
     agent_id?: string;
+    payload?: Record<string, unknown>;
+    scheduled_tick?: number;
+    schedule_lead_ticks?: number;
+    duration_ticks?: number;
+    expected_closed_at_tick?: number;
+    map_anchor?: SimMapAnchor;
+    hotspot_signal?: SimHotspotSignal;
 };
 
 export type LifecycleChunk = {

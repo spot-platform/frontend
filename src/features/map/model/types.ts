@@ -1,3 +1,4 @@
+import type { SimHotspotSignal } from '@/entities/spot/sim-stream-types';
 import type { GeoCoord } from '@/entities/spot/types';
 
 export type PersonaRef = {
@@ -29,6 +30,8 @@ export type ActivityCluster = {
     variant?: 'discovery' | 'ai-feed' | 'user-feed' | 'feed-group' | 'mine';
     /** 변형에 따른 추가 라벨(예: "내 모임"). */
     variantLabel?: string;
+    /** simulator-origin hotspot 신호. AI 피드 본문이 아니라 지도 발견/형성 상태용 메타데이터. */
+    hotspotSignal?: SimHotspotSignal;
 };
 
 export type ClusterInput = {
