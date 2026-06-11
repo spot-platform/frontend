@@ -107,9 +107,16 @@ function loopPeriodTicks(manifest: SimManifest): number {
 }
 
 function dataWindowTicks(manifest: SimManifest): number {
+    const loopPeriod = loopPeriodTicks(manifest);
+    const declaredMaxProjected = manifest.max_projected_tick;
+    const tailMaxProjected =
+        manifest.projection_tail_ticks != null
+            ? loopPeriod + manifest.projection_tail_ticks - 1
+            : null;
     return Math.max(
         manifest.total_ticks,
-        (manifest.max_projected_tick ?? manifest.total_ticks - 1) + 1,
+        (declaredMaxProjected ?? manifest.total_ticks - 1) + 1,
+        tailMaxProjected != null ? tailMaxProjected + 1 : 0,
     );
 }
 

@@ -24,6 +24,11 @@ export type SimMapAnchor = {
     category?: string;
     confidence?: number;
     match_reason?: string;
+    /** Actual/public POI anchor metadata when provided by contextBuilder. */
+    poi_id?: string;
+    poi_name?: string;
+    poi_category?: string;
+    address?: string | null;
 };
 
 export type SimHotspotSignal = {
